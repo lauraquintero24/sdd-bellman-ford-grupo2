@@ -1,0 +1,12 @@
+NFR-11 — 2026-10-30T16:19:12Z
+Comando: python scripts/measure_nfr11.py --machine 'Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa'
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+  os: Linux-6.18.44-fc-v185-x86_64-with-glibc2.39  python: 3.13.17
+Procesos reales: Controller 127.0.0.1:60513 (F-01), Router 127.0.0.1:50273, bitácora vacía al inicio
+Clientes concurrentes: 4 x 25 POST /packets (pkt-000..pkt-099) en 0.523 s
+Respuestas 200: 100 de 100
+Líneas en la bitácora: 100; no parseables: 0; conformes a 04 §6: 100
+packet_id distintos: 100
+Veredicto (100 líneas parseables, sin mezclas, 100 IDs distintos): PASS
+Bitácora cruda: nfr11-forwarding.jsonl
+El caso «un fallo de escritura produce 500 y nunca 200» se verifica en TC-33 (test-results.txt).
