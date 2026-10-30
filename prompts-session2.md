@@ -112,7 +112,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) TC-15 mide `GET /route` del Controller, que no usa `HttpRouteClient`: por construcción no podía detectar el efecto del cambio. (2) La medición del Router mostró una regresión de unas 10 veces en el p95 con la variante A: cada `httpx.Client()` recargaba los certificados raíz (≈ 51 ms por cliente, frente a 0,85 ms con un contexto SSL reutilizado). (3) La propuesta C-32 omitía `04` §4.2, que también fija el valor por defecto 1.0 y el ejemplo `httpx.Timeout(connect=1.0, …)`, y la prueba `test_tc14_router_settings.py::test_defaults` |
 | Corrección hecha | [IA] (1) Se añadió una medición informativa de `POST /packets` antes y después. (2) Variante A′ propuesta, medida en una copia y aplicada tras la aprobación de Laura, con un comentario en el código que da el motivo y las cifras. (3) Señalado al equipo; C-32 no se escribió y `specs/` no se modificó (decisión del equipo; la limitación 10 del README se mantiene) |
 | Requisitos relacionados | FR-07, FR-09, NFR-06, NFR-10; TC-15, TC-32; `02` §5, §7; `04` §4.2 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal |Ejecuté en Windows 11 la suite completa tras la variante A′ (553 passed) y scripts/demo.sh, que siguió devolviendo 503 CONTROLLER_UNAVAILABLE con el Controller detenido. |
 
 ### Anexo S2-P01 — texto literal
 

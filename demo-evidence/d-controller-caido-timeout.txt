@@ -1,11 +1,11 @@
 # Paso d — Controller detenido (503) y Controller que no responde (504)
-Fecha (UTC): 2026-10-30T17:03:23Z
-Máquina: no indicada
+Fecha (UTC): 2026-10-30T18:02:21Z
+Máquina: Windows 11, portátil de Laura
 Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
         packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
         R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
 
-## Se detiene el proceso Controller (PID 953)
+## Se detiene el proceso Controller (PID 320)
 $ packet pkt-d1
 {"packet_id":"pkt-d1","status":"failed","trace":[],"error":{"code":"CONTROLLER_UNAVAILABLE","message":"No fue posible conectar con el Controller.","details":{}}}
 HTTP 503

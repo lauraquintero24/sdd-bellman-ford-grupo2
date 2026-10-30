@@ -1,21 +1,21 @@
-INFO:     Started server process [35660]
+INFO:     Started server process [22964]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
-INFO:     127.0.0.1:56730 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56732 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62730 - "GET /topology HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62731 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62733 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62734 - "POST /links/fail HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62733 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62736 - "POST /links/restore HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62737 - "POST /links/restore HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62733 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62739 - "GET /topology HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62740 - "POST /links/fail HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62741 - "POST /links/fail HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62733 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:62743 - "POST /links/restore HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62744 - "POST /links/restore HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62733 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56781 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49333 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49335 - "GET /topology HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51055 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59123 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59126 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60169 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63446 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63447 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63449 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63452 - "GET /topology HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63453 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63454 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63456 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63457 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63458 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63460 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK

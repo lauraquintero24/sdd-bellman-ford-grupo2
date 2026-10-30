@@ -1,6 +1,6 @@
 # Paso a — Paquete reenviado: ruta del Controller y traza del Router
-Fecha (UTC): 2026-10-30T17:03:20Z
-Máquina: no indicada
+Fecha (UTC): 2026-10-30T18:02:17Z
+Máquina: Windows 11, portátil de Laura
 Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
         packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
         R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
