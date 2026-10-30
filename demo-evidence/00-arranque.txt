@@ -1,12 +1,12 @@
 # Paso 0 — Arranque del Controller y del Router en puertos no predeterminados
-Fecha (UTC): 2026-10-30T16:18:39Z
-Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+Fecha (UTC): 2026-10-30T17:03:18Z
+Máquina: no indicada
 Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
         packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
         R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
 
-## Controller: .venv/bin/python -m controller.main --port 8100 --topology specs/fixtures/F-01.json
-## Router: .venv/bin/python -m router.main --port 8101 --controller-url http://127.0.0.1:8100 --log-file data/demo-forwarding.jsonl
+## Controller: .venv/Scripts/python.exe -m controller.main --port 8100 --topology specs/fixtures/F-01.json
+## Router: .venv/Scripts/python.exe -m router.main --port 8101 --controller-url http://127.0.0.1:8100 --log-file data/demo-forwarding.jsonl --connect-timeout 3
 $ http http://127.0.0.1:8100/health
 {"status":"ok","application":"controller"}
 HTTP 200
