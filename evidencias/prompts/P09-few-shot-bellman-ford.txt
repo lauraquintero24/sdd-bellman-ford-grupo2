@@ -1,0 +1,33 @@
+# P09 — Ejercicio few-shot (Bellman-Ford, DEC-08/DEC-09)
+# Textos copiados sin modificaciones del registro de prompts de la versión RC11 (no incluido en esta entrega; líneas 3199-3236 de ese archivo).
+# -----------------------------------------------------------------
+
+== PROMPT VERSIÓN 1 (dos ejemplos resueltos + caso nuevo) ==
+> Actúa como verificador de rutas Bellman-Ford para el Grupo 2, usando grafos dirigidos y costos `delay_ms` no negativos. Los pesos decimales se convierten exactamente mediante Decimal/Fraction, no float. Política: primero minimizar el costo total solicitado; ante costo **idéntico en aritmética exacta**, escoger menos saltos; si sigue empate, ruta completa alfabéticamente menor. No uses Dijkstra. Devuelve solo JSON con `path` y `total_cost` como cadena.
+>
+> Ejemplo 1: nodos A,B,D; enlaces A→D delay=2, A→B delay=1, B→D delay=3. Consulta A→D. Salida correcta: `{"path":["A","D"],"total_cost":"2"}` porque la ruta directa cuesta 2 y la alternativa cuesta 4.
+>
+> Ejemplo 2: nodos A,B,C,D; enlaces A→B=1, B→D=1, A→C=1, C→D=1. Consulta A→D. Salida correcta: `{"path":["A","B","D"],"total_cost":"2"}` porque empatan en costo y saltos; gana la ruta alfabética por B.
+>
+> Caso nuevo 3: nodos A,B,C,D; enlaces A→D=0.8, A→B=0.1, B→D=0.7, A→C=0.4, C→D=0.4. Consulta A→D en métrica delay. ¿Cuál es la salida? Escribe una justificación de una frase después del JSON.
+
+== RESPUESTA VISIBLE EN LA CAPTURA evidencias/few_shot/P09-respuesta-chatgpt.png (transcripción) ==
+{"path":["A","D"],"total_cost":"0.8"}
+Justificación: Las tres rutas cuestan exactamente 0.8 en aritmética decimal exacta, por lo que gana A→D al tener un solo salto frente a los dos saltos de las alternativas.
+
+== RESPUESTA DE DEMOSTRACIÓN REGISTRADA EN RC10 (redacción distinta a la captura) ==
+```json
+{"path":["A","D"],"total_cost":"0.8"}
+```
+
+> Los tres caminos tienen costo matemático exacto 0.8 y gana la ruta directa A→D por tener un salto frente a los dos saltos de las alternativas.
+
+== PROMPT VERSIÓN 2 (refinamiento iterativo) ==
+> Conserva exactamente la política y los ejemplos anteriores. Cambia solo A→D de `0.8` a `0.800000000001`; conserva A→B→D=0.1+0.7 y A→C→D=0.4+0.4. No conviertas las entradas a float y no uses tolerancias aproximadas. Responde con JSON `path` y `total_cost` como cadena, seguido de una justificación matemática breve.
+
+== RESPUESTA A LA VERSIÓN 2 REGISTRADA EN RC10 (sin captura) ==
+```json
+{"path":["A","B","D"],"total_cost":"0.8"}
+```
+
+> Las dos rutas de dos saltos cuestan exactamente 0.8, menor que 0.800000000001 de la ruta directa; entre ellas gana A→B→D por orden alfabético.

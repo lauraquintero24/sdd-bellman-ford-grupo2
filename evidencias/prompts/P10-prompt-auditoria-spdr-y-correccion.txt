@@ -1,0 +1,106 @@
+# Prompt enviado a Claude (Anthropic) el 29/10/2026 en la sesión que produjo la versión 1.0.
+# Texto copiado sin modificaciones entre las líneas de separación.
+# -----------------------------------------------------------------
+# PROMPT MAESTRO — AUDITORÍA SPDR Y CORRECCIÓN INTEGRAL DEL ZIP (SESIÓN 1)
+
+Actúa como un **comité de evaluación académica compuesto por auditores expertos en SPDR, ingeniería de software, desarrollo dirigido por especificaciones (SDD), Prompt Engineering, algoritmo Bellman-Ford, pruebas de software y documentación técnica**.
+
+Te proporcionaré un archivo ZIP que contiene los entregables de la Sesión 1 del Taller SDD_Prompt Engineering.
+
+## OBJETIVO PRINCIPAL
+
+Realizar una **auditoría extremadamente rigurosa, imparcial y exhaustiva** de todos los archivos del ZIP, identificar cada incumplimiento y corregir directamente los documentos, códigos y demás archivos necesarios para producir una versión final optimizada.
+
+La meta es alcanzar una **calificación superior a 95/100 bajo los criterios SPDR**, sin inventar resultados, evidencias, firmas, aprobaciones ni verificaciones.
+
+No quiero una evaluación complaciente. Quiero que identifiques incluso los errores pequeños que un evaluador estricto podría penalizar.
+
+## FASE 1. AUDITORÍA INICIAL
+
+1. Descomprime y examina todos los archivos y subcarpetas del ZIP, sin omitir ninguno.
+2. Identifica los entregables obligatorios correspondientes exclusivamente a la Sesión 1.
+3. Contrasta el contenido con las instrucciones oficiales del taller, las plantillas proporcionadas y la rúbrica SPDR disponible.
+4. Comprueba la consistencia entre requisitos, arquitectura, diagramas, casos de prueba, criterios de aceptación, decisiones técnicas y evidencias.
+5. Identifica errores técnicos, contradicciones, omisiones, ambigüedades, contenido redundante y afirmaciones sin respaldo.
+6. Examina los aspectos matemáticos y algorítmicos de Bellman-Ford, incluyendo grafos dirigidos, métricas, desempates, precisión decimal, estados de enlaces, ciclos negativos y manejo de errores cuando sean aplicables a las especificaciones.
+7. Distingue los requisitos obligatorios de las recomendaciones opcionales, evitando exigir elementos de sesiones posteriores.
+
+Presenta una **calificación inicial estricta sobre 100**, desglosada por criterio SPDR, explicando las penalizaciones con referencia al archivo y sección afectados.
+
+## FASE 2. CORRECCIÓN INTEGRAL
+
+Después de la auditoría, no te limites a recomendar mejoras: **aplica directamente todas las correcciones técnicamente justificadas**.
+
+Para cada archivo que requiera modificaciones:
+
+- Corrige errores de contenido, redacción, estructura, formato y coherencia.
+- Completa requisitos y apartados faltantes cuando exista información suficiente para hacerlo correctamente.
+- Elimina duplicaciones, contradicciones y contenido innecesario.
+- Uniforma nombres, identificadores, versiones, nomenclaturas y referencias cruzadas.
+- Asegura la trazabilidad entre requisitos, decisiones de diseño, pruebas y criterios de aceptación.
+- Corrige diagramas Mermaid y verifica su sintaxis y correspondencia con las especificaciones.
+- Mejora los ejemplos, las pruebas y los casos límite.
+- Revisa que las decisiones técnicas sean compatibles entre todos los documentos.
+- Mantén únicamente los archivos necesarios para entregar y evaluar correctamente la Sesión 1.
+
+**Importante:** No inventes firmas, aprobaciones estudiantiles, commits, ejecuciones de pruebas ni evidencias. Si algo requiere una acción humana o una verificación imposible de realizar en el entorno, identifícalo expresamente y prepara el material necesario para completarlo.
+
+## FASE 3. VERIFICACIÓN TÉCNICA
+
+Realiza todas las comprobaciones que permita el entorno:
+
+1. Verifica la integridad de la estructura de archivos.
+2. Comprueba la validez de archivos JSON, Markdown, diagramas y código cuando corresponda.
+3. Ejecuta las pruebas disponibles y documenta sus resultados reales.
+4. Comprueba los ejemplos de Bellman-Ford utilizando aritmética decimal exacta cuando sea necesario.
+5. Revisa la coherencia matemática, los desempates y la reproducibilidad.
+6. Confirma que los requisitos tengan criterios de aceptación verificables.
+7. Identifica cualquier dependencia, error o validación pendiente.
+
+No declares que algo está probado si no se ejecutó o verificó realmente.
+
+## FASE 4. SEGUNDA AUDITORÍA SPDR
+
+Una vez aplicadas las correcciones, vuelve a evaluar **la totalidad del ZIP corregido desde cero**, con el mismo nivel de exigencia que utilizaría un evaluador académico particularmente estricto.
+
+No aumentes la nota simplemente por haber realizado modificaciones.
+
+Si detectas nuevas fallas, corrígelas y repite el proceso de revisión hasta alcanzar el máximo nivel de calidad verificable.
+
+**Objetivo: superar 95/100.** Si no puede justificarse una nota superior a 95, informa la calificación real y explica qué impide alcanzarla. No garantices una nota que dependa de criterios o comprobaciones externas.
+
+## FASE 5. ENTREGA FINAL
+
+Debes entregar:
+
+1. **Calificación inicial SPDR:** nota sobre 100 y explicación de las penalizaciones.
+2. **Registro de correcciones:** archivos modificados, secciones intervenidas y descripción de cada cambio importante.
+3. **Calificación final SPDR:** evaluación estricta del resultado corregido, con desglose por criterios.
+4. **Resultados de verificación:** qué pruebas se ejecutaron, cuáles fueron satisfactorias y cuáles quedaron pendientes.
+5. **Archivo ZIP final descargable:** con todos los documentos corregidos, organizados y listos para entregar, sin borradores innecesarios, duplicados ni archivos temporales.
+
+El ZIP final debe conservar la identidad del proyecto, su alcance académico y la estructura requerida por el profesor.
+
+## REGLAS INNEGOCIABLES
+
+- Sé extremadamente estricto y nada generoso.
+- No ocultes errores para aumentar la calificación.
+- No confundas documentación de una prueba con evidencia de su ejecución.
+- No fabriques aprobaciones ni verificaciones de estudiantes.
+- No cambies decisiones técnicas sin revisar su impacto en todos los documentos.
+- No elimines archivos obligatorios.
+- No agregues entregables de sesiones posteriores si no corresponden.
+- No presentes como cumplidos requisitos que no puedas demostrar.
+- No entregues únicamente recomendaciones: modifica físicamente el contenido del ZIP.
+- No des por terminado el trabajo sin una segunda auditoría integral.
+- Prioriza siempre la rúbrica y las instrucciones oficiales frente a tus suposiciones.
+
+## INSTRUCCIÓN FINAL
+
+**Trabaja como si el ZIP fuera a ser evaluado inmediatamente por un sistema SPDR automatizado y un profesor experto que buscarán cualquier defecto técnico, documental o de trazabilidad.**
+
+Tu responsabilidad es producir la versión más sólida, verificable, consistente y completa posible de la Sesión 1.
+
+No me preguntes qué corregir primero. Analiza el conjunto completo, toma las decisiones técnicamente justificadas, realiza las correcciones y entrégame el ZIP final acompañado de una evaluación crítica y transparente.
+
+**No busco que me regales una calificación de 95. Busco que el trabajo realmente merezca más de 95 puntos.**

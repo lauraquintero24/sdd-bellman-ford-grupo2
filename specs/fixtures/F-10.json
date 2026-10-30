@@ -1,0 +1,8 @@
+{
+  "directed": true,
+  "nodes": ["A", "B", "C", "D", "E"],
+  "links": [
+    {"source": "A", "target": "B", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true},
+    {"source": "D", "target": "E", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true}
+  ]
+}

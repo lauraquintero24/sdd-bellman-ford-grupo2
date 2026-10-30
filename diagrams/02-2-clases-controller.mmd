@@ -1,0 +1,181 @@
+classDiagram
+    direction TB
+    class Link {
+        +str source
+        +str target
+        +Decimal delay_ms
+        +Decimal bandwidth_mbps
+        +Decimal loss_probability
+        +bool active
+        +is_usable() bool
+    }
+    class Topology {
+        +bool directed
+        +int version
+        +tuple~str~ nodes
+        +tuple~Link~ links
+        +has_node(node_id: str) bool
+        +find_link(source: str, target: str) Link
+    }
+    class LinkChangeResult {
+        +str source
+        +str target
+        +bool active
+        +bool changed
+        +int topology_version
+    }
+    class TopologyDAO {
+        <<interface>>
+        +get_topology() Topology
+        +set_link_status(source: str, target: str, active: bool) LinkChangeResult
+    }
+    class JsonTopologyDAO {
+        -Path path
+        -Topology state
+        -Lock lock
+        +JsonTopologyDAO(path: Path)
+        +get_topology() Topology
+        +set_link_status(source: str, target: str, active: bool) LinkChangeResult
+    }
+    class TopologyLoadError {
+        <<exception>>
+        +str rule
+        +str detail
+    }
+    class LinkCostPolicy {
+        +weight(link: Link, metric: str) Fraction
+    }
+    class RouteLabel {
+        +Fraction score
+        +int hops
+        +tuple~str~ path
+    }
+    class PathScore {
+        +tuple~str~ path
+        +Fraction score
+    }
+    class BellmanFordEngine {
+        -LinkCostPolicy policy
+        +BellmanFordEngine()
+        +find_path(topology: Topology, src: str, dst: str, metric: str) PathScore
+        +run_bellman_ford_on_weighted_graph(graph: nx.Graph, src: str, mode: str) dict~str, RouteLabel~
+    }
+    class CostPresenter {
+        +format_cost(score: Fraction, metric: str) str
+    }
+    class RoutingService {
+        -TopologyDAO dao
+        -BellmanFordEngine engine
+        -CostPresenter presenter
+        +RoutingService(dao: TopologyDAO, engine: BellmanFordEngine, presenter: CostPresenter)
+        +read_topology() Topology
+        +compute_route(src: str, dst: str, metric: str) Route
+        +set_link_status(source: str, target: str, active: bool) LinkChangeResult
+    }
+    class ControllerHTTP {
+        <<Controller MVC>>
+        -RoutingService service
+        +ControllerHTTP(service: RoutingService)
+        +get_topology() TopologyResponseSchema
+        +get_route(src: str, dst: str, metric: str) RouteResponseSchema
+        +fail_link(LinkRequestSchema) LinkStatusSchema
+        +restore_link(LinkRequestSchema) LinkStatusSchema
+        +health() ControllerHealthSchema
+    }
+    class TopologyResponseSchema {
+        <<View>>
+        +int topology_version
+        +bool directed
+        +list~str~ nodes
+        +list~LinkSchema~ links
+    }
+    class LinkSchema {
+        <<View>>
+        +str source
+        +str target
+        +Decimal delay_ms
+        +Decimal bandwidth_mbps
+        +Decimal loss_probability
+        +bool active
+    }
+    class RouteResponseSchema {
+        <<View>>
+        +str source
+        +str destination
+        +str metric
+        +list~str~ path
+        +str total_cost
+        +int topology_version
+    }
+    class LinkRequestSchema {
+        <<View>>
+        +str source
+        +str target
+    }
+    class LinkStatusSchema {
+        <<View>>
+        +str source
+        +str target
+        +bool active
+        +bool changed
+        +int topology_version
+    }
+    class ControllerHealthSchema {
+        <<View>>
+        +str status
+        +str application
+    }
+    class ControllerSettings {
+        +str host
+        +int port
+        +Path topology_file
+    }
+    class ErrorBodySchema {
+        <<View>>
+        +str code
+        +str message
+        +dict details
+    }
+    class ControllerHttpErrors {
+        <<module http_errors.py>>
+        +install_error_handlers(app: FastAPI) None
+    }
+    class ControllerComposition {
+        <<composition root>>
+        +create_controller_app(settings: ControllerSettings, dao: TopologyDAO = None) FastAPI
+    }
+    class Route {
+        <<shared, dataclass inmutable>>
+        +str source
+        +str destination
+        +str metric
+        +tuple~str~ path
+        +str total_cost
+        +int topology_version
+    }
+    Topology "1" *-- "0..*" Link : contiene
+    TopologyDAO <|.. JsonTopologyDAO
+    JsonTopologyDAO "1" o-- "1" Topology : estado vigente
+    JsonTopologyDAO ..> LinkChangeResult : devuelve
+    JsonTopologyDAO ..> TopologyLoadError : lanza al cargar
+    RoutingService "1" --> "1" TopologyDAO : inyectada
+    RoutingService "1" --> "1" BellmanFordEngine : inyectado
+    RoutingService "1" --> "1" CostPresenter : inyectado
+    RoutingService ..> Route : crea
+    BellmanFordEngine "1" *-- "1" LinkCostPolicy
+    BellmanFordEngine ..> RouteLabel : usa
+    BellmanFordEngine ..> PathScore : devuelve
+    BellmanFordEngine ..> Topology : lee
+    ControllerHTTP "1" --> "1" RoutingService : invoca
+    ControllerHTTP ..> TopologyResponseSchema
+    ControllerHTTP ..> RouteResponseSchema
+    ControllerHTTP ..> LinkRequestSchema
+    ControllerHTTP ..> LinkStatusSchema
+    ControllerHTTP ..> ControllerHealthSchema
+    TopologyResponseSchema "1" *-- "0..*" LinkSchema
+    ControllerComposition ..> ControllerSettings : lee
+    ControllerComposition ..> JsonTopologyDAO : crea si no se inyecta dao
+    ControllerComposition ..> RoutingService : crea e inyecta
+    ControllerComposition ..> ControllerHTTP : registra
+    ControllerComposition ..> ControllerHttpErrors : instala
+    ControllerHttpErrors ..> ErrorBodySchema : serializa errores

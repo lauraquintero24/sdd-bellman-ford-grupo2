@@ -1,0 +1,73 @@
+sequenceDiagram
+    autonumber
+    actor Operador
+    actor Cliente
+    participant PA as PacketHTTP
+    participant FS as ForwardingService
+    participant RC as HttpRouteClient
+    participant CA as ControllerHTTP
+    participant RS as RoutingService
+    participant TD as TopologyDAO
+    participant BF as BellmanFordEngine
+    participant CP as CostPresenter
+    participant LD as ForwardingLogDAO
+    Operador->>CA: POST /links/fail {source B, target D}
+    CA->>RS: set_link_status(B, D, false)
+    RS->>TD: set_link_status(B, D, false)
+    Note over TD: active pasa a false, version 1 → 2
+    TD-->>RS: LinkChangeResult changed true, version 2
+    RS-->>CA: LinkChangeResult
+    CA-->>Operador: 200 {active false, changed true, topology_version 2}
+    Cliente->>PA: POST /packets {pkt-002, A→D, delay}
+    PA->>FS: forward(packet)
+    FS->>RC: fetch_route(A, D, delay)
+    RC->>CA: GET /route?src=A&dst=D&metric=delay
+    CA->>RS: compute_route(A, D, delay)
+    RS->>TD: get_topology()
+    TD-->>RS: Topology version 2 (B→D inactivo)
+    RS->>BF: find_path(topology, A, D, delay)
+    alt F-01: existe la ruta alternativa A→C→D
+        BF-->>RS: ruta (A, C, D), score 4
+        RS->>CP: format_cost(4, delay)
+        CP-->>RS: "4"
+        RS-->>CA: Route [A, C, D], version 2
+        CA-->>RC: 200 RouteResponseSchema
+        RC-->>FS: Route
+        FS->>LD: save(ForwardingResult forwarded)
+        LD-->>FS: OK
+        FS-->>PA: ForwardingResult
+        PA-->>Cliente: 200 forwarded, trace [A, C, D]
+    else si no quedara ruta utilizable (p. ej. C→D también inactivo: TC-17)
+        BF-->>RS: RouteUnreachableError
+        RS-->>CA: RouteUnreachableError
+        CA-->>RC: 404 ROUTE_UNREACHABLE
+        RC-->>FS: RouteUnreachableError
+        FS->>LD: save(ForwardingResult failed)
+        LD-->>FS: OK
+        FS-->>PA: RouteUnreachableError
+        PA-->>Cliente: 404 ROUTE_UNREACHABLE, status failed, trace []
+    end
+    Operador->>CA: POST /links/restore {source B, target D}
+    CA->>RS: set_link_status(B, D, true)
+    RS->>TD: set_link_status(B, D, true)
+    TD-->>RS: LinkChangeResult changed true, version 3
+    RS-->>CA: LinkChangeResult
+    CA-->>Operador: 200 {active true, changed true, topology_version 3}
+    Cliente->>PA: POST /packets {pkt-003, A→D, delay}
+    PA->>FS: forward(packet)
+    FS->>RC: fetch_route(A, D, delay)
+    RC->>CA: GET /route?src=A&dst=D&metric=delay
+    CA->>RS: compute_route(A, D, delay)
+    RS->>TD: get_topology()
+    TD-->>RS: Topology version 3
+    RS->>BF: find_path(topology, A, D, delay)
+    BF-->>RS: ruta (A, B, D), score 2
+    RS->>CP: format_cost(2, delay)
+    CP-->>RS: "2"
+    RS-->>CA: Route [A, B, D], version 3
+    CA-->>RC: 200 RouteResponseSchema
+    RC-->>FS: Route
+    FS->>LD: save(ForwardingResult forwarded)
+    LD-->>FS: OK
+    FS-->>PA: ForwardingResult
+    PA-->>Cliente: 200 forwarded, trace [A, B, D]

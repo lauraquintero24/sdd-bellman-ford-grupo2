@@ -1,0 +1,7 @@
+{
+  "directed": true,
+  "nodes": ["A", "D"],
+  "links": [
+    {"source": "A", "target": "D", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0.250000000001, "active": true}
+  ]
+}

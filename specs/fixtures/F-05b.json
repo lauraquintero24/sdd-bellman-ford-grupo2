@@ -1,0 +1,11 @@
+{
+  "directed": true,
+  "nodes": ["A", "B", "D", "E", "F"],
+  "links": [
+    {"source": "A", "target": "B", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true},
+    {"source": "B", "target": "F", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true},
+    {"source": "F", "target": "D", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true},
+    {"source": "B", "target": "E", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true},
+    {"source": "E", "target": "D", "delay_ms": 1, "bandwidth_mbps": 10, "loss_probability": 0, "active": true}
+  ]
+}

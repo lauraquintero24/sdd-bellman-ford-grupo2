@@ -1,0 +1,58 @@
+flowchart LR
+    CLI["Cliente HTTP / Operador"]
+    subgraph CTRL["Proceso Controller · CONTROLLER_PORT, por defecto 8000"]
+        direction TB
+        C_COMP["create_controller_app<br/>raíz de composición DI"]
+        C_HTTP["Controller MVC<br/>ControllerHTTP + http_errors"]
+        C_VIEW["View<br/>esquemas Pydantic"]
+        C_RS["Servicio de dominio<br/>RoutingService"]
+        C_BF["Servicio de dominio<br/>BellmanFordEngine + LinkCostPolicy"]
+        C_CP["Servicio de dominio<br/>CostPresenter"]
+        C_MOD["Model<br/>Topology · Link · LinkChangeResult"]
+        C_DAOI["«interfaz» TopologyDAO<br/>ports.py"]
+        C_DAO["DAO concreto<br/>JsonTopologyDAO"]
+    end
+    subgraph RTR["Proceso Router · ROUTER_PORT, por defecto 8001"]
+        direction TB
+        R_COMP["create_router_app<br/>raíz de composición DI"]
+        R_HTTP["Controller MVC<br/>PacketHTTP + http_errors"]
+        R_VIEW["View<br/>esquemas Pydantic"]
+        R_FS["Servicio de dominio<br/>ForwardingService"]
+        R_MOD["Model<br/>Packet · ForwardingResult · TraceHop"]
+        R_RCI["«interfaz» RouteClient<br/>ports.py"]
+        R_HRC["Cliente HTTP<br/>HttpRouteClient"]
+        R_DAOI["«interfaz» ForwardingLogDAO<br/>ports.py"]
+        R_DAO["DAO concreto<br/>JsonlForwardingLogDAO"]
+    end
+    SH["shared/ · contratos puros<br/>Route · AppError y subclases · códigos · formato de costo"]
+    subgraph PERS["Frontera de persistencia · sistema de archivos"]
+        TF[("topology.json<br/>lectura única al arrancar")]
+        LF[("forwarding.jsonl<br/>solo anexado")]
+    end
+    CLI -->|"GET /topology · GET /route · POST /links/fail · POST /links/restore · GET /health"| C_HTTP
+    CLI -->|"POST /packets · GET /health"| R_HTTP
+    C_HTTP --> C_VIEW
+    C_HTTP --> C_RS
+    C_RS --> C_DAOI
+    C_RS --> C_BF
+    C_RS --> C_CP
+    C_RS --> C_MOD
+    C_BF --> C_MOD
+    C_DAO -. implementa .-> C_DAOI
+    C_DAO --> TF
+    C_COMP -. crea .-> C_DAO
+    C_COMP -. inyecta .-> C_RS
+    R_HTTP --> R_VIEW
+    R_HTTP --> R_FS
+    R_FS --> R_RCI
+    R_FS --> R_DAOI
+    R_FS --> R_MOD
+    R_HRC -. implementa .-> R_RCI
+    R_DAO -. implementa .-> R_DAOI
+    R_DAO --> LF
+    R_COMP -. crea .-> R_DAO
+    R_COMP -. crea .-> R_HRC
+    R_COMP -. inyecta .-> R_FS
+    R_HRC ==>|"REST: GET /route · HTTP/JSON"| C_HTTP
+    CTRL -. importa .-> SH
+    RTR -. importa .-> SH

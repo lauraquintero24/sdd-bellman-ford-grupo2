@@ -1,0 +1,45 @@
+classDiagram
+    direction TB
+    class AppError {
+        <<exception>>
+        +str code
+        +str message
+        +dict details
+        +to_dict() dict
+    }
+    class InvalidRequestError {
+        +code = "INVALID_REQUEST"
+    }
+    class NodeNotFoundError {
+        +code = "NODE_NOT_FOUND"
+    }
+    class LinkNotFoundError {
+        +code = "LINK_NOT_FOUND"
+    }
+    class RouteUnreachableError {
+        +code = "ROUTE_UNREACHABLE"
+    }
+    class NegativeCycleError {
+        +code = "NEGATIVE_CYCLE"
+    }
+    class LogPersistenceError {
+        +code = "LOG_PERSISTENCE_ERROR"
+    }
+    class ControllerBadResponseError {
+        +code = "CONTROLLER_BAD_RESPONSE"
+    }
+    class ControllerUnavailableError {
+        +code = "CONTROLLER_UNAVAILABLE"
+    }
+    class ControllerTimeoutError {
+        +code = "CONTROLLER_TIMEOUT"
+    }
+    AppError <|-- InvalidRequestError
+    AppError <|-- NodeNotFoundError
+    AppError <|-- LinkNotFoundError
+    AppError <|-- RouteUnreachableError
+    AppError <|-- NegativeCycleError
+    AppError <|-- LogPersistenceError
+    AppError <|-- ControllerBadResponseError
+    AppError <|-- ControllerUnavailableError
+    AppError <|-- ControllerTimeoutError

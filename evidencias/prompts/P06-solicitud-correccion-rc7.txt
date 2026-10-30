@@ -1,0 +1,899 @@
+# Transcripción literal conservada del registro de prompts de la versión RC11 (prompts-session1.md de ese expediente, no incluido en esta entrega; el equipo conserva el ZIP RC11).
+# Texto copiado sin modificaciones entre las líneas de separación.
+# -----------------------------------------------------------------
+# PROMPT MAESTRO DEFINITIVO — CORRECCIÓN INTEGRAL RC7 PARA ALCANZAR 95–100/100 EN SPDR
+
+## 1. ROL Y RESPONSABILIDAD
+
+Actúa simultáneamente como:
+
+1. **Auditor SPDR de máximo rigor**, especializado en diseño preliminar de software y verificación de especificaciones.
+2. **Profesor universitario extremadamente exigente**, evaluador de sexto semestre de Informática para las Telecomunicaciones.
+3. **Arquitecto de software sénior**, experto en MVC, DAO, arquitectura modular, contratos REST e inyección de dependencias.
+4. **Ingeniero experto en Python, NetworkX, FastAPI y Bellman-Ford**, incluyendo precisión numérica, complejidad, rutas deterministas y ciclos negativos.
+5. **Especialista en pruebas de software**, experto en pytest, pruebas unitarias, integración, mocks/fakes y trazabilidad.
+6. **Especialista en Spec-Driven Development y Prompt Engineering**, encargado de validar todas las técnicas y los entregables oficiales.
+7. **Editor técnico y auditor de archivos**, responsable de modificar realmente el contenido de los archivos Markdown y generar una versión final corregida.
+
+**TU RESPONSABILIDAD ES CORREGIR, NO SOLAMENTE EVALUAR.**
+
+Debes actuar como si estuvieras realizando una revisión técnica formal previa a la autorización de implementación de un proyecto universitario.
+
+---
+
+## 2. ARCHIVOS DE ENTRADA
+
+Utilizarás obligatoriamente:
+
+**ZIP ACTUAL:**
+
+`SDD_Bellman_Ford_Grupo2_Etapa1_RC6_SPDR_Corregida(1).zip`
+
+**DOCUMENTO OFICIAL DEL PROFESOR:**
+
+`SDD_Prompt_Engineering_SDN_Bellman_Ford_Group2_Workshop(4).pdf`
+
+El ZIP RC6 es la base del trabajo.
+
+NO reconstruyas el proyecto desde cero.
+
+NO descartes los avances de RC4, RC5 y RC6.
+
+NO cambies decisiones técnicamente correctas sin justificación.
+
+Debes conservar todo lo válido y corregir exhaustivamente lo deficiente.
+
+---
+
+# 3. RESULTADO DE LA ÚLTIMA EVALUACIÓN
+
+## CALIFICACIÓN ACTUAL: 86/100
+
+La versión RC6 fue sometida a una evaluación SPDR independiente, extremadamente estricta y sin puntuaciones generosas.
+
+El resultado fue:
+
+**86/100 — 4,30/5,0.**
+
+**VEREDICTO: NO APROBADO PARA CONGELAMIENTO.**
+
+La evaluación se distribuyó de esta manera:
+
+| Criterio SPDR | Máximo | RC6 |
+|---|---:|---:|
+| Requisitos y calidad | 20 | 19 |
+| Corrección arquitectónica | 20 | 18 |
+| Consistencia estática y dinámica | 15 | 13 |
+| Contratos e interfaces | 10 | 9 |
+| Trazabilidad | 15 | 14 |
+| Verificación y testabilidad | 10 | 8 |
+| Viabilidad y gestión de riesgos | 10 | 5 |
+| **TOTAL** | **100** | **86** |
+
+### CALIFICACIÓN INDIVIDUAL DE LOS DOCUMENTOS
+
+| Archivo | RC6 | Objetivo RC7 |
+|---|---:|---:|
+| `01-requirements.md` | 91 | ≥95 |
+| `02-static-architecture.md` | 91 | ≥95 |
+| `03-dynamic-architecture.md` | 90 | ≥95 |
+| `04-api-contract.md` | 90 | ≥95 |
+| `05-implementation-plan.md` | 68 | ≥95 |
+| `06-test-specification.md` | 88 | ≥95 |
+
+## META OBLIGATORIA
+
+**SPDR GLOBAL: MÍNIMO 95/100.**
+
+**CALIDAD INDIVIDUAL OBJETIVO: MÍNIMO 95/100 EN CADA DOCUMENTO.**
+
+La calificación no debe aumentarse artificialmente.
+
+No debes considerar cumplida la meta hasta que una auditoría técnicamente fundamentada justifique esa puntuación.
+
+Si existe algún requisito imposible de completar sin autorización humana, implementación posterior o evidencia externa, debes indicarlo expresamente y dejar preparado todo lo que sí pueda corregirse.
+
+---
+
+# 4. INSTRUCCIONES DE EJECUCIÓN NO NEGOCIABLES
+
+Debes ejecutar el siguiente procedimiento completo:
+
+1. Extraer el ZIP RC6.
+2. Leer íntegramente los 15 archivos existentes.
+3. Leer el PDF oficial del profesor.
+4. Realizar una auditoría inicial para confirmar los siete hallazgos anteriores.
+5. Buscar defectos adicionales no identificados.
+6. Modificar directamente todos los archivos afectados.
+7. Revisar individualmente los seis Markdown.
+8. Corregir cualquier contradicción entre documentos.
+9. Verificar tablas, diagramas Mermaid, JSON, matemáticas, trazabilidad y planificación.
+10. Ejecutar una segunda auditoría SPDR independiente.
+11. Repetir la corrección de los defectos solucionables hasta alcanzar el máximo rigor posible.
+12. Generar el ZIP RC7.
+13. Verificar que el ZIP contenga las modificaciones reales.
+14. Entregar la nueva versión y el informe final.
+
+**NO ESTÁ PERMITIDO RESPONDER ÚNICAMENTE CON RECOMENDACIONES.**
+
+**NO ESTÁ PERMITIDO ENTREGAR EL MISMO ZIP CON UNA CALIFICACIÓN CAMBIADA.**
+
+---
+
+# 5. HALLAZGOS OBLIGATORIOS QUE DEBEN RESOLVERSE
+
+## HALLAZGO RC6-01 — PLAN DE IMPLEMENTACIÓN INSUFICIENTEMENTE VIABLE
+
+**GRAVEDAD: MAYOR.**
+
+**ARCHIVO PRINCIPAL:**
+
+`specs/05-implementation-plan.md`
+
+**CALIFICACIÓN ACTUAL DEL ARCHIVO: 68/100.**
+
+Este es el documento más débil del proyecto y constituye la principal prioridad.
+
+### Problema detectado
+
+El cronograma tiene 108 minutos, pero continúa asignando tiempos poco sustentados:
+
+- Siete minutos al núcleo Bellman-Ford.
+- Doce minutos a las métricas y el desempate exacto.
+- Cuatro minutos a verificaciones internas.
+- Doce minutos a los endpoints Controller.
+- Veinte minutos a las pruebas y evidencias.
+
+No se demuestra suficientemente que dos estudiantes puedan implementar, integrar y verificar todas las funciones obligatorias.
+
+### CORRECCIONES OBLIGATORIAS
+
+1. Reestructurar completamente las subtareas de implementación.
+2. Conservar estrictamente los 108 minutos y los seis bloques oficiales.
+3. Dividir responsabilidades entre Estudiante A y Estudiante B.
+4. Diseñar trabajo paralelo realista.
+5. Identificar dependencias entre las tareas W-xx.
+6. Calcular y documentar la ruta crítica.
+7. Estimar la duración de cada subtarea mediante una justificación explícita.
+8. Reservar tiempo efectivo para las pruebas arquitectónicas obligatorias.
+9. Garantizar que TC-08 y TC-09 tengan prioridad verificable.
+10. Priorizar integración HTTP temprana para detectar errores de contrato.
+11. Definir criterios de terminación objetivos.
+12. Incorporar estrategias concretas para retrasos.
+13. No eliminar funcionalidades obligatorias.
+14. No convertir tareas obligatorias en opcionales.
+15. No utilizar tiempo negativo, trabajo gratuito ni asignaciones de cero minutos para actividades reales.
+16. Diferenciar actividades preparatorias permitidas antes de sesión 1 y trabajo de implementación reservado para sesión 2.
+17. Respetar la prohibición oficial de generar implementación durante sesión 1.
+18. Definir qué evidencia se captura en los últimos cinco minutos.
+19. Verificar que W-13 finalice antes del empaquetado W-12.
+20. Conservar trazabilidad completa FR/NFR → W-xx → módulo → prueba.
+
+### RESULTADO OBLIGATORIO
+
+El plan deberá ser técnicamente defendible, con una secuencia de ejecución coherente y sin depender de supuestos irrealistas.
+
+No basta con que la suma de la tabla sea 108.
+
+**La calidad individual objetivo de este archivo es ≥95/100.**
+
+---
+
+## HALLAZGO RC6-02 — EVIDENCIA INCOMPLETA DE PROMPT ENGINEERING
+
+**GRAVEDAD: BLOQUEANTE PARA EL CIERRE.**
+
+**ARCHIVO:**
+
+`prompts-session1.md`
+
+### Problema detectado
+
+La RC6 conserva registros auténticos de algunas interacciones, pero:
+
+- Faltan textos literales completos.
+- La técnica *few-shot* no está acreditada como ejecutada.
+- Algunas propuestas siguen pendientes.
+
+### CORRECCIONES OBLIGATORIAS
+
+Verificar las cinco técnicas obligatorias:
+
+1. Contextual framing.
+2. Structured prompting.
+3. Role prompting.
+4. Few-shot examples.
+5. Iterative refinement.
+
+Para cada interacción realmente ejecutada, registrar:
+
+- Identificador.
+- Fecha real, si está disponible.
+- Técnica.
+- Objetivo.
+- Texto completo del prompt.
+- Respuesta relevante.
+- Error, ambigüedad o deficiencia detectada.
+- Corrección aplicada.
+- Requisitos relacionados.
+- Evidencia verificable de la interacción.
+
+### EXIGENCIA ESPECIAL: FEW-SHOT
+
+Crear una interacción completa y técnicamente pertinente utilizando ejemplos de Bellman-Ford.
+
+Si el entorno permite realizar una interacción real con IA, ejecutarla y documentarla como interacción nueva de RC7.
+
+Si no puede ejecutarse de manera verificable, conservarla como pendiente de ejecución, con el prompt preparado y las instrucciones exactas para completarla.
+
+**PROHIBIDO INVENTAR PROMPTS HISTÓRICOS O PRESENTAR PROPUESTAS NO EJECUTADAS COMO EVIDENCIA REAL.**
+
+Actualizar las relaciones con los requisitos y las correcciones realizadas.
+
+---
+
+## HALLAZGO RC6-03 — BASELINE SIN CONGELAR
+
+**GRAVEDAD: BLOQUEANTE.**
+
+**ARCHIVO:**
+
+`REVIEW-AND-BASELINE.md`
+
+### CORRECCIONES OBLIGATORIAS
+
+1. Revisar y actualizar todas las decisiones DEC-01 a DEC-09.
+2. Preparar la matriz de revisión cruzada.
+3. Comprobar los seis documentos oficiales.
+4. Verificar las referencias de diagramas.
+5. Incorporar los resultados reales de la revisión técnica.
+6. Preparar la aprobación individual de ambos estudiantes.
+7. Preparar el campo de commit Git definitivo.
+8. Relacionar la baseline con el manifiesto final.
+9. Incorporar el procedimiento para modificaciones posteriores al congelamiento.
+10. Registrar todos los pendientes auténticos.
+
+### REGLA INVIOLABLE
+
+**NO INVENTAR FIRMAS, APROBACIONES, COMMITS NI VALIDACIONES HUMANAS.**
+
+Si los estudiantes todavía no han aprobado la baseline, el estado debe continuar correctamente como `NO CONGELADA`.
+
+Debes completar todo lo que dependa exclusivamente de la edición y verificación técnica, y separar lo que todavía exija intervención humana.
+
+---
+
+## HALLAZGO RC6-04 — PRECISIÓN NUMÉRICA DE LA MÉTRICA LOSS
+
+**GRAVEDAD: MODERADA, CORRECCIÓN TÉCNICA OBLIGATORIA.**
+
+**ARCHIVOS PRINCIPALES:**
+
+- `specs/01-requirements.md`
+- `specs/02-static-architecture.md`
+- `specs/04-api-contract.md`
+- `specs/06-test-specification.md`
+
+### PROBLEMA DETECTADO
+
+El proyecto utiliza una representación exacta con `Fraction` para decisiones internas, pero convierte costos a `Decimal` para presentar la métrica `loss`.
+
+En un caso como:
+
+`p = 1e-60`
+
+una precisión decimal fija puede redondear la supervivencia a 1 antes de evaluar:
+
+`-ln(1-p)`
+
+obteniendo cero a pesar de que la pérdida sea positiva.
+
+### CORRECCIONES OBLIGATORIAS
+
+1. Revisar el cálculo completo de la métrica de pérdida.
+2. Diferenciar selección exacta de rutas y presentación numérica.
+3. Resolver el problema de pérdidas extremadamente pequeñas.
+4. Definir una política de precisión que no produzca ceros espurios dentro del dominio declarado.
+5. Si se propone precisión adaptable, especificar el algoritmo para seleccionarla.
+6. Evaluar opciones numéricamente estables como una formulación equivalente de `-log1p(-p)`, precisando biblioteca, representación y garantías.
+7. Documentar explícitamente el error máximo de representación, si aplica.
+8. Garantizar que el cálculo de presentación no altere la selección de la ruta.
+9. Precisar el contrato JSON para costos representados como cadenas decimales.
+10. Mantener coherencia con DEC-08 y DEC-09.
+11. Incorporar pruebas para pérdidas extremadamente pequeñas y valores próximos al límite superior permitido.
+12. Verificar las operaciones con cálculos matemáticos independientes.
+
+No basta con elevar arbitrariamente una precisión fija.
+
+### RESULTADO OBLIGATORIO
+
+Debe existir un contrato numérico claro, reproducible y defendible para todos los valores admitidos por las especificaciones.
+
+---
+
+## HALLAZGO RC6-05 — ERROR DE FORMATO EN DEC-09
+
+**GRAVEDAD: MENOR, CORRECCIÓN OBLIGATORIA.**
+
+**ARCHIVO:**
+
+`specs/01-requirements.md`
+
+### CORRECCIÓN
+
+Localizar la tabla de decisiones DEC-01 a DEC-09.
+
+Eliminar la línea vacía que dejó DEC-09 fuera de la tabla.
+
+Verificar que:
+
+- DEC-09 aparezca como fila válida.
+- La numeración sea correcta.
+- El contenido sea consistente.
+- La decisión esté relacionada con arquitectura, API, plan y pruebas.
+- La tabla Markdown renderice adecuadamente.
+
+Adicionalmente, verificar todas las tablas del proyecto para detectar errores equivalentes.
+
+---
+
+## HALLAZGO RC6-06 — PRUEBAS CON FIXTURES INCOMPLETOS
+
+**GRAVEDAD: MODERADA.**
+
+**ARCHIVO PRINCIPAL:**
+
+`specs/06-test-specification.md`
+
+### PROBLEMA DETECTADO
+
+TC-23 y TC-37 no presentan todos los datos numéricos necesarios para reproducir íntegramente sus escenarios.
+
+### CORRECCIONES OBLIGATORIAS
+
+#### TC-23
+
+Definir completamente:
+
+- Todos los nodos.
+- Todas las aristas.
+- Direccionalidad.
+- Métricas de cada arista.
+- Estado inicial de enlaces.
+- Rutas alternativas.
+- Costos esperados.
+- Orden de desempate.
+- Resultado exacto de la prueba.
+
+No dejar valores implícitos.
+
+#### TC-37
+
+Definir conjuntos numéricos exactos para comprobar:
+
+- Igualdad racional.
+- Productos equivalentes.
+- Sumas equivalentes.
+- Costos distintos pero próximos.
+- Ordenamiento determinista.
+- Desempate por saltos.
+- Desempate lexicográfico.
+
+Utilizar datos reproducibles y aserciones explícitas.
+
+### AUDITORÍA COMPLETA DE TC-01 A TC-37
+
+No limitarse a TC-23 y TC-37.
+
+Revisar todos los casos y comprobar:
+
+1. Requisito asociado.
+2. Preparación o fixture.
+3. Entrada exacta.
+4. Procedimiento.
+5. Resultado esperado.
+6. Aserciones verificables.
+7. Componente evaluado.
+8. Dependencias del caso.
+9. Ausencia de contradicciones con API y arquitectura.
+
+Agregar casos adicionales únicamente cuando exista una brecha concreta de cobertura, por ejemplo la precisión de presentación para pérdidas extremadamente pequeñas.
+
+No registrar como ejecutadas pruebas que solamente están especificadas.
+
+---
+
+## HALLAZGO RC6-07 — DIAGRAMAS MERMAID SIN EVIDENCIA VISUAL
+
+**GRAVEDAD: MODERADA.**
+
+**ARCHIVOS:**
+
+- `specs/02-static-architecture.md`
+- `specs/03-dynamic-architecture.md`
+
+### CORRECCIONES OBLIGATORIAS
+
+El proyecto contiene cinco diagramas obligatorios:
+
+- Un diagrama de componentes.
+- Un diagrama de clases.
+- Tres diagramas de secuencia.
+
+Para cada uno:
+
+1. Extraer el bloque Mermaid.
+2. Verificar sintaxis.
+3. Intentar renderizarlo mediante un motor Mermaid.
+4. Corregir cualquier error detectado.
+5. Verificar legibilidad del resultado.
+6. Comprobar que las clases utilizadas existan.
+7. Comprobar los nombres de métodos.
+8. Comprobar las dependencias y asociaciones.
+9. Confirmar el sentido de los mensajes.
+10. Comprobar que los escenarios coincidan con los contratos REST.
+11. Guardar evidencia gráfica cuando el entorno lo permita.
+12. Indicar expresamente si alguna validación visual no pudo realizarse.
+
+**PROHIBIDO AFIRMAR QUE UN DIAGRAMA ESTÁ RENDERIZADO CUANDO SOLO SE COMPROBÓ SU TEXTO.**
+
+---
+
+# 6. REVISIÓN SUPERIOR INDIVIDUAL DE LOS SEIS DOCUMENTOS
+
+Además de resolver los siete hallazgos anteriores, realiza una auditoría adicional de cada documento.
+
+Cada archivo debe alcanzar el nivel técnico propio de una especificación lista para implementación y defensa universitaria.
+
+## DOCUMENTO 01 — REQUISITOS
+
+`specs/01-requirements.md`
+
+**Objetivo individual: ≥95/100.**
+
+Comprobar:
+
+- FR-01 a FR-10.
+- NFR-01 a NFR-11.
+- DEC-01 a DEC-09.
+- Restricciones del modelo.
+- Definiciones de topología.
+- Fórmulas matemáticas.
+- Bellman-Ford.
+- Ciclos negativos.
+- Precisión de costos.
+- Direccionalidad.
+- Nodos inválidos.
+- Caminos inalcanzables.
+- Aceptación medible.
+- Casos extremos.
+- Coherencia matemática.
+- Complejidad computacional.
+
+Corregir cualquier ambigüedad que pueda producir dos implementaciones incompatibles.
+
+## DOCUMENTO 02 — ARQUITECTURA ESTÁTICA
+
+`specs/02-static-architecture.md`
+
+**Objetivo individual: ≥95/100.**
+
+Comprobar:
+
+- Arquitectura Controller.
+- Arquitectura Router.
+- MVC en ambas aplicaciones.
+- DAO en ambas aplicaciones.
+- Dependencias invertidas.
+- Servicios de dominio.
+- Interfaces.
+- Adaptadores.
+- Modelos y atributos.
+- Métodos públicos.
+- Excepciones.
+- Independencia de procesos.
+- Organización de paquetes.
+- Relaciones entre clases.
+- Algoritmo exclusivamente en Controller.
+- Persistencia exclusivamente por DAO.
+
+Corregir todas las dependencias incompatibles con las reglas oficiales.
+
+## DOCUMENTO 03 — ARQUITECTURA DINÁMICA
+
+`specs/03-dynamic-architecture.md`
+
+**Objetivo individual: ≥95/100.**
+
+Comprobar:
+
+- Reenvío exitoso.
+- Fallo y restauración.
+- Controller no disponible.
+- Timeouts.
+- Errores de comunicación.
+- Respuestas malformadas.
+- Persistencia.
+- Versionado de topología.
+- Llamadas HTTP.
+- Correspondencia con clases.
+- Correspondencia con endpoints.
+- Correspondencia con pruebas.
+- Renderizado real de Mermaid, si es posible.
+
+Corregir cualquier mensaje o interacción inexistente en la arquitectura estática.
+
+## DOCUMENTO 04 — CONTRATO API
+
+`specs/04-api-contract.md`
+
+**Objetivo individual: ≥95/100.**
+
+Comprobar:
+
+- Endpoints obligatorios.
+- Métodos HTTP.
+- Parámetros.
+- Schemas.
+- JSON.
+- Validaciones.
+- Estados HTTP.
+- Errores.
+- Excepciones FastAPI.
+- Timeouts.
+- Contrato entre Router y Controller.
+- Versionado.
+- Costos y precisión.
+- Casos límite.
+- Persistencia.
+- Semántica de respuestas.
+
+Cada ejemplo debe ser válido y sus datos deben ser consistentes con el algoritmo documentado.
+
+## DOCUMENTO 05 — PLAN DE IMPLEMENTACIÓN
+
+`specs/05-implementation-plan.md`
+
+**Objetivo individual: ≥95/100.**
+
+Este documento debe recibir el análisis más exhaustivo.
+
+No aceptar cronogramas irreales, tareas ambiguas o dependencias sin justificar.
+
+Debe contener una estrategia completa, concreta y evaluable para que los dos estudiantes implementen el proyecto dentro del formato establecido por el profesor.
+
+El objetivo es eliminar el principal motivo de descuento SPDR.
+
+## DOCUMENTO 06 — ESPECIFICACIÓN DE PRUEBAS
+
+`specs/06-test-specification.md`
+
+**Objetivo individual: ≥95/100.**
+
+Comprobar:
+
+- Cobertura funcional.
+- Cobertura no funcional.
+- Pruebas arquitectónicas.
+- DAO fakes.
+- Integración HTTP.
+- Bellman-Ford.
+- Métricas.
+- Precisión.
+- Ciclos negativos.
+- Fallo de enlaces.
+- Restauración.
+- Errores.
+- Topologías válidas e inválidas.
+- Fixtures exactos.
+- Resultados matemáticamente correctos.
+- Aserciones reproducibles.
+
+La cantidad de pruebas no justifica una puntuación alta si sus expectativas son incorrectas.
+
+---
+
+# 7. CORRECCIÓN DE TODOS LOS ARCHIVOS COMPLEMENTARIOS
+
+No limitar el trabajo a las seis especificaciones.
+
+Modificar también los archivos complementarios afectados, entre ellos:
+
+- `prompts-session1.md`
+- `REVIEW-AND-BASELINE.md`
+- `CHANGELOG-SPECS.md`
+- `README.md`
+- `MANIFEST.md`
+- `SPDR-CIERRE-RC6.md`
+- Matrices, evidencias y demás archivos existentes en RC6.
+
+Actualizar referencias de versión RC6 a RC7 cuando corresponda, conservando los registros históricos.
+
+Crear `SPDR-CIERRE-RC7.md` con los resultados reales de la nueva auditoría.
+
+No incorporar autocalificaciones sin justificación verificable.
+
+---
+
+# 8. AUDITORÍA CRUZADA TOTAL
+
+Después de corregir los documentos individualmente, verifica su consistencia colectiva.
+
+Construye y comprueba la siguiente cadena:
+
+`Requisito → Decisión → Componente → Clase → Método → API → Secuencia → Tarea → Prueba`
+
+### EXIGE COHERENCIA ABSOLUTA EN:
+
+1. Nombres de clases.
+2. Nombres de métodos.
+3. Tipos de atributos.
+4. Tipos de retorno.
+5. Excepciones.
+6. Estados HTTP.
+7. JSON.
+8. Versiones de topología.
+9. Fórmulas.
+10. Algoritmos.
+11. Desempates.
+12. Interfaces DAO.
+13. Dependencias.
+14. Tareas.
+15. Criterios de aceptación.
+16. Casos de prueba.
+17. Diagramas.
+18. Referencias internas.
+19. Decisiones DEC-01 a DEC-09.
+20. Evidencias pendientes.
+
+Si encuentras una contradicción, modifica todos los archivos afectados.
+
+**NO ACEPTES QUE UNA CORRECCIÓN QUEDE APLICADA EN UN DOCUMENTO PERO NO EN LOS DEMÁS.**
+
+---
+
+# 9. CICLO DE CORRECCIÓN Y REEVALUACIÓN OBLIGATORIA
+
+Debes ejecutar las siguientes rondas:
+
+### RONDA 1 — CORRECCIÓN
+
+Resolver los hallazgos RC6-01 a RC6-07 y cualquier otro defecto confirmado.
+
+### RONDA 2 — REVISIÓN INDIVIDUAL
+
+Evaluar cada uno de los seis Markdown de 0 a 100.
+
+Si algún documento está por debajo de 95, localizar todos sus defectos corregibles, modificarlos y repetir su evaluación.
+
+### RONDA 3 — REVISIÓN CRUZADA
+
+Buscar inconsistencias introducidas por los cambios.
+
+Corregirlas y verificar nuevamente.
+
+### RONDA 4 — AUDITORÍA SPDR COMPLETA
+
+Utilizar exclusivamente los siguientes pesos:
+
+| Criterio | Máximo |
+|---|---:|
+| Requisitos | 20 |
+| Arquitectura | 20 |
+| Modelos estáticos y dinámicos | 15 |
+| API e interfaces | 10 |
+| Trazabilidad | 15 |
+| Verificación | 10 |
+| Viabilidad y riesgos | 10 |
+| **TOTAL** | **100** |
+
+La meta es obtener **95/100 o superior** con argumentos técnicos y evidencia.
+
+### RONDA 5 — CORRECCIÓN FINAL
+
+Si la calificación permanece por debajo de 95:
+
+1. Identificar cada punto descontado.
+2. Determinar el defecto que origina el descuento.
+3. Localizar el documento correspondiente.
+4. Corregir lo que realmente sea corregible.
+5. Sincronizar documentos relacionados.
+6. Reevaluar.
+
+No detener la revisión mientras existan errores técnicos corregibles.
+
+Si el resultado sigue por debajo de 95 por falta de evidencias externas, reportar la puntuación real y distinguir claramente esas condiciones.
+
+---
+
+# 10. OBJETIVO DE CALIDAD FINAL POR CRITERIO
+
+Utiliza los siguientes valores como objetivos, no como puntuaciones automáticas:
+
+| Criterio | RC6 | Meta RC7 |
+|---|---:|---:|
+| Requisitos | 19/20 | 20/20 |
+| Arquitectura | 18/20 | 19/20 |
+| Modelos | 13/15 | 14/15 |
+| API | 9/10 | 10/10 |
+| Trazabilidad | 14/15 | 15/15 |
+| Verificación | 8/10 | 9/10 |
+| Viabilidad | 5/10 | 8/10 |
+| **TOTAL** | **86/100** | **95/100** |
+
+Cada incremento debe justificarse mediante correcciones reales.
+
+No puedes aumentar un criterio si las deficiencias que originaron el descuento no están solucionadas.
+
+La ausencia de implementación ejecutada no debe calificarse como incumplimiento de sesión 1, porque el profesor reserva la programación para sesión 2. Sin embargo, sí debes evaluar rigurosamente la viabilidad del diseño.
+
+---
+
+# 11. VALIDACIONES TÉCNICAS EXIGIDAS
+
+Antes de entregar RC7 debes comprobar:
+
+### A. Markdown
+
+- Tablas correctamente formadas.
+- Encabezados coherentes.
+- Bloques de código cerrados.
+- Enlaces y referencias internas.
+- Numeración consistente.
+- Ausencia de contenido duplicado contradictorio.
+
+### B. Mermaid
+
+- Cinco diagramas presentes.
+- Sintaxis válida.
+- Renderizado visual cuando sea posible.
+- Clases, interfaces y métodos coherentes.
+
+### C. JSON
+
+- Sintaxis correcta.
+- Campos obligatorios.
+- Tipos de datos.
+- Ejemplos consistentes.
+- Errores conformes con API.
+
+### D. Matemáticas
+
+- Bellman-Ford.
+- Fórmulas de métricas.
+- Desempate determinista.
+- Precisión racional.
+- Costo logarítmico.
+- Resultados de fixtures.
+- Complejidad.
+
+### E. Trazabilidad
+
+- Todos los FR.
+- Todos los NFR.
+- Todas las decisiones DEC.
+- Todas las tareas.
+- Todas las pruebas.
+- Todos los componentes.
+
+### F. Entrega
+
+- ZIP legible.
+- Archivos completos.
+- Inventario actualizado.
+- SHA-256 correcto.
+- Versiones coherentes.
+- Estado de aprobación informado con veracidad.
+
+No declarar verificada una condición sin haber ejecutado realmente su comprobación.
+
+---
+
+# 12. NUEVO ZIP OBLIGATORIO
+
+Genera un ZIP con este nombre:
+
+`SDD_Bellman_Ford_Grupo2_Etapa1_RC7_SPDR_95_Objetivo.zip`
+
+El nombre indica el objetivo de calidad; no significa que la calificación esté garantizada.
+
+El archivo debe contener las especificaciones RC7 físicamente modificadas y todos los documentos complementarios actualizados.
+
+**NO QUIERO ARCHIVOS VACÍOS, VERSIONES ANTERIORES RENOMBRADAS NI INFORMES SIN CAMBIOS REALES.**
+
+Compara el contenido y los hashes entre RC6 y RC7 para demostrar qué documentos fueron modificados.
+
+---
+
+# 13. INFORME FINAL OBLIGATORIO
+
+Después de generar el ZIP, presenta:
+
+## A. Resultado SPDR
+
+- Nota RC6: 86/100.
+- Nota RC7 obtenida realmente.
+- Diferencia de puntos.
+- Tabla completa por criterios.
+- Veredicto técnico.
+- Estado de congelamiento.
+
+## B. Evaluación individual
+
+Tabla obligatoria:
+
+| Documento | RC6 | RC7 | Mejora | Estado |
+|---|---:|---:|---:|---|
+| 01 | 91 | Nota real | Diferencia | Resultado |
+| 02 | 91 | Nota real | Diferencia | Resultado |
+| 03 | 90 | Nota real | Diferencia | Resultado |
+| 04 | 90 | Nota real | Diferencia | Resultado |
+| 05 | 68 | Nota real | Diferencia | Resultado |
+| 06 | 88 | Nota real | Diferencia | Resultado |
+
+## C. Hallazgos
+
+Para cada RC6-01 a RC6-07 informar:
+
+- Problema.
+- Archivo.
+- Sección.
+- Corrección realizada.
+- Validación.
+- Estado final.
+
+## D. Verificaciones
+
+Informar expresamente:
+
+- JSON válidos.
+- Diagramas realmente renderizados.
+- Matemáticas comprobadas.
+- Trazabilidad revisada.
+- Hashes correctos.
+- Evidencias humanas pendientes.
+
+## E. Entregables
+
+Entregar enlaces reales al ZIP RC7 y al informe de auditoría.
+
+---
+
+# 14. PROHIBICIONES FINALES
+
+**NO PUEDES:**
+
+- Inflar la nota.
+- Omitir hallazgos.
+- Fingir aprobaciones.
+- Declarar ejecutadas pruebas de software inexistentes.
+- Confundir calidad de documentación con implementación funcional.
+- Reescribir todo desde cero para evitar corregir el trabajo existente.
+- Limitarte a solucionar los siete hallazgos sin revisar los demás documentos.
+- Terminar con un listado de tareas para el estudiante si puedes modificar los archivos directamente.
+- Declarar éxito sin generar el ZIP.
+- Presentar la calificación como oficial del profesor.
+
+---
+
+# 15. ORDEN DEFINITIVA DE EJECUCIÓN
+
+**LA RC6 ACTUAL TIENE 86/100.**
+
+**LA META DE LA RC7 ES ALCANZAR AL MENOS 95/100 GLOBAL Y QUE CADA UNO DE LOS SEIS DOCUMENTOS TENGA UNA CALIDAD INDIVIDUAL OBJETIVO DE 95/100 O SUPERIOR.**
+
+**TODOS LOS HALLAZGOS TÉCNICOS CORREGIBLES DEBEN QUEDAR RESUELTOS.**
+
+**TODO ARCHIVO AFECTADO DEBE SER MODIFICADO FÍSICAMENTE.**
+
+**TODOS LOS CAMBIOS DEBEN SER VERIFICADOS INDIVIDUALMENTE Y ENTRE DOCUMENTOS.**
+
+**NO DEBES DETENERTE EN UNA EXPLICACIÓN TEÓRICA.**
+
+**NO DEBES ACEPTAR LA CALIFICACIÓN QUE EL PROPIO ZIP SE OTORGUE.**
+
+**DEBES CORREGIR, GUARDAR, VALIDAR, REEVALUAR Y ENTREGAR.**
+
+Si la meta no puede alcanzarse de forma honesta por evidencias humanas pendientes o limitaciones reales, informa la puntuación técnicamente justificada y deja perfectamente diferenciadas las condiciones faltantes.
+
+**EJECUTA AHORA LA CORRECCIÓN INTEGRAL RC6 → RC7 Y ENTREGA LOS ARCHIVOS DEFINITIVOS.**

@@ -1,0 +1,152 @@
+classDiagram
+    direction LR
+    class Packet {
+        +str packet_id
+        +str source
+        +str destination
+        +str payload
+        +str metric
+    }
+    class TraceHop {
+        +int hop_index
+        +str node
+    }
+    class ForwardingResult {
+        +str packet_id
+        +str source
+        +str destination
+        +str metric
+        +str status
+        +tuple~TraceHop~ trace
+        +Optional~Route~ route
+        +Optional~int~ topology_version
+        +Optional~dict~ error
+    }
+    class RouteClient {
+        <<interface>>
+        +fetch_route(src: str, dst: str, metric: str) Route
+    }
+    class HttpRouteClient {
+        -str base_url
+        -float connect_timeout_s
+        -float read_timeout_s
+        -httpx.Client http
+        +HttpRouteClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport: httpx.BaseTransport = None)
+        +fetch_route(src: str, dst: str, metric: str) Route
+    }
+    class ForwardingLogDAO {
+        <<interface>>
+        +save(result: ForwardingResult) None
+        +list_recent(limit: int) list~ForwardingResult~
+    }
+    class JsonlForwardingLogDAO {
+        -Path path
+        -Lock lock
+        +JsonlForwardingLogDAO(path: Path)
+        +save(result: ForwardingResult) None
+        +list_recent(limit: int) list~ForwardingResult~
+    }
+    class ForwardingService {
+        -RouteClient client
+        -ForwardingLogDAO log_dao
+        +ForwardingService(client: RouteClient, log_dao: ForwardingLogDAO)
+        +forward(packet: Packet) ForwardingResult
+    }
+    class PacketHTTP {
+        <<Controller MVC>>
+        -ForwardingService service
+        +PacketHTTP(service: ForwardingService)
+        +post_packet(PacketRequestSchema) ForwardingResponseSchema
+        +health() RouterHealthSchema
+    }
+    class PacketRequestSchema {
+        <<View>>
+        +str packet_id
+        +str source
+        +str destination
+        +str payload = ""
+        +str metric
+    }
+    class ForwardingResponseSchema {
+        <<View>>
+        +str packet_id
+        +str status
+        +RouteSchema route
+        +list~TraceHopSchema~ trace
+        +int topology_version
+    }
+    class RouteSchema {
+        <<View>>
+        +str source
+        +str destination
+        +str metric
+        +list~str~ path
+        +str total_cost
+        +int topology_version
+    }
+    class TraceHopSchema {
+        <<View>>
+        +int hop_index
+        +str node
+    }
+    class RouterHealthSchema {
+        <<View>>
+        +str status
+        +str application
+    }
+    class RouterSettings {
+        +str host
+        +int port
+        +str controller_url
+        +float connect_timeout_s
+        +float read_timeout_s
+        +Path log_file
+    }
+    class PacketErrorSchema {
+        <<View>>
+        +str packet_id
+        +str status
+        +list~TraceHopSchema~ trace
+        +ErrorBodySchema error
+    }
+    class ErrorBodySchema {
+        <<View>>
+        +str code
+        +str message
+        +dict details
+    }
+    class RouterHttpErrors {
+        <<module http_errors.py>>
+        +install_error_handlers(app: FastAPI) None
+    }
+    class RouterComposition {
+        <<composition root>>
+        +create_router_app(settings: RouterSettings, route_client: RouteClient = None, log_dao: ForwardingLogDAO = None) FastAPI
+    }
+    class Route {
+        <<shared>>
+    }
+    RouteClient <|.. HttpRouteClient
+    ForwardingLogDAO <|.. JsonlForwardingLogDAO
+    ForwardingService "1" --> "1" RouteClient : inyectada
+    ForwardingService "1" --> "1" ForwardingLogDAO : inyectada
+    ForwardingService ..> Packet : recibe
+    ForwardingService ..> ForwardingResult : crea
+    ForwardingResult "1" *-- "0..*" TraceHop : traza
+    ForwardingResult "1" --> "0..1" Route : ruta usada
+    HttpRouteClient ..> Route : valida y crea
+    PacketHTTP "1" --> "1" ForwardingService : invoca
+    PacketHTTP ..> PacketRequestSchema
+    PacketHTTP ..> ForwardingResponseSchema
+    PacketHTTP ..> RouterHealthSchema
+    ForwardingResponseSchema "1" *-- "1" RouteSchema
+    ForwardingResponseSchema "1" *-- "1..*" TraceHopSchema
+    RouterComposition ..> RouterSettings : lee
+    RouterComposition ..> HttpRouteClient : crea si no se inyecta route_client
+    RouterComposition ..> JsonlForwardingLogDAO : crea si no se inyecta log_dao
+    RouterComposition ..> ForwardingService : crea e inyecta
+    RouterComposition ..> PacketHTTP : registra
+    RouterComposition ..> RouterHttpErrors : instala
+    RouterHttpErrors ..> PacketErrorSchema : errores de paquetes validados
+    RouterHttpErrors ..> ErrorBodySchema : errores de entrada
+    PacketErrorSchema "1" *-- "1" ErrorBodySchema

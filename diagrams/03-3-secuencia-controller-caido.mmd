@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+    actor Cliente
+    participant PA as PacketHTTP
+    participant FS as ForwardingService
+    participant RC as HttpRouteClient
+    participant CA as ControllerHTTP
+    participant LD as ForwardingLogDAO
+    Cliente->>PA: POST /packets (paquete válido)
+    PA->>FS: forward(packet)
+    FS->>RC: fetch_route(src, dst, metric)
+    alt Controller detenido: conexión rechazada
+        RC-xCA: GET /route (la conexión no se establece)
+        Note over RC: ConnectError → ControllerUnavailableError (503)
+    else Controller lento o bloqueado: timeout de conexión o de lectura
+        RC->>CA: GET /route
+        Note over RC,CA: en un timeout de conexión la petición no llega a CA
+        Note over RC: sin respuesta dentro del plazo → ControllerTimeoutError (504)
+    else respuesta no conforme
+        RC->>CA: GET /route
+        CA-->>RC: JSON inválido, ruta incoherente o estado HTTP no previsto
+        Note over CA: p. ej. un 500 del Controller (INTERNAL_ERROR, NEGATIVE_CYCLE),<br/>otra versión u otro proceso en CONTROLLER_URL (TC-31, TC-32)
+        Note over RC: ControllerBadResponseError (502)
+    end
+    RC-->>FS: AppError normalizado
+    FS->>LD: save(ForwardingResult failed, trace vacía, error)
+    alt el registro se guarda
+        LD-->>FS: OK
+        FS-->>PA: relanza el mismo AppError
+        PA-->>Cliente: 503, 504 o 502 {packet_id, status failed, trace [], error}
+    else la bitácora falla
+        LD-->>FS: LogPersistenceError
+        FS-->>PA: LogPersistenceError
+        PA-->>Cliente: 500 LOG_PERSISTENCE_ERROR (nunca 200)
+    end
+    Cliente->>PA: GET /health
+    PA-->>Cliente: 200 {status ok, application router}

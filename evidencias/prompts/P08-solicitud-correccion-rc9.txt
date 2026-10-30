@@ -1,0 +1,945 @@
+# Transcripción literal conservada del registro de prompts de la versión RC11 (prompts-session1.md de ese expediente, no incluido en esta entrega; el equipo conserva el ZIP RC11).
+# Texto copiado sin modificaciones entre las líneas de separación.
+# -----------------------------------------------------------------
+# PROMPT MAESTRO DE MÁXIMA EXIGENCIA — RC9
+## OPERACIÓN CERO DEFECTOS: CORRECCIÓN, RECONSTRUCCIÓN, VALIDACIÓN Y AUDITORÍA SPDR INDEPENDIENTE
+### OBJETIVO OBLIGATORIO: CALIDAD TÉCNICA ≥95/100 — ASPIRACIÓN 98–100/100
+
+---
+
+# 1. MANDATO PRINCIPAL
+
+Actúa como un comité multidisciplinario compuesto por:
+
+1. Auditor SPDR extremadamente estricto.
+2. Profesor universitario de sexto semestre con criterios de evaluación rigurosos.
+3. Arquitecto de software sénior.
+4. Ingeniero especialista en Bellman-Ford, NetworkX y teoría de grafos.
+5. Matemático especializado en precisión numérica y complejidad computacional.
+6. Ingeniero experto en Python, FastAPI y REST/JSON.
+7. Especialista en MVC, DAO, SOLID e inyección de dependencias.
+8. Ingeniero de pruebas, verificación formal y trazabilidad.
+9. Especialista en Spec-Driven Development y Prompt Engineering.
+10. Auditor adversarial encargado de encontrar defectos que los otros nueve especialistas no detecten.
+
+**TU MISIÓN NO ES EXPLICAR CÓMO CORREGIR EL PROYECTO. TU MISIÓN ES CORREGIRLO FÍSICAMENTE Y DEMOSTRAR QUE CADA CORRECCIÓN FUNCIONA A NIVEL DE ESPECIFICACIÓN.**
+
+Debes asumir la responsabilidad integral de revisar, modificar, reestructurar, validar y empaquetar los documentos.
+
+Tienes autorización para rehacer secciones completas o documentos individuales cuando sea técnicamente necesario.
+
+Debes conservar todas las funcionalidades obligatorias del taller oficial.
+
+---
+
+# 2. ESTADO ACTUAL: RC8 RECHAZADA
+
+## ARCHIVO BASE
+
+`SDD_Bellman_Ford_Grupo2_Etapa1_RC8_SPDR_Final (1).zip`
+
+## DOCUMENTO OFICIAL
+
+`SDD_Prompt_Engineering_SDN_Bellman_Ford_Group2_Workshop(4).pdf`
+
+### ÚLTIMA EVALUACIÓN SPDR INDEPENDIENTE
+
+**RC8: 89/100.**
+
+**CALIFICACIÓN: 4,45/5,0.**
+
+**DICTAMEN: NO APROBADO PARA CONGELAMIENTO FORMAL.**
+
+La RC8 no alcanzó el objetivo mínimo de 95/100.
+
+Su autocalificación interna de 93/100 fue rechazada por insuficiencia de evidencia.
+
+### PUNTUACIÓN RC8
+
+| Criterio | Máximo | RC8 |
+|---|---:|---:|
+| Requisitos y calidad | 20 | 19 |
+| Arquitectura | 20 | 18 |
+| Modelos estáticos y dinámicos | 15 | 13 |
+| API y contratos | 10 | 9 |
+| Trazabilidad | 15 | 15 |
+| Verificación | 10 | 9 |
+| Viabilidad y riesgos | 10 | 6 |
+| **TOTAL** | **100** | **89** |
+
+### OBJETIVO RC9
+
+**MÍNIMO 95/100 JUSTIFICABLE.**
+
+**ASPIRACIÓN TÉCNICA: 98–100/100.**
+
+No puedes modificar artificialmente las calificaciones.
+
+Cada incremento de puntos debe corresponder a una mejora comprobada.
+
+No se permite declarar una versión perfecta si conserva errores materiales.
+
+---
+
+# 3. PRINCIPIO FUNDAMENTAL: DEJA DE AÑADIR COMPLEJIDAD INNECESARIA
+
+Las versiones anteriores han demostrado un problema recurrente:
+
+Al corregir un defecto, se introducen nuevos componentes, nuevas fórmulas, nuevas excepciones o nuevas pruebas que aumentan la complejidad y crean otros defectos.
+
+**ESTA VEZ DEBES ROMPER ESE CICLO.**
+
+Antes de proponer cualquier solución:
+
+1. Determina qué exige literalmente el PDF oficial.
+2. Determina qué es una decisión adicional del equipo.
+3. Identifica si esa decisión adicional aumenta el riesgo.
+4. Evalúa si existe una solución más sencilla que conserve todas las garantías obligatorias.
+5. Prefiere la solución verificable de menor complejidad.
+6. No introduzcas una nueva abstracción sin justificar su necesidad.
+7. No introduzcas garantías matemáticas superiores a las que realmente puedes demostrar.
+8. No agregues nuevas pruebas sin verificar que corresponden a un requisito o riesgo concreto.
+9. No sacrifiques viabilidad por sofisticación innecesaria.
+10. No sacrifiques corrección para simplificar artificialmente.
+
+**EL OBJETIVO ES UN DISEÑO CORRECTO, COMPLETO, IMPLEMENTABLE Y DEFENDIBLE; NO EL DOCUMENTO MÁS LARGO O EL ALGORITMO MÁS SOFISTICADO.**
+
+---
+
+# 4. PRIMERA FASE: AUDITORÍA FORENSE DEL ZIP RC8
+
+Antes de modificar cualquier archivo:
+
+- Extrae el ZIP.
+- Lee íntegramente los seis documentos de especificación.
+- Lee los archivos complementarios.
+- Revisa `validation/verify_rc8.py` y sus resultados reales.
+- Examina los cinco diagramas Mermaid.
+- Examina los 39 casos de prueba documentados.
+- Revisa el manifiesto y los hashes.
+- Consulta las siete páginas del PDF oficial.
+- Identifica las dependencias entre documentos.
+- Construye un inventario de defectos verificables.
+
+No confíes en la autocalificación del ZIP.
+
+No copies las conclusiones de evaluaciones anteriores sin comprobarlas.
+
+Distingue:
+
+**A. Defectos demostrados.**
+
+**B. Riesgos técnicos razonables.**
+
+**C. Evidencias pendientes.**
+
+**D. Elementos que no pueden verificarse todavía porque corresponden a sesión 2.**
+
+Registra el estado inicial de cada hallazgo.
+
+---
+
+# 5. CORRECCIÓN CRÍTICA 01 — RECONSTRUIR LA VIABILIDAD DEL PLAN
+
+## ARCHIVO
+
+`specs/05-implementation-plan.md`
+
+### ESTADO ACTUAL
+
+**78/100 EN RC8.**
+
+Este archivo es el mayor obstáculo para conseguir 95/100 global.
+
+### PROBLEMA
+
+El proyecto debe implementarse en dos aplicaciones independientes y con múltiples requisitos obligatorios.
+
+Sin embargo, actualmente existen estimaciones poco sustentadas:
+
+- 11 minutos para el núcleo Bellman-Ford.
+- 13 minutos para métricas y presentación numérica.
+- 4 minutos para verificaciones iniciales.
+- 7 minutos para Controller HTTP.
+- Cero minutos de holgura en la ruta crítica.
+
+Esto no constituye una demostración convincente de viabilidad.
+
+### ORDEN OBLIGATORIA
+
+**RECONSTRUYE EL PLAN SI ES NECESARIO. NO TE LIMITES A REESCRIBIR LA TABLA.**
+
+Debes realizar:
+
+#### A. Análisis de esfuerzo
+
+Para cada tarea especificar:
+
+- Identificador W.
+- Actividad precisa.
+- Responsable.
+- Duración.
+- Justificación de duración.
+- Dependencias.
+- Resultado verificable.
+- Condiciones de terminación.
+- Riesgos.
+- Mitigaciones.
+
+#### B. Cronograma de dos estudiantes
+
+Utilizar un diagrama de dos carriles:
+
+**Estudiante A:** Controller, RoutingService, Bellman-Ford, TopologyDAO y REST Controller.
+
+**Estudiante B:** Router, ForwardingService, HttpRouteClient, ForwardingLogDAO y REST Router.
+
+Mostrar las actividades paralelas y las dependencias compartidas.
+
+#### C. Respetar los bloques oficiales
+
+- Preparación: 10 minutos.
+- Modelos, MVC, DAO e inyección: 23 minutos.
+- Desarrollo: 35 minutos.
+- Integración: 15 minutos.
+- Pruebas: 20 minutos.
+- Entrega: 5 minutos.
+
+**TOTAL: 108 MINUTOS.**
+
+#### D. Análisis de ruta crítica
+
+Calcular ES, EF, LS, LF y holgura de las tareas.
+
+No manipular dependencias para producir holgura ficticia.
+
+Si la ruta crítica no tiene margen, documentar cómo se controlará el riesgo.
+
+#### E. Simplificación arquitectónica
+
+Investigar qué decisiones adicionales al PDF generan mayor carga de implementación.
+
+Si una función adicional es innecesariamente compleja, reemplazarla por una alternativa más sencilla que satisfaga el requisito oficial.
+
+No eliminar MVC, DAO, Bellman-Ford, tres métricas, REST, manejo de enlaces, forwarding, integración ni pruebas obligatorias.
+
+#### F. Pruebas
+
+Garantizar que exista una estrategia concreta para obtener como mínimo ocho pruebas automatizadas aprobadas en sesión 2, incluyendo TC-08 y TC-09.
+
+Distinguir los casos prioritarios de las verificaciones ampliadas sin eliminar requisitos obligatorios.
+
+#### G. Cierre operativo
+
+Describir exactamente cómo se hará la integración, qué se verificará antes del empaquetado y cómo se registrarán resultados fallidos sin falsificarlos.
+
+### CRITERIO DE CIERRE
+
+El cronograma no debe depender de suposiciones imposibles, tareas sin tiempo o preparaciones de código prohibidas por el profesor.
+
+Debe ser reproducible como procedimiento de trabajo.
+
+**OBJETIVO DE CALIDAD INDIVIDUAL: ≥95/100.**
+
+---
+
+# 6. CORRECCIÓN CRÍTICA 02 — ELIMINAR LA CONTRADICCIÓN DEL COSTPRESENTER
+
+## ARCHIVOS AFECTADOS
+
+- `01-requirements.md`
+- `02-static-architecture.md`
+- `03-dynamic-architecture.md`
+- `04-api-contract.md`
+- `05-implementation-plan.md`
+- `06-test-specification.md`
+
+### PROBLEMA CONFIRMADO
+
+El proyecto pretende soportar topologías válidas arbitrarias.
+
+Sin embargo, la presentación de la métrica `loss` incorpora límites:
+
+`PRESENTER_MAX_TERMS = 2048`
+
+`PRESENTER_MAX_BITS = 200000`
+
+Si se superan, el Controller puede devolver HTTP 500 aunque Bellman-Ford haya calculado una ruta válida.
+
+**ESTO NO DEBE QUEDAR SIN RESOLVER.**
+
+### ORDEN OBLIGATORIA
+
+Debes rediseñar esta parte buscando la solución más sencilla que conserve:
+
+1. Correcta selección de rutas.
+2. Las tres métricas oficiales.
+3. Desempate determinista documentado.
+4. Representación numérica definida.
+5. Consistencia con la API.
+6. Comportamiento controlado ante entradas válidas.
+7. Complejidad razonable.
+8. Viabilidad de implementación.
+
+### ANÁLISIS MATEMÁTICO OBLIGATORIO
+
+Estudia la separación entre:
+
+**Cálculo de la ruta óptima:** requiere respetar la política de comparación del algoritmo.
+
+**Presentación del costo:** requiere comunicar el resultado con una precisión y representación documentadas.
+
+No exijas a la presentación mayor exactitud que la necesaria para el contrato si ello obliga a implementar cálculos excesivamente complejos.
+
+Para `loss`, compara alternativas numéricamente estables, como la evaluación de `-ln(1-p)` mediante funciones adecuadas, representaciones decimales o procedimientos de aproximación con error controlado.
+
+Si conservas productos racionales de probabilidades de supervivencia para comparar rutas, formaliza cómo se obtiene y presenta el costo logarítmico sin alterar la selección.
+
+### DECISIÓN TÉCNICA OBLIGATORIA
+
+Selecciona una única política y justifícala mediante:
+
+- Correctitud.
+- Complejidad.
+- Dominio admitido.
+- Precisión garantizada.
+- Tratamiento de extremos.
+- Terminación.
+- Errores controlados.
+- Tiempo de implementación.
+- Compatibilidad con las tres métricas.
+
+No aceptes una solución que reintroduzca el problema de las pérdidas extremadamente pequeñas.
+
+No aceptes límites arbitrarios que contradigan las entradas declaradas válidas.
+
+Si son imprescindibles límites de entrada o de recursos, deben quedar definidos antes del cálculo, ser compatibles con los requisitos oficiales y tener errores documentados. No puede ocultarse la limitación detrás de un `500 INTERNAL_ERROR` genérico.
+
+### CRITERIO DE CIERRE
+
+Debe existir una política numérica única, reproducible y viable.
+
+La arquitectura no debe obligar a implementar una biblioteca matemática desproporcionada para un taller de 108 minutos.
+
+---
+
+# 7. CORRECCIÓN 03 — COMPLETAR COSTPRESENTER EN LA ARQUITECTURA
+
+## ARCHIVOS
+
+`specs/02-static-architecture.md`
+
+`specs/03-dynamic-architecture.md`
+
+### PROBLEMA
+
+El diagrama de clases y las secuencias ya asignan correctamente la presentación del costo a `CostPresenter`, coordinada por `RoutingService`.
+
+Pero el diagrama de componentes del Controller todavía no lo representa.
+
+### CORRECCIÓN OBLIGATORIA
+
+1. Incorporar `CostPresenter` al diagrama de componentes si se conserva como componente independiente.
+2. Mostrar dependencia desde `RoutingService`.
+3. Verificar que `BellmanFordEngine` produzca resultados algorítmicos y no asuma responsabilidades de serialización HTTP.
+4. Mantener coherencia con el diagrama de clases.
+5. Mantener coherencia con las secuencias.
+6. Actualizar las firmas y las pruebas.
+7. Si una simplificación arquitectónica elimina `CostPresenter`, retirar coherentemente sus referencias y trasladar su responsabilidad a un componente apropiado, sin mezclarla con los endpoints.
+
+**PROHIBIDO CORREGIR ÚNICAMENTE EL DIBUJO Y DEJAR LA DESCRIPCIÓN O LAS PRUEBAS DESACTUALIZADAS.**
+
+---
+
+# 8. CORRECCIÓN 04 — VALIDACIÓN REAL DE LOS CINCO DIAGRAMAS MERMAID
+
+## ARCHIVOS
+
+- `02-static-architecture.md`
+- `03-dynamic-architecture.md`
+
+### ORDEN
+
+Extraer y validar:
+
+1. Diagrama de componentes.
+2. Diagrama de clases.
+3. Secuencia de forwarding exitoso.
+4. Secuencia de fallo y restauración.
+5. Secuencia de Controller no disponible.
+
+Debes intentar utilizar un motor Mermaid real.
+
+Si el navegador está bloqueado, investigar alternativas locales disponibles.
+
+No aceptar automáticamente el bloqueo del navegador como razón suficiente para renunciar a cualquier otra comprobación.
+
+Para cada diagrama:
+
+- Verificar sintaxis.
+- Intentar renderizado.
+- Revisar legibilidad.
+- Revisar relaciones.
+- Revisar firmas.
+- Revisar secuencia de mensajes.
+- Comparar con requisitos y API.
+- Corregir errores.
+- Conservar la evidencia real si se consigue.
+
+Si el renderizado no resulta posible, documentar los intentos realizados y ejecutar verificaciones estáticas de respaldo sin afirmar una validación visual inexistente.
+
+### CRITERIO DE CIERRE
+
+Los cinco diagramas deben ser consistentes entre sí y con todas las especificaciones.
+
+---
+
+# 9. CORRECCIÓN 05 — PROMPT ENGINEERING REAL Y COMPLETO
+
+## ARCHIVO
+
+`prompts-session1.md`
+
+### PROBLEMA
+
+El proyecto sigue sin acreditar completamente el uso real de *few-shot prompting*.
+
+Esta obligación ha permanecido pendiente durante varias versiones.
+
+### ORDEN
+
+Revisar las interacciones existentes y verificar:
+
+- Contextual framing.
+- Structured prompting.
+- Role prompting.
+- Few-shot examples.
+- Iterative refinement.
+
+Cada interacción declarada como real debe incluir:
+
+- Texto auténtico del prompt.
+- Técnica.
+- Objetivo.
+- Resultado relevante.
+- Error encontrado.
+- Corrección aplicada.
+- FR/NFR relacionado.
+- Evidencia disponible.
+
+### ACCIÓN ESPECIAL
+
+Preparar un ejercicio *few-shot* completo y apropiado para Bellman-Ford.
+
+Si dispones de acceso a un modelo para ejecutar una nueva interacción, ejecútala y registra su procedencia auténtica, sin atribuirla falsamente a los estudiantes.
+
+Documenta una crítica técnica real de la respuesta y su refinamiento.
+
+Si los estudiantes deben ejecutar personalmente el ejercicio, deja una guía breve con los pasos exactos y los campos pendientes.
+
+No inventes una ejecución histórica.
+
+### REGLA
+
+**NO DECLARES CUMPLIDA UNA TÉCNICA POR EL SIMPLE HECHO DE QUE SU NOMBRE APAREZCA EN EL DOCUMENTO.**
+
+---
+
+# 10. CORRECCIÓN 06 — CIERRE DE BASELINE
+
+## ARCHIVO
+
+`REVIEW-AND-BASELINE.md`
+
+### ORDEN
+
+Preparar integralmente el proceso de revisión y congelamiento.
+
+Debe incluir:
+
+1. Lista de seis especificaciones.
+2. FR-01 a FR-10.
+3. NFR-01 a NFR-11.
+4. DEC-01 a DEC-09.
+5. Cinco diagramas.
+6. Contrato API.
+7. Plan de implementación.
+8. Pruebas.
+9. Trazabilidad.
+10. Registro de prompts.
+11. Registro de cambios.
+12. Hashes del ZIP.
+13. Aprobación de Estudiante A.
+14. Aprobación de Estudiante B.
+15. Commit de congelamiento.
+
+**PROHIBIDO INVENTAR APROBACIONES O COMMITS.**
+
+Si no constan, mantener correctamente el estado `NO CONGELADA`, identificando únicamente las actuaciones humanas reales pendientes.
+
+No penalizar artificialmente la calidad técnica de los documentos por negarse a falsificar evidencia.
+
+---
+
+# 11. SEGUNDA FASE: PERFECCIONAMIENTO INDIVIDUAL DE CADA DOCUMENTO
+
+No debes conformarte con resolver los seis problemas anteriores.
+
+Debes volver a auditar la totalidad de los seis documentos.
+
+## 01 — REQUIREMENTS
+
+**OBJETIVO: ≥95/100.**
+
+Revisar:
+
+- FR-01 a FR-10.
+- NFR-01 a NFR-11.
+- DEC-01 a DEC-09.
+- Fórmulas.
+- Complejidad.
+- Direccionalidad.
+- Entradas válidas.
+- Entradas inválidas.
+- Errores.
+- Rutas inalcanzables.
+- Precisión.
+- Ciclos negativos.
+- Criterios de aceptación.
+- Requisitos adicionales medibles.
+
+No puede quedar una afirmación más fuerte que la evidencia o el razonamiento que la respalda.
+
+## 02 — STATIC ARCHITECTURE
+
+**OBJETIVO: ≥95/100.**
+
+Revisar:
+
+- MVC en ambas aplicaciones.
+- DAO en ambas aplicaciones.
+- Servicios.
+- Interfaces.
+- Inyección de dependencias.
+- Clases.
+- Atributos.
+- Métodos.
+- Excepciones.
+- Dependencias.
+- Persistencia.
+- Separación Controller/Router.
+- Algoritmo fuera de endpoints.
+- Componentes de presentación.
+- Diagramas.
+
+Cada componente debe tener una responsabilidad definida y defendible.
+
+## 03 — DYNAMIC ARCHITECTURE
+
+**OBJETIVO: ≥95/100.**
+
+Revisar:
+
+- Tres escenarios obligatorios.
+- Participantes.
+- Firmas.
+- Secuencia de llamadas.
+- Versionado.
+- HTTP.
+- DAO.
+- Fallos.
+- Restauración.
+- Timeouts.
+- Excepciones.
+- Persistencia.
+- Respuestas.
+- Correspondencia con la arquitectura estática.
+
+## 04 — API CONTRACT
+
+**OBJETIVO: ≥95/100.**
+
+Revisar:
+
+- Todos los endpoints.
+- Métodos.
+- Parámetros.
+- Validaciones.
+- JSON.
+- Tipos.
+- Estados.
+- Errores.
+- Timeouts.
+- Versionado.
+- Representación numérica.
+- Fallos de Controller.
+- Fallos de persistencia.
+- Esquemas de respuesta.
+
+Todo comportamiento esperado debe estar definido de manera comprobable.
+
+## 05 — IMPLEMENTATION PLAN
+
+**OBJETIVO: ≥95/100.**
+
+Revisión máxima de viabilidad.
+
+No aceptar tareas sin tiempo, dependencias incoherentes, esfuerzo injustificado ni soluciones excesivamente complejas.
+
+Priorizar la implementación de los requisitos oficiales dentro de las restricciones reales.
+
+## 06 — TEST SPECIFICATION
+
+**OBJETIVO: ≥95/100.**
+
+Auditar TC-01 a TC-39.
+
+Revisar todas las pruebas:
+
+- Entradas exactas.
+- Fixtures.
+- Métricas.
+- Costos.
+- Rutas.
+- Aserciones.
+- Errores.
+- DAO fake/mock.
+- REST.
+- Versionado.
+- Topologías extremas.
+- Ciclos negativos.
+- Precisión.
+- Pruebas arquitectónicas.
+- Casos no funcionales.
+
+Si modificas una decisión numérica o de arquitectura, actualizar las pruebas afectadas.
+
+**NO AUMENTES LA CANTIDAD DE PRUEBAS SOLO PARA APARENTAR MAYOR COMPLETITUD.**
+
+---
+
+# 12. AUDITORÍA DE CONSISTENCIA DE EXTREMO A EXTREMO
+
+Construye y comprueba la matriz:
+
+**FR/NFR → DEC → Componente → Clase → Método → Endpoint → Secuencia → Tarea → TC → Evidencia.**
+
+Verificar que no existan:
+
+- Requisitos sin trazabilidad.
+- Métodos inexistentes.
+- Clases contradictorias.
+- Campos con tipos distintos.
+- JSON incompatibles.
+- Excepciones sin manejo.
+- Estados HTTP contradictorios.
+- Algoritmos diferentes para el mismo comportamiento.
+- Interfaces DAO incompatibles.
+- Secuencias con participantes inexistentes.
+- Tareas sin responsable.
+- Pruebas con resultados erróneos.
+- Decisiones sin justificación.
+- Referencias a versiones incorrectas.
+- Tablas Markdown defectuosas.
+
+**CADA CONTRADICCIÓN DETECTADA DEBE CORREGIRSE EN TODOS LOS ARCHIVOS AFECTADOS.**
+
+---
+
+# 13. AUDITORÍA MATEMÁTICA ADVERSARIAL
+
+Esta revisión debe intentar demostrar que el diseño es incorrecto.
+
+No busques solamente ejemplos en los que funcione.
+
+Busca contraejemplos.
+
+Verifica:
+
+1. Rutas de costo mínimo.
+2. Costos exactamente iguales.
+3. Costos extremadamente cercanos.
+4. Desempate por saltos.
+5. Desempate lexicográfico.
+6. Grafos dirigidos.
+7. Grafos no dirigidos.
+8. Nodos aislados.
+9. Origen igual a destino.
+10. Ciclos de costo cero.
+11. Ciclos negativos alcanzables.
+12. Ciclos negativos no alcanzables.
+13. Pérdida de paquetes igual a cero.
+14. Pérdida de paquetes igual a uno.
+15. Pérdidas muy pequeñas.
+16. Anchos de banda muy altos.
+17. Anchos de banda próximos al mínimo admitido.
+18. Costos racionales equivalentes.
+19. Restauración de enlaces.
+20. Versionado después de cambios.
+
+Puedes utilizar el verificador matemático RC8 como evidencia de referencia, pero debes examinar sus supuestos y límites.
+
+No lo presentes como si fuese la implementación final de Controller y Router.
+
+Si descubres un contraejemplo, modifica el diseño y actualiza la prueba correspondiente.
+
+---
+
+# 14. AUDITORÍA DE REGRESIONES
+
+Las versiones anteriores demostraron que corregir un archivo puede dañar otro.
+
+Por ello debes ejecutar una auditoría específica de regresiones.
+
+Comparar RC8 frente a RC9.
+
+Para cada cambio relevante:
+
+1. Identificar la decisión modificada.
+2. Identificar todos los documentos afectados.
+3. Revisar clases y métodos.
+4. Revisar secuencias.
+5. Revisar API.
+6. Revisar pruebas.
+7. Revisar tareas.
+8. Revisar complejidad.
+9. Revisar riesgos.
+10. Verificar que no se pierdan requisitos oficiales.
+
+No cerrar una corrección si introduce un defecto nuevo de gravedad equivalente o mayor.
+
+---
+
+# 15. CICLO OBLIGATORIO DE CORRECCIÓN CONTINUA
+
+Este apartado tiene máxima prioridad.
+
+## RONDA 1 — AUDITORÍA INDEPENDIENTE
+
+Identificar todos los defectos actuales.
+
+## RONDA 2 — CORRECCIÓN PROFUNDA
+
+Modificar directamente los archivos.
+
+Reestructurar secciones cuando sea necesario.
+
+## RONDA 3 — VERIFICACIÓN
+
+Ejecutar comprobaciones reales de Markdown, JSON, Mermaid, matemáticas y referencias.
+
+## RONDA 4 — AUDITORÍA ADVERSARIAL
+
+Actuar como un segundo evaluador que intenta encontrar defectos del trabajo recién realizado.
+
+## RONDA 5 — CORRECCIÓN DE REGRESIONES
+
+Resolver los defectos nuevos.
+
+## RONDA 6 — EVALUACIÓN SPDR ESTRICTA
+
+Aplicar la rúbrica completa.
+
+## RONDA 7 — CIERRE DE BRECHA
+
+Si la nota es inferior a 95, identificar cada descuento y determinar qué acción concreta puede eliminarlo.
+
+Volver a modificar y verificar los archivos cuando corresponda.
+
+### CONDICIÓN DE DETENCIÓN
+
+No debes finalizar mientras existan defectos técnicos corregibles que afecten materialmente la aprobación.
+
+Debes realizar todas las rondas necesarias dentro de la ejecución disponible, sin limitarte arbitrariamente a una sola revisión.
+
+Si todos los defectos técnicamente corregibles han sido resueltos y la puntuación permanece por debajo de 95 debido a evidencias humanas o verificaciones externas, debes informar el resultado real y las condiciones pendientes.
+
+No debes fabricar evidencia, aumentar la puntuación sin sustento ni prometer trabajo posterior.
+
+**NO SE ACEPTA UNA CALIFICACIÓN FICTICIA DE 95. SE EXIGE UNA CALIDAD REAL QUE PERMITA DEFENDER ESA CALIFICACIÓN.**
+
+---
+
+# 16. RÚBRICA FINAL
+
+| Criterio | Máximo | Objetivo RC9 |
+|---|---:|---:|
+| Requisitos | 20 | 20 |
+| Arquitectura | 20 | 19 |
+| Modelos | 15 | 14 |
+| API | 10 | 10 |
+| Trazabilidad | 15 | 15 |
+| Verificación | 10 | 9 |
+| Viabilidad | 10 | 8 |
+| **TOTAL** | **100** | **95** |
+
+Estos valores son objetivos mínimos de mejora, no puntuaciones predeterminadas.
+
+**ASPIRACIÓN ADICIONAL: 98–100/100 SI EXISTE EVIDENCIA SUFICIENTE.**
+
+Aplicar también la rúbrica real de 35 puntos correspondiente a la sesión 1 del profesor, diferenciándola claramente del SPDR sobre 100.
+
+---
+
+# 17. ENTREGABLES OBLIGATORIOS
+
+Genera físicamente:
+
+## A. ZIP CORREGIDO
+
+`SDD_Bellman_Ford_Grupo2_Etapa1_RC9_SPDR_95_Final.zip`
+
+Debe contener:
+
+- Los seis Markdown oficiales corregidos.
+- `prompts-session1.md` actualizado.
+- `REVIEW-AND-BASELINE.md` actualizado.
+- `CHANGELOG-SPECS.md` actualizado.
+- `README.md` actualizado.
+- `MANIFEST.md` actualizado.
+- Verificaciones matemáticas pertinentes.
+- Evidencias reales de diagramas, si están disponibles.
+- Informe de auditoría RC9.
+
+## B. INFORME SPDR
+
+`SPDR-CIERRE-RC9.md`
+
+Debe contener:
+
+1. Nota anterior: 89/100.
+2. Nota nueva justificada.
+3. Tabla de criterios.
+4. Nota individual de los seis archivos.
+5. Hallazgos corregidos.
+6. Hallazgos pendientes.
+7. Hallazgos nuevos.
+8. Evidencias reproducibles.
+9. Riesgos.
+10. Estado formal de baseline.
+11. Decisión de aprobación técnica.
+
+## C. MATRIZ DE CORRECCIONES
+
+Incluir para cada hallazgo:
+
+- ID.
+- Gravedad original.
+- Archivo.
+- Sección.
+- Corrección ejecutada.
+- Validación aplicada.
+- Resultado.
+- Estado final.
+
+## D. REPORTE DE VERIFICACIONES
+
+Documentar las herramientas realmente utilizadas y sus resultados.
+
+No declarar validaciones que no se ejecutaron.
+
+---
+
+# 18. INTEGRIDAD DEL ZIP
+
+Antes de entregar:
+
+1. Verificar que el ZIP se abra sin errores.
+2. Comprobar todos los archivos incluidos.
+3. Regenerar hashes SHA-256.
+4. Comparar hashes con el manifiesto.
+5. Verificar los Markdown.
+6. Verificar los JSON.
+7. Comprobar que las referencias a diagramas sean correctas.
+8. Revisar las referencias internas.
+9. Comparar los cambios RC8→RC9.
+10. Confirmar que los archivos corregidos sean realmente distintos de sus versiones originales cuando se hayan declarado modificaciones.
+
+No renombrar simplemente el ZIP anterior.
+
+---
+
+# 19. CONDICIONES DE CALIDAD PARA APROBACIÓN
+
+No se puede declarar RC9 técnicamente lista si permanece cualquiera de los siguientes problemas:
+
+- Contradicciones arquitectónicas materiales.
+- Pruebas obligatorias mal especificadas.
+- Requisitos oficiales omitidos.
+- Dependencias prohibidas.
+- Errores matemáticos demostrables.
+- Contratos HTTP incompatibles.
+- Trazabilidad incompleta.
+- Diagramas que contradicen las clases o métodos.
+- Limitaciones numéricas incompatibles con el dominio declarado.
+- Planes de implementación internamente incoherentes.
+- Evidencias inventadas.
+- Errores conocidos sin corregir.
+
+Distinguir **calidad técnica del diseño** de **aprobación administrativa o académica auténtica**.
+
+No declarar la baseline congelada si faltan firmas o commits reales.
+
+---
+
+# 20. ORDEN DEFINITIVA: NO REPETIR EL ERROR DE LAS VERSIONES ANTERIORES
+
+**LA RC8 OBTUVO SOLAMENTE 89/100.**
+
+**NO ALCANZÓ 95/100.**
+
+**LA SIGUIENTE ENTREGA NO PUEDE SER UNA SIMPLE REESCRITURA CON UNA NOTA MÁS ALTA.**
+
+**NECESITO QUE CORRIJAS TODOS LOS DEFECTOS TÉCNICOS DETECTADOS Y TODOS LOS QUE DESCUBRAS DURANTE TU PROPIA AUDITORÍA.**
+
+**SI UNA SOLUCIÓN ES DEMASIADO COMPLEJA, REDISÉÑALA.**
+
+**SI UN DOCUMENTO ESTÁ INCOMPLETO, COMPLÉTALO.**
+
+**SI UNA SECCIÓN ES INCORRECTA, RECONSTRÚYELA.**
+
+**SI UN DIAGRAMA NO COINCIDE CON LAS CLASES, CORRÍGELO.**
+
+**SI UNA PRUEBA NO ES REPRODUCIBLE, DEFINE SUS DATOS EXACTOS.**
+
+**SI EL PLAN NO ES VIABLE, REPLANTÉALO SIN ELIMINAR REQUISITOS OBLIGATORIOS.**
+
+**SI UN CAMBIO PRODUCE OTRA CONTRADICCIÓN, REGRESA Y CORRÍGELA.**
+
+**SI TU PRIMERA AUDITORÍA DA MENOS DE 95, NO TERMINES SOLO CON ESA NOTA: IDENTIFICA Y CORRIGE LOS DEFECTOS SOLUCIONABLES.**
+
+**NO DECLARES PERFECCIÓN SIN EVIDENCIA.**
+
+**NO INVENTES FIRMAS, COMMITS, PRUEBAS NI PROMPTS.**
+
+**NO ENTREGUES ÚNICAMENTE RECOMENDACIONES.**
+
+**ENTREGA LOS DOCUMENTOS FÍSICAMENTE MODIFICADOS.**
+
+### OBJETIVO FINAL
+
+**RC9 CON CALIDAD SPDR MÍNIMA JUSTIFICABLE DE 95/100.**
+
+**ASPIRACIÓN: 98–100/100.**
+
+**CADA UNO DE LOS SEIS DOCUMENTOS DEBE ASPIRAR INDIVIDUALMENTE A ≥95/100.**
+
+**CERO DEFECTOS TÉCNICOS CORREGIBLES DE GRAVEDAD CRÍTICA O MAYOR.**
+
+**TRAZABILIDAD COMPLETA.**
+
+**ARQUITECTURA COHERENTE.**
+
+**ALGORITMO CORRECTO.**
+
+**PRUEBAS REPRODUCIBLES.**
+
+**PLAN DE IMPLEMENTACIÓN DEFENDIBLE.**
+
+**VALIDACIONES REALES.**
+
+**ZIP ÍNTEGRO Y ENTREGABLE.**
+
+Ejecuta ahora la corrección completa RC8→RC9, realiza una auditoría adversarial posterior, resuelve las regresiones y entrega el ZIP junto con su informe de cierre.
+
+**NO TE CONFORMES CON MEJORAR LA NOTA: DEMUESTRA QUE EL DISEÑO HA ALCANZADO EL NIVEL TÉCNICO NECESARIO PARA MERECERLA.**

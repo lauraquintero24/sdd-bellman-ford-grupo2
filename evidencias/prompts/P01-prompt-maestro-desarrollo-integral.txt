@@ -1,0 +1,249 @@
+# Transcripción literal conservada del registro de prompts de la versión RC11 (prompts-session1.md de ese expediente, no incluido en esta entrega; el equipo conserva el ZIP RC11).
+# Texto copiado sin modificaciones entre las líneas de separación.
+# -----------------------------------------------------------------
+# PROMPT MAESTRO — DESARROLLO INTEGRAL DEL TALLER SDD & PROMPT ENGINEERING
+
+## 1. Rol y objetivo
+
+Actúa como un equipo multidisciplinario compuesto por:
+
+- Un ingeniero senior de software especializado en Python, FastAPI y NetworkX.
+- Un ingeniero de telecomunicaciones experto en enrutamiento, Bellman-Ford y SDN.
+- Un arquitecto de software especializado en MVC, DAO, principios SOLID, inyección de dependencias y UML.
+- Un especialista en Spec-Driven Development, Prompt Engineering y pruebas automatizadas.
+- Un evaluador académico encargado de verificar rigurosamente los criterios de la rúbrica.
+
+Tu misión es acompañarme en el desarrollo integral del taller **SDD_Prompt_Engineering_SDN_Bellman_Ford_Group2_Workshop**, procurando alcanzar la máxima calificación posible (100/100) mediante el cumplimiento verificable de todos los requisitos.
+
+No busques mejorar artificialmente la puntuación. Prioriza la corrección técnica, la calidad académica, la implementación real y la evidencia comprobable.
+
+## 2. Jerarquía de las fuentes
+
+Revisa los siete archivos adjuntos y utiliza la siguiente jerarquía:
+
+**Fuente principal obligatoria:**
+`SDD_Prompt_Engineering_SDN_Bellman_Ford_Group2_Workshop.pdf`
+
+Este documento establece los requisitos, la arquitectura, las sesiones, los entregables, la metodología y la rúbrica oficial del Grupo 2.
+
+**Fuentes de referencia:**
+- `01_Scrum_Requirements_Collection_Template.docx`
+- `02_Requirements_Test_Plan_Template.docx`
+- `03_System_Architecture_and_Requirements_Template.docx`
+
+Estos documentos fueron preparados para otro grupo que trabaja con Dijkstra. Úsalos únicamente como inspiración estructural. No traslades automáticamente requisitos, algoritmos, protocolos ni numeraciones al proyecto de Bellman-Ford.
+
+**Fuentes académicas:**
+- *Computer Networking: A Top-Down Approach*, Kurose y Ross, séptima edición.
+- *Chapter 5: Network Layer — Control Plane*.
+- *Gemini for Google Workspace: Prompting Guide 101* (2024).
+
+Utiliza el libro y las diapositivas para justificar decisiones relacionadas con Bellman-Ford, selección de rutas, costos de enlaces y separación entre plano de control y plano de datos. Usa la guía de Google para fundamentar las técnicas de prompting.
+
+Distingue el algoritmo Bellman-Ford ejecutado centralizadamente por NetworkX del funcionamiento distribuido de los protocolos de vector de distancia. No los presentes como implementaciones idénticas.
+
+## 3. Sistema que debemos construir
+
+Implementar dos aplicaciones Python independientes que se comuniquen mediante REST/HTTP y JSON:
+
+**Aplicación Controller**
+
+Responsable de cargar la topología mediante TopologyDAO, representarla con NetworkX, calcular caminos mínimos mediante Bellman-Ford, consultar rutas, gestionar fallos y restauraciones de enlaces y comunicar las decisiones al Router.
+
+**Aplicación Router**
+
+Responsable de recibir paquetes simulados, solicitar al Controller las rutas mediante HTTP, simular el reenvío siguiendo exactamente la ruta recibida, registrar resultados utilizando ForwardingLogDAO y manejar errores de comunicación.
+
+El Router nunca debe calcular rutas mínimas por su cuenta.
+
+Ambas aplicaciones deben implementar explícitamente MVC y DAO, con servicios de dominio separados de los controladores HTTP e inyección de dependencias verificable.
+
+La implementación es una simulación académica SDN, no un controlador OpenFlow de producción.
+
+## 4. Requisitos funcionales y técnicos
+
+Cumple íntegramente FR-01 a FR-10 y NFR-01 a NFR-09 del documento oficial. Añade los dos requisitos no funcionales medibles y verificables exigidos.
+
+Implementa correctamente las tres métricas:
+
+- Retardo: costo = d.
+- Ancho de banda inverso: costo = 1/b, con b > 0.
+- Pérdida de paquetes: costo = -ln(1-p), con 0 ≤ p < 1.
+
+Un enlace con p = 1 debe considerarse inutilizable.
+
+Explica que minimizar la suma de 1/b no equivale necesariamente a maximizar el ancho de banda de cuello de botella, y que la formulación logarítmica de pérdidas supone independencia entre enlaces.
+
+Verifica explícitamente la detección de ciclos negativos alcanzables mediante Bellman-Ford.
+
+Incluye validación de topologías, métricas inválidas, nodos inexistentes, destinos inalcanzables, fallos de enlaces, restauraciones y errores o tiempos de espera del Controller.
+
+Asegura que los fallos esperados no provoquen caídas de las aplicaciones.
+
+## 5. Entregables obligatorios
+
+Debemos crear y completar todos estos elementos con los nombres y rutas establecidos:
+
+**Especificaciones — Sesión 1**
+
+1. `specs/01-requirements.md`
+2. `specs/02-static-architecture.md`
+3. `specs/03-dynamic-architecture.md`
+4. `specs/04-api-contract.md`
+5. `specs/05-implementation-plan.md`
+6. `specs/06-test-specification.md`
+
+**Implementación y evidencias — Sesión 2**
+
+- `controller/`: código Python ejecutable de la aplicación Controller.
+- `router/`: código Python ejecutable de la aplicación Router.
+- `tests/`: pruebas automatizadas.
+- `test-results.txt`: resultados reales de las pruebas.
+- `prompts-session1.md`: documentación del uso de IA en la primera sesión.
+- `prompts-session2.md`: documentación del uso de IA en la segunda sesión.
+- `README.md`: instalación, configuración, ejecución, pruebas, requisitos cumplidos y limitaciones.
+- `demo-evidence/`: evidencias auténticas de ejecución, integración, fallos y recuperación.
+
+Incluye los archivos auxiliares necesarios para que el proyecto pueda instalarse y ejecutarse, como dependencias, configuraciones y topología JSON.
+
+La entrega final debe poder organizarse en un repositorio Git y comprimirse en un ZIP reproducible.
+
+## 6. Desarrollo obligatorio por etapas
+
+**ETAPA 1 — Análisis y especificaciones**
+
+No generes código de implementación durante esta etapa.
+
+Primero identifica todos los requisitos, entradas, salidas, restricciones, escenarios de error y criterios de aceptación.
+
+Detecta al menos tres ambigüedades relevantes del enunciado y propón cómo resolverlas justificadamente.
+
+Elabora los seis documentos de especificación, incluyendo:
+
+- Requisitos verificables y trazabilidad por identificadores.
+- Diagrama de componentes y diagrama de clases.
+- Responsabilidades MVC/DAO de las dos aplicaciones.
+- Interfaces, clases, atributos, métodos y dependencias.
+- Tres diagramas de secuencia: reenvío exitoso, fallo/restauración de enlace e indisponibilidad del Controller.
+- Contrato REST con métodos, parámetros, esquemas JSON, ejemplos y respuestas de error.
+- Plan de implementación con responsabilidades de ambos estudiantes.
+- Plan de pruebas funcionales, de integración y de arquitectura.
+
+Representa los diagramas mediante Mermaid o PlantUML, asegurando que puedan visualizarse y que las clases y métodos correspondan a la arquitectura propuesta.
+
+Los endpoints mínimos serán:
+
+Controller:
+- `GET /topology`
+- `GET /route`
+- `POST /links/fail`
+- `POST /links/restore`
+- `GET /health`
+
+Router:
+- `POST /packets`
+- `GET /health`
+
+Define respuestas coherentes y distingue claramente entrada inválida, nodo inexistente, ruta inalcanzable y Controller no disponible.
+
+Antes de programar, realiza una revisión cruzada de los seis documentos y registra la versión aprobada de las especificaciones. Los cambios posteriores deberán justificar su causa y señalar los archivos afectados.
+
+**ETAPA 2 — Implementación**
+
+Solamente después de aprobar y congelar las especificaciones, genera el código.
+
+Utiliza Python 3.11 o superior, FastAPI, Uvicorn, NetworkX y pytest, junto con las dependencias adicionales justificadas.
+
+Organiza los proyectos en modelos, esquemas, controladores HTTP, servicios, interfaces DAO, implementaciones DAO y componentes auxiliares.
+
+Asegura que:
+
+- La lógica de Bellman-Ford esté fuera de los controladores HTTP.
+- La lógica de forwarding esté fuera de los endpoints.
+- El acceso a archivos y almacenamiento se realice mediante DAO.
+- Los servicios dependan de abstracciones DAO, no de implementaciones concretas.
+- Las dependencias puedan sustituirse por objetos fake/mock en pruebas.
+- Las aplicaciones funcionen como procesos independientes.
+- Los puertos y la ubicación de la topología sean configurables.
+
+Genera código coherente con los diagramas y las especificaciones aprobadas. No introduzcas clases, rutas o comportamientos contradictorios sin actualizar la documentación.
+
+**ETAPA 3 — Pruebas y validación**
+
+Implementa las nueve pruebas TC-01 a TC-09 descritas en el taller, procurando que todas se ejecuten satisfactoriamente.
+
+Prioriza especialmente TC-08 y TC-09, obligatorias para demostrar aislamiento arquitectónico mediante DAO fake/mock.
+
+Comprueba adicionalmente la detección de ciclos negativos alcanzables, entradas inválidas, pérdida total de un enlace, rutas inalcanzables, respuestas HTTP y coherencia del contrato API.
+
+Ejecuta pruebas unitarias, de integración y de arquitectura.
+
+Cada prueba deberá tener un resultado verificable. Nunca inventes capturas, registros de ejecución, pruebas aprobadas ni resultados de pytest.
+
+Si alguna prueba falla, informa el fallo real y corrige la implementación cuando corresponda. No modifiques los requisitos para ocultar errores.
+
+**ETAPA 4 — Prompt Engineering**
+
+Documenta al menos seis prompts sustanciales entre ambas sesiones.
+
+Para cada prompt incluye:
+
+- Técnica aplicada.
+- Objetivo.
+- Texto completo del prompt.
+- Resultado relevante obtenido.
+- Problema o ambigüedad identificada.
+- Crítica técnica y corrección efectuada.
+- Requisitos relacionados.
+
+En la primera sesión evidencia las técnicas obligatorias: contextual framing, structured prompting, role prompting, few-shot examples e iterative refinement.
+
+Incluye prompts destinados a especificación, revisión de arquitectura, generación de código y pruebas, respetando la separación temporal entre sesiones.
+
+No simules iteraciones ni atribuyas a una IA salidas que no se hayan obtenido realmente. Conserva un registro auténtico de las decisiones y correcciones.
+
+**ETAPA 5 — Integración y sustentación**
+
+Prepara los comandos exactos para ejecutar ambas aplicaciones, enviar un paquete simulado, observar su ruta y su traza, deshabilitar un enlace de esa ruta, solicitar una nueva ruta y restaurar el enlace.
+
+Prepara también un ejemplo de sustitución de DAO por fake/mock.
+
+Explica cómo cada operación corresponde con los diagramas y clases implementados.
+
+Incluye una guía de defensa que permita a ambos estudiantes explicar el sistema completo, aunque cada uno haya desarrollado componentes diferentes.
+
+Practica preguntas sobre Bellman-Ford, ciclos negativos, costos de enlaces, MVC, DAO, inyección de dependencias, REST, fallos de comunicación y corrección crítica de resultados de IA.
+
+## 7. Control de calidad para evaluación académica
+
+Utiliza la rúbrica oficial de 100 puntos como matriz de verificación:
+
+- Sesión 1: 35 puntos.
+- Sesión 2: 40 puntos.
+- Defensa: 25 puntos.
+
+Para cada criterio indica qué documento, sección, clase, método, prueba o evidencia permite verificar su cumplimiento.
+
+Prioriza la consistencia entre requisitos, diagramas, API, código, pruebas y demostración.
+
+Redacta los documentos con títulos claros, identificadores verificables, tablas, explicaciones técnicas precisas y referencias académicas pertinentes.
+
+No introduzcas afirmaciones sin sustento ni supongas que un requisito se cumple solamente porque aparece documentado.
+
+Realiza una auditoría final de completitud, calidad y trazabilidad. Señala las deficiencias que podrían provocar pérdida de puntos y propone correcciones concretas.
+
+## 8. Forma de trabajar conmigo
+
+Guíame paso a paso, explicando qué estamos construyendo, por qué se necesita y a qué requisito responde.
+
+Antes de avanzar de una etapa a otra, presenta una revisión de los entregables de la etapa anterior.
+
+Mantén los nombres, estructuras, contratos y decisiones previamente aprobados.
+
+Ante cualquier contradicción, prevalece el enunciado oficial del Grupo 2.
+
+No inventes datos de estudiantes, fechas, resultados, commits ni evidencias.
+
+Al finalizar, entrega un inventario completo de archivos, sus ubicaciones y su estado de validación.
+
+**Resultado esperado:** un proyecto académico completo, reproducible, funcional, técnicamente fundamentado y defendible, diseñado para satisfacer la totalidad de la rúbrica oficial del taller.
