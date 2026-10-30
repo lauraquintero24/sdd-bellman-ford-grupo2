@@ -12,8 +12,78 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Texto del prompt | Literal al final de este registro (anexo S2-P01) |
 | Salida relevante | [IA] FASE 0: lista de verificación módulo → clases → firmas → FR/NFR → TC; tareas W-02A, W-03, W-04.1, W-04.2, W-04A, W-05; dos ambigüedades (R1-1 orden de reglas TOPO-* con estructuras no iterables; R1-2 serialización de números en `GET /topology`) y riesgos |
 | Problema detectado | [IA] (1) `networkx==3.7` exige Python ≥ 3.12 y R8 admite 3.11 → se fijó `networkx==3.6.1` (Requires-Python ≥ 3.11). (2) R3 adaptado no indica nombre/correo para `--author`. (3) El prompt conserva `MODO: A` en un repositorio de la Estudiante B. (4) `import shared.error_contract, shared.cost_format` falla hasta integrar W-02B |
-| Corrección hecha | [IA] (1) `requirements.txt` con `networkx==3.6.1`. (2)–(3) Pendiente de confirmación de las estudiantes; se continuó con MODO A por indicación «continua». (4) Registrado como dependencia de G0/G1 |
+| Corrección hecha | [IA] (1) `requirements.txt` con `networkx==3.6.1`. (2) Resuelto en S2-P03: la propietaria indicó el autor y el correo. (3) Se continuó con MODO A por indicación «continua»; después se cambió a MODO COMPLETO (S2-P04). (4) Resuelto al integrar W-02B en la misma rama (S2-P04) |
 | Requisitos relacionados | NFR-05, NFR-08; W-02A |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
+## S2-P02 — «continua»: generación del Controller (W-03 → W-05, W-RA)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [IA] Continuación del prompt S2-P01 (mismas reglas R1–R10); tareas pequeñas y verificables con cierre por tarea; pruebas junto al código; oráculo independiente (NetworkX y referencia decimal de 120 cifras) |
+| Objetivo | [IA] Implementar el Controller completo (DAO con reglas TOPO-*, motor Bellman-Ford exacto, presentador de costos, API de 04 §3) y su parte de TC-13 y TC-15 |
+| Texto del prompt | «continua» (repetido al cierre de cada tarea W-xx) |
+| Salida relevante | [IA] `controller/` completo; 48/48 filas del oráculo de 06 §3 por servicio y por HTTP; TC-08 aprobado con E/S bloqueada; NFR-10 medido (p95 F-01 2.414 ms, F-19 41.970 ms, máquina en la nube) |
+| Problema detectado | [IA] (1) La primera versión de `test_tc08_routing_service_fake_dao.py` contenía una fixture de relleno sin uso. (2) TC-08, TC-01 (API) y TC-02 (API) se escribieron antes de que existieran el motor, el presentador y `controller/app.py`, y fallaron con `ModuleNotFoundError` hasta W-04.2 y W-05. (3) Una expectativa de `test_decimal_text_format` era incorrecta: esperaba `"1.23456789012e+11"` para `123456789012`, cuando 04 §3.2 manda notación fija para exponente 11. (4) La cadena «Comando» del informe de NFR-10 perdía las comillas del argumento `--machine` y no era reproducible |
+| Corrección hecha | [IA] (1) Fixture eliminada. (2) Fallos registrados como tales en cada cierre; desaparecieron al implementar los módulos, sin desactivar pruebas. (3) Se corrigió la prueba, no el código, y se añadió el caso frontera `1e12` → `"1e+12"` (`tests/test_tc12_controller_api_contract.py`). (4) `shlex.join` en `scripts/measure_nfr10.py` y nueva medición; la primera medición se descartó |
+| Requisitos relacionados | FR-01–FR-06, FR-09, NFR-01–NFR-07, NFR-09, NFR-10; TC-01–TC-04, TC-08, TC-10–TC-12, TC-15, TC-17–TC-30, TC-36–TC-39 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
+## S2-P03 — Aprobación y commits del carril A
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [Equipo] Instrucción operativa explícita con autoría y formato de salida verificable |
+| Objetivo | [IA] Registrar con autoría individual el trabajo del Controller (commits individuales, PDF p. 7) |
+| Texto del prompt | «Revisado y aprobado — Mariana Arturo Pabón / Haz ahora los commits de W-02A, W-03, W-04.1, W-04.2, W-04A, W-05 y la parte Controller de W-RA, uno por tarea, con --author="Mariana Arturo Pabón <marianaarturo@unicauca.edu.co>", y haz push a la rama claude/lucid-tesla-5aa8as. Al terminar, muéstrame `git log --oneline --format="%h %an — %s"` y confirma que el push se completó.» Después: «Reintenta el push: git push -u origin claude/lucid-tesla-5aa8as. Si funciona, muéstrame la salida y confirma que la rama existe en GitHub.» |
+| Salida relevante | [IA] Siete commits (`3f2fc50` … `527d0d4`) con autora Mariana; rama publicada (`git ls-remote` → `527d0d4…`) |
+| Problema detectado | [IA] (1) El primer push devolvió HTTP 403: la integración de GitHub no tenía acceso al repositorio. (2) `tests/test_tc11_negative_cycle.py` pertenecía a dos tareas: W-04.1 y el subcaso API de W-05 |
+| Corrección hecha | [IA] (1) Las estudiantes corrigieron el acceso y el push se repitió con éxito. (2) En el commit de W-04.1 se incluyó el archivo sin el subcaso API, que entró en el commit de W-05; cada commit deja el árbol coherente |
+| Requisitos relacionados | PDF p. 7 (commits individuales); 05 §2 y §8 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
+## S2-P04 — MODO COMPLETO: generación del Router (W-02B → W-08)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [Equipo] Cambio de modo con restricciones (mismas reglas, propietaria del carril, commit y push por tarea, sin merge ni tags) |
+| Objetivo | [IA] Implementar el Router y la parte B de `shared/` en la misma rama, con autoría de Laura |
+| Texto del prompt | «Cambia a MODO COMPLETO: estamos usando un solo ordenador y una sola rama, así que continúa en claude/lucid-tesla-5aa8as con el resto del plan. 1. MODO B: W-02B, W-06, W-07.1, W-07.2 y W-08 con las mismas reglas (R1–R10 y la adaptación web). Propietaria: Laura Sofia Quintero Fernandez <laurasquintero@unicauca.edu.co>. 2. Después, FASE 3 y FASE FINAL. Como el Controller y el Router quedan en esta misma rama, la condición del MODO INTEGRACION («ambas partes en la misma rama») se cumple sin necesidad de merge. 3. Commits: al cerrar cada tarea, muestra el resumen y espera la frase «Revisado y aprobado — <nombre>» de la propietaria (Router → Laura; integración y documentación → repartidas según 05 §2). Tras cada commit, haz push inmediato a la rama para no perder trabajo. 4. No hagas push a main, ni merge, ni tags.» Después: «continua» al cierre de cada tarea |
+| Salida relevante | [IA] `shared/error_contract.py`, `shared/cost_format.py`, `router/` completo; TC-09 aprobado con E/S bloqueada; G0 completa (la prueba de TC-39 con `is_canonical_cost`, que fallaba desde W-04.2, pasó) |
+| Problema detectado | [IA] (1) En `tests/test_tc31_route_response_validation.py`, `kwargs.pop` modificaba el diccionario compartido de casos parametrizados. (2) Los imports de los dobles del Router quedaron a mitad de `tests/fakes.py`. (3) TC-06 (API) falló con `ModuleNotFoundError` hasta W-08. (4) El subcaso de TC-33 con permisos de archivo no puede ejecutarse como administrador |
+| Corrección hecha | [IA] (1) Se sustituyó por `kwargs.get` sin mutación. (2) Imports movidos al principio del archivo. (3) Fallo registrado; pasó al crear `router/app.py`. (4) La prueba comprueba si los permisos aplican y, si no, se declara NO EJECUTADA (06 TC-33 lo prevé); registrado en `test-results.txt` y en el README |
+| Requisitos relacionados | FR-07–FR-10, NFR-04–NFR-07, NFR-09, NFR-11; TC-05–TC-07, TC-09, TC-14, TC-16, TC-31–TC-33 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
+## S2-P05 — Revisión de arquitectura (parte automática de TC-13)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [IA] Verificación automática por AST de reglas declarativas (tabla de importaciones prohibidas de 02 §8) + lista de revisión manual para las estudiantes |
+| Objetivo | [IA] Demostrar que los handlers no contienen algoritmos, que el Router no calcula rutas y que la DI es verificable (NFR-01–NFR-03) |
+| Texto del prompt | Parte de S2-P01 (FASE 3, punto 4: «una prueba AST que verifique las reglas de importación de 02 §8 y que ningún http.py contiene bucles de relajación ni de reenvío») |
+| Salida relevante | [IA] `tests/test_tc13_architecture_ast.py`: 28 pruebas aprobadas sobre `controller/`, `router/` y `shared/`; lista manual de 06 §6 en `test-results.txt` sin marcar |
+| Problema detectado | [IA] `controller/http_errors.py` y `router/http_errors.py` importan `starlette.exceptions` para capturar los 404/405 de enrutamiento; 02 §8 permite «FastAPI» en los adaptadores y prohíbe Starlette solo en `shared/` |
+| Corrección hecha | [IA] Se admite Starlette en los adaptadores HTTP como base de FastAPI (declarado en el código de la prueba y en esta entrada); sigue prohibido en `shared/`, modelos, puertos y servicios |
+| Requisitos relacionados | NFR-01, NFR-02, NFR-03, NFR-08; TC-13 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
+## S2-P06 — Integración, demostración y mediciones (FASE 3)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [IA] Guion reproducible que captura cada comando con su salida literal; mediciones con datos crudos y entorno |
+| Objetivo | [IA] Evidencia de la demostración obligatoria (PDF p. 5) con dos procesos reales; NFR-11 con procesos reales; `test-results.txt` |
+| Texto del prompt | «continua» (tras el cierre de W-08), bajo S2-P01 (FASE 3) y S2-P04 |
+| Salida relevante | [IA] `scripts/demo.sh`, `demo-evidence/` (pasos 00, a, b, c, c2, d, e, f y registros de los procesos); `scripts/measure_nfr11.py` y `demo-evidence/nfr11/` (PASS); `test-results.txt` (552 aprobadas, 1 subcaso no ejecutado); TC-34 con dos directorios |
+| Problema detectado | [IA] (1) La primera versión del guion fallaba también C→D dentro del paso b, de modo que la secuencia de versiones no era 1 → 2 → 3 como en W-11A y 03 S2. (2) Los comandos guardados usaban los atajos `http` y `packet` sin explicarlos. (3) TC-34 solo estaba cubierta parcialmente (TC-07 y AST), sin los «dos directorios» de 06 |
+| Corrección hecha | [IA] (1) El destino inalcanzable pasó a un paso propio (c2) después de la restauración; se borró la primera evidencia y se repitió la demostración. (2) Cada archivo de evidencia incluye la definición de los atajos y las URL. (3) Nueva prueba `tests/test_tc34_process_independence.py` |
+| Requisitos relacionados | FR-06, FR-07, FR-09, FR-10, NFR-05, NFR-06, NFR-10, NFR-11; TC-05, TC-07, TC-14–TC-16, TC-34 |
 | Verificación personal | [Por completar por la estudiante: verificación personal] |
 
 ### Anexo S2-P01 — texto literal
