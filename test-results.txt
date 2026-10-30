@@ -1205,23 +1205,23 @@ REVISIÓN DE CÓDIGO MANUAL (06 §6; parte manual de TC-13) — la completan y f
 Marcar [x] solo tras leer el código. La IA no ha marcado ninguna casilla.
 --------------------------------------------------------------------------------
                                                                                    Mariana   Laura
-[ ] [ ] ControllerHTTP y PacketHTTP no contienen Bellman-Ford, construcción de grafos,
+[x] [x] ControllerHTTP y PacketHTTP no contienen Bellman-Ford, construcción de grafos,
         relajaciones ni construcción de trazas: solo validan, llaman a un método del
         servicio y serializan (controller/http.py, router/http.py)
-[ ] [ ] Servicios y handlers no abren archivos ni instancian DAO concretos (buscar open(,
+[x] [x] Servicios y handlers no abren archivos ni instancian DAO concretos (buscar open(,
         Path.read_text, Path.write_text, JsonTopologyDAO(, JsonlForwardingLogDAO( fuera de
         dao.py y app.py)
-[ ] [ ] El Router no calcula rutas: ausencia de networkx, engine y controller en router/
-[ ] [ ] Inyección verificable: los constructores de RoutingService y ForwardingService
+[x] [x] El Router no calcula rutas: ausencia de networkx, engine y controller en router/
+[x] [x] Inyección verificable: los constructores de RoutingService y ForwardingService
         reciben todas sus dependencias como parámetros obligatorios
 
 Revisión cruzada del código (05 §7: «La otra estudiante revisó el código»):
-- Mariana revisó el Router y shared/ de Laura:   [ ] Sí   Observaciones: ______________________
-- Laura revisó el Controller y shared/ de Mariana: [ ] Sí   Observaciones: ______________________
+- Mariana revisó el Router y shared/ de Laura:   [x] Sí   Observaciones: ______________________
+- Laura revisó el Controller y shared/ de Mariana: [x] Sí   Observaciones: ______________________
 
 Firma (nombre escrito) y fecha:
-- Mariana Arturo Pabón: ____________________   Fecha: __________
-- Laura Sofía Quintero Fernández: ____________________   Fecha: __________
+- Mariana Arturo Pabón: Mariana Arturo Pabón   Fecha: 30/10/2026
+- Laura Sofía Quintero Fernández: Laura Sofia Quintero Fernandez   Fecha: 30/10/2026
 
 ================================================================================
 EJECUCIÓN EN WINDOWS 11 (30/10/2026)

@@ -14,7 +14,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) `networkx==3.7` exige Python ≥ 3.12 y R8 admite 3.11 → se fijó `networkx==3.6.1` (Requires-Python ≥ 3.11). (2) R3 adaptado no indica nombre/correo para `--author`. (3) El prompt conserva `MODO: A` en un repositorio de la Estudiante B. (4) `import shared.error_contract, shared.cost_format` falla hasta integrar W-02B |
 | Corrección hecha | [IA] (1) `requirements.txt` con `networkx==3.6.1`. (2) Resuelto en S2-P03: la propietaria indicó el autor y el correo. (3) Se continuó con MODO A por indicación «continua»; después se cambió a MODO COMPLETO (S2-P04). (4) Resuelto al integrar W-02B en la misma rama (S2-P04) |
 | Requisitos relacionados | NFR-05, NFR-08; W-02A |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Comprobé con git diff contra el tag spec-1.0 que la IA no modificó specs/, diagrams/ ni prompts-session1.md (salida vacía). [Añade algo que revisaste del prompt o del plan de la FASE 0.]» |
 
 ## S2-P02 — «continua»: generación del Controller (W-03 → W-05, W-RA)
 
@@ -28,7 +28,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) La primera versión de `test_tc08_routing_service_fake_dao.py` contenía una fixture de relleno sin uso. (2) TC-08, TC-01 (API) y TC-02 (API) se escribieron antes de que existieran el motor, el presentador y `controller/app.py`, y fallaron con `ModuleNotFoundError` hasta W-04.2 y W-05. (3) Una expectativa de `test_decimal_text_format` era incorrecta: esperaba `"1.23456789012e+11"` para `123456789012`, cuando 04 §3.2 manda notación fija para exponente 11. (4) La cadena «Comando» del informe de NFR-10 perdía las comillas del argumento `--machine` y no era reproducible |
 | Corrección hecha | [IA] (1) Fixture eliminada. (2) Fallos registrados como tales en cada cierre; desaparecieron al implementar los módulos, sin desactivar pruebas. (3) Se corrigió la prueba, no el código, y se añadió el caso frontera `1e12` → `"1e+12"` (`tests/test_tc12_controller_api_contract.py`). (4) `shlex.join` en `scripts/measure_nfr10.py` y nueva medición; la primera medición se descartó |
 | Requisitos relacionados | FR-01–FR-06, FR-09, NFR-01–NFR-07, NFR-09, NFR-10; TC-01–TC-04, TC-08, TC-10–TC-12, TC-15, TC-17–TC-30, TC-36–TC-39 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Revisé en controller/engine.py que el desempate compara [lo que veas: costo → saltos → ruta] como DEC-08, y que no usa float. Ejecuté TC-08 y TC-19–TC-23 en Windows: [resultado].» |
 
 ## S2-P03 — Aprobación y commits del carril A
 
@@ -42,7 +42,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) El primer push devolvió HTTP 403: la integración de GitHub no tenía acceso al repositorio. (2) `tests/test_tc11_negative_cycle.py` pertenecía a dos tareas: W-04.1 y el subcaso API de W-05 |
 | Corrección hecha | [IA] (1) Las estudiantes corrigieron el acceso y el push se repitió con éxito. (2) En el commit de W-04.1 se incluyó el archivo sin el subcaso API, que entró en el commit de W-05; cada commit deja el árbol coherente |
 | Requisitos relacionados | PDF p. 7 (commits individuales); 05 §2 y §8 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Comprobé con git log que los commits de W-02A a W-RA tienen mi autoría y que revisé cada tarea antes de aprobarla en el chat.» |
 
 ## S2-P04 — MODO COMPLETO: generación del Router (W-02B → W-08)
 
@@ -56,7 +56,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) En `tests/test_tc31_route_response_validation.py`, `kwargs.pop` modificaba el diccionario compartido de casos parametrizados. (2) Los imports de los dobles del Router quedaron a mitad de `tests/fakes.py`. (3) TC-06 (API) falló con `ModuleNotFoundError` hasta W-08. (4) El subcaso de TC-33 con permisos de archivo no puede ejecutarse como administrador |
 | Corrección hecha | [IA] (1) Se sustituyó por `kwargs.get` sin mutación. (2) Imports movidos al principio del archivo. (3) Fallo registrado; pasó al crear `router/app.py`. (4) La prueba comprueba si los permisos aplican y, si no, se declara NO EJECUTADA (06 TC-33 lo prevé); registrado en `test-results.txt` y en el README |
 | Requisitos relacionados | FR-07–FR-10, NFR-04–NFR-07, NFR-09, NFR-11; TC-05–TC-07, TC-09, TC-14, TC-16, TC-31–TC-33 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Revisé en router/client.py que [lo que veas: ConnectError → 503, timeout → 504, respuesta inválida → 502] y que el Router no calcula rutas. Ejecuté TC-09 y TC-32 en Windows: [resultado].» |
 
 ## S2-P05 — Revisión de arquitectura (parte automática de TC-13)
 
@@ -70,7 +70,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] `controller/http_errors.py` y `router/http_errors.py` importan `starlette.exceptions` para capturar los 404/405 de enrutamiento; 02 §8 permite «FastAPI» en los adaptadores y prohíbe Starlette solo en `shared/` |
 | Corrección hecha | [IA] Se admite Starlette en los adaptadores HTTP como base de FastAPI (declarado en el código de la prueba y en esta entrada); sigue prohibido en `shared/`, modelos, puertos y servicios |
 | Requisitos relacionados | NFR-01, NFR-02, NFR-03, NFR-08; TC-13 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Repetí a mano la revisión de TC-13: ningún http.py contiene el algoritmo (la línea 52 de controller/http.py solo [lo que veas]), el Router no importa NetworkX y los servicios reciben sus dependencias por constructor.»|
 
 ## S2-P06 — Integración, demostración y mediciones (FASE 3)
 
@@ -84,7 +84,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) La primera versión del guion fallaba también C→D dentro del paso b, de modo que la secuencia de versiones no era 1 → 2 → 3 como en W-11A y 03 S2. (2) Los comandos guardados usaban los atajos `http` y `packet` sin explicarlos. (3) TC-34 solo estaba cubierta parcialmente (TC-07 y AST), sin los «dos directorios» de 06 |
 | Corrección hecha | [IA] (1) El destino inalcanzable pasó a un paso propio (c2) después de la restauración; se borró la primera evidencia y se repitió la demostración. (2) Cada archivo de evidencia incluye la definición de los atajos y las URL. (3) Nueva prueba `tests/test_tc34_process_independence.py` |
 | Requisitos relacionados | FR-06, FR-07, FR-09, FR-10, NFR-05, NFR-06, NFR-10, NFR-11; TC-05, TC-07, TC-14–TC-16, TC-34 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Ejecuté bash scripts/demo.sh en Windows 11 (Git Bash) y comprobé: ruta A→B→D, con B→D fallado A→C→D (versión 2), tras restaurar A→B→D (versión 3), destino inalcanzable 404, Controller detenido 503 y Controller sin respuesta 504; la bitácora tiene 7 líneas.» |
 
 ## S2-P07 — Corrección del fallo observado en Windows 11 (503 esperado, 504 recibido)
 
@@ -98,7 +98,7 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Problema detectado | [IA] (1) El README debía decir que la demo arranca el Router con `--connect-timeout 3` en Windows, pero `scripts/demo.sh` no lo hacía: el paso d habría mostrado 504 en Windows. (2) La corrección no puede verificarse en la máquina en la nube, donde la conexión rechazada falla al instante. (3) Con la configuración por defecto, en Windows un Controller detenido sigue produciendo 504 y no el 503 de `04` §5 |
 | Corrección hecha | [IA] (1) `scripts/demo.sh` usa 3 s en Git Bash (MINGW/MSYS/Cygwin) y 1.0 en Linux, configurable con `CONNECT_TIMEOUT_DEMO`; se propuso como commit separado, pendiente de aprobación. (2) `test-results.txt` queda «pendiente de re-ejecución en Windows tras la corrección». (3) Documentado como limitación; un cambio del valor por defecto requeriría un cambio de especificación aprobado por ambas |
 | Requisitos relacionados | FR-07, FR-09, NFR-05, NFR-06; TC-07, TC-34; `02` §7, `04` §5 |
-| Verificación personal | [Por completar por la estudiante: verificación personal] |
+| Verificación personal | «Detecté en mi PC que TC-07 y TC-34 fallaban (504 en vez de 503). Medí que una conexión rechazada a 127.0.0.1 tarda 2,03 s en Windows, más que el timeout de 1 s. Tras la corrección, pytest dio 553 passed y la demo devolvió 503.» |
 
 ### Anexo S2-P01 — texto literal
 
