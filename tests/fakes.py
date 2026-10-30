@@ -1,4 +1,4 @@
-"""Dobles de prueba del Controller (02 §7: viven solo en tests/)."""
+"""Dobles de prueba del Controller y del Router (02 §7: viven solo en tests/)."""
 
 import dataclasses
 import json
@@ -7,6 +7,8 @@ from pathlib import Path
 
 from controller.models import Link, LinkChangeResult, Topology
 from controller.ports import TopologyDAO
+from router.models import ForwardingResult
+from router.ports import ForwardingLogDAO, RouteClient
 from shared.errors import LinkNotFoundError, NodeNotFoundError
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "specs" / "fixtures"
@@ -56,3 +58,42 @@ class SpyCostPresenter:
     def format_cost(self, score, metric: str) -> str:
         self.calls.append((score, metric))
         return self.result
+
+
+# --- Dobles del Router (Estudiante B) ---
+
+class FakeRouteClient(RouteClient):
+    """Devuelve una ruta fija o lanza la excepción indicada; cuenta las llamadas."""
+
+    def __init__(self, route=None, error: Exception | None = None) -> None:
+        self.route = route
+        self.error = error
+        self.calls: list[tuple[str, str, str]] = []
+
+    def fetch_route(self, src: str, dst: str, metric: str):
+        self.calls.append((src, dst, metric))
+        if self.error is not None:
+            raise self.error
+        return self.route
+
+
+class SpyRouteClient(FakeRouteClient):
+    """Espía: registra cada petición y devuelve la ruta configurada sin modificarla."""
+
+
+class FakeForwardingLogDAO(ForwardingLogDAO):
+    """Bitácora en memoria; con ``fail_with`` su ``save`` lanza esa excepción."""
+
+    def __init__(self, fail_with: Exception | None = None) -> None:
+        self.fail_with = fail_with
+        self.saved: list[ForwardingResult] = []
+        self.save_calls = 0
+
+    def save(self, result: ForwardingResult) -> None:
+        self.save_calls += 1
+        if self.fail_with is not None:
+            raise self.fail_with
+        self.saved.append(result)
+
+    def list_recent(self, limit: int) -> list[ForwardingResult]:
+        return self.saved[-limit:] if limit > 0 else []
