@@ -42,5 +42,19 @@ class NegativeCycleError(AppError):
     code = "NEGATIVE_CYCLE"
 
 
-# --- Errores del Router (Estudiante B): LogPersistenceError,
-# ControllerBadResponseError, ControllerUnavailableError, ControllerTimeoutError ---
+# --- Errores del Router (Estudiante B) ---
+
+class LogPersistenceError(AppError):
+    code = "LOG_PERSISTENCE_ERROR"
+
+
+class ControllerBadResponseError(AppError):
+    code = "CONTROLLER_BAD_RESPONSE"
+
+
+class ControllerUnavailableError(AppError):
+    code = "CONTROLLER_UNAVAILABLE"
+
+
+class ControllerTimeoutError(AppError):
+    code = "CONTROLLER_TIMEOUT"
