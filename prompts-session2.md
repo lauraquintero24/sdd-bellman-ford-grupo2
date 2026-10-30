@@ -86,6 +86,20 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Requisitos relacionados | FR-06, FR-07, FR-09, FR-10, NFR-05, NFR-06, NFR-10, NFR-11; TC-05, TC-07, TC-14–TC-16, TC-34 |
 | Verificación personal | [Por completar por la estudiante: verificación personal] |
 
+## S2-P07 — Corrección del fallo observado en Windows 11 (503 esperado, 504 recibido)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [Equipo] Informe de defecto con evidencia real (resultado literal de pytest y medición del tiempo de rechazo), hipótesis de causa, tareas numeradas con propietaria y restricciones explícitas (no cambiar el valor por defecto ni la especificación) |
+| Objetivo | [IA] Que TC-07 y TC-34 sean válidas en Windows sin alterar el contrato, y documentar la limitación con datos medidos |
+| Texto del prompt | Literal en el anexo S2-P07, al final de este registro |
+| Salida relevante | [IA] `--connect-timeout 3` (con comentario y el dato de 2.03 s) en `test_tc07_unreachable_controller_down_and_timeout` y `test_tc34_two_separate_directories`; README (demo en Windows y limitación n.º 10); apartado «Ejecución en Windows 11 (30/10/2026)» en `test-results.txt`; suite en Linux tras la corrección: 552 passed, 1 skipped |
+| Problema detectado | [IA] (1) El README debía decir que la demo arranca el Router con `--connect-timeout 3` en Windows, pero `scripts/demo.sh` no lo hacía: el paso d habría mostrado 504 en Windows. (2) La corrección no puede verificarse en la máquina en la nube, donde la conexión rechazada falla al instante. (3) Con la configuración por defecto, en Windows un Controller detenido sigue produciendo 504 y no el 503 de `04` §5 |
+| Corrección hecha | [IA] (1) `scripts/demo.sh` usa 3 s en Git Bash (MINGW/MSYS/Cygwin) y 1.0 en Linux, configurable con `CONNECT_TIMEOUT_DEMO`; se propuso como commit separado, pendiente de aprobación. (2) `test-results.txt` queda «pendiente de re-ejecución en Windows tras la corrección». (3) Documentado como limitación; un cambio del valor por defecto requeriría un cambio de especificación aprobado por ambas |
+| Requisitos relacionados | FR-07, FR-09, NFR-05, NFR-06; TC-07, TC-34; `02` §7, `04` §5 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
 ### Anexo S2-P01 — texto literal
 
 ````text
@@ -213,4 +227,19 @@ ADAPTACIÓN PARA CLAUDE CODE EN LA WEB (sustituye a R3 y matiza R8):
 - Commits: al cerrar cada tarea W-xx, enséñame el resumen del diff y ESPERA. Solo cuando la propietaria escriba en el chat «Revisado y aprobado — <su nombre>», haz el commit de esa tarea con su autoría (--author con el nombre y correo indicados en R3) y el mensaje sugerido, y haz push a la rama de la sesión. Sin esa frase, no hagas commit.
 - R8: ejecuta los comandos en Linux, pero en el README documenta también los equivalentes para Windows con Git Bash, que es donde se hará la demostración en vivo.
 - demo-evidence/ y las mediciones de NFR-10/NFR-11 de esta sesión deben indicar que se obtuvieron en la máquina en la nube. La demostración en vivo de la defensa se repetirá en un ordenador del equipo.
+````
+
+### Anexo S2-P07 — texto literal
+
+````text
+Contexto: proyecto de la Sesión 2 ya fusionado en main (baseline spec-1.0 intacta). Reglas: no modificar specs/, diagrams/, prompts-session1.md ni evidencias/; no inventar resultados; un commit por cambio con la autoría indicada, solo tras «Revisado y aprobado — <nombre>»; push inmediato a la rama de la sesión; nada en main.
+
+Problema real observado en Windows 11 (Python 3.14, Git Bash), al ejecutar python -m pytest -q: «2 failed, 551 passed». Fallan test_tc07_unreachable_controller_down_and_timeout y test_tc34_two_separate_directories: esperan 503 CONTROLLER_UNAVAILABLE con el Controller detenido y reciben 504. Causa probable: en Windows, una conexión rechazada a 127.0.0.1 tarda unos 2 s en fallar, y el connect timeout por defecto es 1.0 s (02 §7), así que httpx lanza ConnectTimeout.
+
+Haz:
+1. En esas dos pruebas, arranca el Router con --connect-timeout 3, con un comentario que cite esta causa. No cambies el valor por defecto ni la especificación. (Propietaria: Laura Sofia Quintero Fernandez <laurasquintero@unicauca.edu.co>.)
+2. En la sección «Sesión 2» del README: en Windows, la demo arranca el Router con --connect-timeout 3; añade la limitación conocida con su explicación. (Propietaria: Mariana Arturo Pabón <marianaarturo@unicauca.edu.co>.)
+3. En test-results.txt añade un apartado «Ejecución en Windows 11 (30/10/2026)» con el resultado real que os doy literalmente: «2 failed, 551 passed, 1 warning in 22.42s», los nombres de las dos pruebas y la causa. No borres nada. Deja indicado «pendiente de re-ejecución en Windows tras la corrección». (Propietaria: Mariana.)
+4. Añade un registro S2-P07 en prompts-session2.md con este prompt.
+5. Regenera SHA256SUMS (autoría de Laura), ejecuta la suite, crea la PR y muéstrame el resultado. Dato medido en el Windows del equipo: socket.connect a 127.0.0.1:9 (puerto cerrado) → «ConnectionRefusedError 2.03 s». Cítalo en el comentario de las pruebas, en el README y en test-results.txt.
 ````
