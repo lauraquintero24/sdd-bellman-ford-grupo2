@@ -72,3 +72,15 @@ def test_find_path_uses_the_same_core(monkeypatch):
     engine.find_path(topology, "A", "D", "loss")
     engine.find_path(topology, "A", "A", "delay")  # caso trivial: no invoca el núcleo
     assert calls == [("A", "additive"), ("A", "product")]
+
+
+def test_api_subcase_returns_500_negative_cycle(controller_client):
+    from tests.fakes import FakeTopologyDAO
+
+    links = tuple(Link(u, v, Decimal(w), Decimal(10), Decimal(0), True) for u, v, w in G1)
+    topology = Topology(directed=True, version=1, nodes=("A", "B", "C", "D"), links=links)
+    client = controller_client("F-01", dao=FakeTopologyDAO(topology))
+    response = client.get("/route", params={"src": "A", "dst": "D", "metric": "delay"})
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "NEGATIVE_CYCLE"
+    assert client.get("/health").status_code == 200
