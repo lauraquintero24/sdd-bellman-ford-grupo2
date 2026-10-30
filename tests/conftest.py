@@ -21,3 +21,20 @@ def controller_client(tmp_path):
         return TestClient(create_controller_app(settings, dao=dao), raise_server_exceptions=False)
 
     return make
+
+
+@pytest.fixture
+def router_client(tmp_path):
+    """``router_client(route_client=…, log_dao=…)`` → TestClient sobre create_router_app.
+
+    Sin ``log_dao`` se usa JsonlForwardingLogDAO sobre ``tmp_path / "forwarding.jsonl"``.
+    """
+    from router.app import create_router_app
+    from router.settings import RouterSettings
+
+    def make(route_client=None, log_dao=None, read_timeout: float = 2.0) -> TestClient:
+        settings = RouterSettings("127.0.0.1", 8001, "http://127.0.0.1:9", 1.0, read_timeout, tmp_path / "forwarding.jsonl")
+        app = create_router_app(settings, route_client=route_client, log_dao=log_dao)
+        return TestClient(app, raise_server_exceptions=False)
+
+    return make
