@@ -100,6 +100,20 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Requisitos relacionados | FR-07, FR-09, NFR-05, NFR-06; TC-07, TC-34; `02` §7, `04` §5 |
 | Verificación personal | Detecté en mi PC que TC-07 y TC-34 fallaban (504 en vez de 503). Medí que una conexión rechazada a 127.0.0.1 tarda 2,03 s en Windows, más que el timeout de 1 s. Tras la corrección, `pytest` dio `553 passed` y la demo devolvió 503. |
 
+## S2-P08 — HttpRouteClient sin cliente abierto permanente; regresión de latencia y variante A′
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-30 |
+| Técnica | [Equipo] Petición de cambio con restricciones (mismas firmas, excepciones y mapeo 503/504/502; transport inyectable), verificación pedida con una métrica (TC-15) y cambio de especificación opcional condicionado a la aprobación de ambas |
+| Objetivo | [IA] Que `HttpRouteClient` no mantenga un `httpx.Client` abierto durante la vida del proceso, sin regresiones; decidir con datos sobre C-32 |
+| Texto del prompt | Literal en el anexo S2-P08 (dos mensajes) |
+| Salida relevante | [IA] `router/client.py` crea un `httpx.Client` por llamada dentro de `with`, con el contexto SSL creado una vez en `__init__` (`verify=self._ssl_context`). Suite: 552 passed, 1 skipped (2026-10-30T17:56:42Z). TC-15/NFR-10 tras el cambio A: p95 F-01 = 3,031 ms y F-19 = 56,256 ms (umbral 300 ms). Medición informativa de `POST /packets` (F-01, procesos reales): 8,554 ms antes; 81,746 ms con A; 8,440 ms con A′ en una copia y 9,324 ms con A′ en el repositorio. Cambio B no aplicado por decisión del equipo |
+| Problema detectado | [IA] (1) TC-15 mide `GET /route` del Controller, que no usa `HttpRouteClient`: por construcción no podía detectar el efecto del cambio. (2) La medición del Router mostró una regresión de unas 10 veces en el p95 con la variante A: cada `httpx.Client()` recargaba los certificados raíz (≈ 51 ms por cliente, frente a 0,85 ms con un contexto SSL reutilizado). (3) La propuesta C-32 omitía `04` §4.2, que también fija el valor por defecto 1.0 y el ejemplo `httpx.Timeout(connect=1.0, …)`, y la prueba `test_tc14_router_settings.py::test_defaults` |
+| Corrección hecha | [IA] (1) Se añadió una medición informativa de `POST /packets` antes y después. (2) Variante A′ propuesta, medida en una copia y aplicada tras la aprobación de Laura, con un comentario en el código que da el motivo y las cifras. (3) Señalado al equipo; C-32 no se escribió y `specs/` no se modificó (decisión del equipo; la limitación 10 del README se mantiene) |
+| Requisitos relacionados | FR-07, FR-09, NFR-06, NFR-10; TC-15, TC-32; `02` §5, §7; `04` §4.2 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
 ### Anexo S2-P01 — texto literal
 
 ````text
@@ -242,4 +256,29 @@ Haz:
 3. En test-results.txt añade un apartado «Ejecución en Windows 11 (30/10/2026)» con el resultado real que os doy literalmente: «2 failed, 551 passed, 1 warning in 22.42s», los nombres de las dos pruebas y la causa. No borres nada. Deja indicado «pendiente de re-ejecución en Windows tras la corrección». (Propietaria: Mariana.)
 4. Añade un registro S2-P07 en prompts-session2.md con este prompt.
 5. Regenera SHA256SUMS (autoría de Laura), ejecuta la suite, crea la PR y muéstrame el resultado. Dato medido en el Windows del equipo: socket.connect a 127.0.0.1:9 (puerto cerrado) → «ConnectionRefusedError 2.03 s». Cítalo en el comentario de las pruebas, en el README y en test-results.txt.
+````
+
+### Anexo S2-P08 — texto literal
+
+Mensaje 1:
+
+````text
+Contexto: proyecto Sesión 2 en main; baseline spec-1.0. Reglas: no inventar resultados; un commit por cambio, con autoría Laura Sofia Quintero Fernandez <laurasquintero@unicauca.edu.co> (propietaria del Router, 05 §2), solo tras «Revisado y aprobado — <nombre>»; push inmediato a la rama de la sesión; nada en main.
+
+Cambio A (sin cambio de especificación): en router/client.py, HttpRouteClient no debe mantener un httpx.Client abierto durante toda la vida del proceso. Crea el cliente dentro de fetch_route con «with httpx.Client(base_url=…, timeout=…, transport=self._transport) as http:», conserva el transport inyectable y las mismas firmas, excepciones y mapeo 503/504/502. Ejecuta toda la suite y TC-15 (NFR-10) y muéstrame que p95 sigue ≤ 300 ms.
+
+[OPCIONAL: incluir solo si ambas aprobáis cambiar la especificación]
+Cambio B (cambio de especificación, control de cambios de REVIEW-AND-BASELINE.md §4): propone la entrada C-32 en CHANGELOG-SPECS.md: «Valor por defecto de CONTROLLER_CONNECT_TIMEOUT_SECONDS: 1.0 → 3.0 s. Motivo: en Windows 11 una conexión rechazada a 127.0.0.1 tarda 2,03 s (medido por el equipo) y con 1.0 s FR-09 devuelve 504 en vez de 503». Artefactos afectados: 02 §7 (tabla), router/settings.py y README (limitación 10). NO modifiques specs/ hasta que ambas escriban «Apruebo C-32 — <nombre>». Después: actualiza 02 §7, el código y el README, quita el --connect-timeout 3 de las pruebas y de demo.sh (ya no hace falta), ejecuta la suite y deja indicado que hay que crear el tag spec-1.1.
+
+Al final regenera SHA256SUMS (autoría de Laura) y crea la PR.
+````
+
+Mensaje 2:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Aplica la variante A′ (contexto SSL creado una vez en __init__ y verify=self._ssl_context). No aplicamos el cambio B: no escribas C-32 ni toques specs/; la limitación 10 del README se mantiene.
+Añade en router/client.py un comentario breve con el motivo (evitar recargar certificados en cada llamada; p95 de POST /packets medido: 8,554 → 81,746 ms con A y 8,440 ms con A′).
+Añade el registro S2-P08 en prompts-session2.md con este prompt y el anterior, la regresión detectada y su corrección, con «Verificación personal» vacía para que la complete yo.
+Ejecuta la suite completa, haz los commits (autoría de Laura), regenera SHA256SUMS el último, haz push y crea la PR.
 ````
