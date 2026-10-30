@@ -1161,8 +1161,8 @@ TC-10  PASA          test_tc10_topology_validation.py (una variante o más por r
                      espía de parse_float); test_tc10_tc14_controller_process.py (el proceso no abre el puerto)
 TC-11  PASA          test_tc11_negative_cycle.py (G1, G2, G3, oráculo NetworkX, espía del núcleo, subcaso API 500)
 TC-12  PASA          test_tc12_controller_api_contract.py (16 peticiones de 06 §5.1, sin trazas, /health 200)
-TC-13  PARCIAL       Parte automática PASA: test_tc13_architecture_ast.py y test_tc13_shared_*.py.
-                     Parte manual (06 §6): PENDIENTE de las dos estudiantes (lista al final de este archivo).
+TC-13  PASA          Parte automática PASA: test_tc13_architecture_ast.py y test_tc13_shared_*.py.
+                     Parte manual (06 §6): completada y firmada por ambas el 30/10/2026 (lista al final de este archivo).
 TC-14  PASA          test_tc14_*_settings.py; test_tc10_tc14_controller_process.py; test_tc07_tc14_two_processes.py
                      (ambos procesos en puertos libres por entorno y CLI; paquete registrado; puerto 70000 rechazado)
 TC-15  PASA          test_tc15_nfr10_latency.py; medición con datos crudos: demo-evidence/nfr10/ (máquina en la nube:
@@ -1185,9 +1185,9 @@ TC-29  PASA          E-23, E-24, E-25 (oráculo, servicio y API)
 TC-30  PASA          E-26 a E-29 (oráculo); test_tc18_link_status_dao.py (F-11: segundo fallo changed=false)
 TC-31  PASA          test_tc31_cost_format.py, test_tc31_route_response_validation.py, test_tc31_router_api_validation.py
 TC-32  PASA          test_tc32_http_route_client.py (MockTransport, timeouts configurados), test_tc32_router_api_network_errors.py
-TC-33  PARCIAL       PASA con FakeForwardingLogDAO que lanza OSError (ruta válida y Controller caído → 500, diagnóstico,
-                     /health 200). Subcaso «JSONL real sin permiso de escritura»: NO EJECUTADO (SKIPPED arriba): la
-                     máquina en la nube ejecuta como administrador y los permisos no aplican; repetir sin privilegios.
+TC-33  PASA          PASA con FakeForwardingLogDAO que lanza OSError (ruta válida y Controller caído → 500, diagnóstico,
+                     /health 200). Subcaso «JSONL real sin permiso de escritura»: omitido en la nube
+                     (administrador); EJECUTADO Y APROBADO en Windows 11 (553 passed, ver el apartado final).
 TC-34  PASA          test_tc34_process_independence.py (dos directorios, cada uno con su aplicación y shared/)
 TC-35  RETIRADA      (06 §5: duplicaba TC-15)
 TC-36  PASA          E-30 a E-33 (oráculo); test_tc36_link_cost_policy.py
@@ -1196,7 +1196,7 @@ TC-38  PASA          E-42, E-43, E-44 (oráculo, tolerancia 1e-10 frente a refer
 TC-39  PASA          E-45, E-46 (rama serie / rama ln comprobadas con espías); SpyCostPresenter "999"; AST sin float;
                      is_canonical_cost sobre las salidas reales
 --------------------------------------------------------------------------------
-Mínimo obligatorio (PDF p. 5): ≥ 8 pruebas aprobadas incluidas TC-08 y TC-09 → CUMPLIDO (552 aprobadas; TC-08 y TC-09 PASAN).
+Mínimo obligatorio (PDF p. 5): ≥ 8 pruebas aprobadas incluidas TC-08 y TC-09 → CUMPLIDO (552 aprobadas en la nube y 553 en Windows 11; TC-08 y TC-09 PASAN).
 Oráculo de 06 §3: 48/48 filas coinciden a nivel de servicio y 48/48 por HTTP.
 Aviso registrado: StarletteDeprecationWarning («Using `httpx` with `starlette.testclient` is deprecated»); no afecta a los resultados.
 
@@ -1216,8 +1216,8 @@ Marcar [x] solo tras leer el código. La IA no ha marcado ninguna casilla.
         reciben todas sus dependencias como parámetros obligatorios
 
 Revisión cruzada del código (05 §7: «La otra estudiante revisó el código»):
-- Mariana revisó el Router y shared/ de Laura:   [x] Sí   Observaciones: ______________________
-- Laura revisó el Controller y shared/ de Mariana: [x] Sí   Observaciones: ______________________
+- Mariana revisó el Router y shared/ de Laura:   [x] Sí   Observaciones: ninguna registrada
+- Laura revisó el Controller y shared/ de Mariana: [x] Sí   Observaciones: ninguna registrada
 
 Firma (nombre escrito) y fecha:
 - Mariana Arturo Pabón: Mariana Arturo Pabón   Fecha: 30/10/2026

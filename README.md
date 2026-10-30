@@ -47,14 +47,14 @@ for f in diagrams/*.mmd; do mmdc -i "$f" -o "${f%.mmd}.svg" -b white; done   # o
 1. ~~Reconfirmación de la versión 1.0~~ — **hecha** el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf` y `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`; `REVIEW-AND-BASELINE.md` §2.4).
 2. **Informar al docente** de que en una iteración temprana la IA produjo un borrador de código, que no se incluye ni se usará (`REVIEW-AND-BASELINE.md` §2.2).
 3. ~~Congelar la baseline~~ — **hecho** el 30/10/2026: commit `20c2289`, tag `spec-1.0` (`REVIEW-AND-BASELINE.md` §3).
-4. **Sesión 2:** implementar desde la baseline, ejecutar al menos ocho pruebas aprobadas (incluidas TC-08 y TC-09), medir NFR-10 y NFR-11 y registrar evidencias reales.
+4. ~~Sesión 2~~ — **hecha** el 30/10/2026: implementación desde la baseline, `553 passed` en Windows 11 (incluidas TC-08 y TC-09), NFR-10 y NFR-11 medidos y evidencias en `demo-evidence/` (sección «Sesión 2» más abajo).
 
 ---
 
 # Sesión 2 — Implementación, pruebas y evidencias
 
 > Esta sección se añade a la de la Sesión 1 (que se conserva arriba sin cambios; su frase «no contiene código» describe el paquete de la Sesión 1). La implementación sigue la baseline congelada `spec-1.0`: `git diff --stat spec-1.0 HEAD -- specs diagrams prompts-session1.md` sale vacío.
-> **Dónde se obtuvieron los resultados:** las pruebas, la demostración (`demo-evidence/`) y las mediciones de NFR-10 y NFR-11 de esta entrega se ejecutaron en una **máquina Linux en la nube** (sesión de Claude Code en la web). La demostración en vivo de la defensa se repetirá en un ordenador del equipo con Windows y Git Bash.
+> **Dónde se obtuvieron los resultados:** la suite de pruebas (`553 passed`) y la demostración de `demo-evidence/` se ejecutaron en **Windows 11 con Git Bash** el 30/10/2026, en el ordenador del equipo. Las mediciones de NFR-10 y NFR-11 (`demo-evidence/nfr10/`, `demo-evidence/nfr11/`) proceden de una **máquina Linux en la nube** (sesión de Claude Code en la web), donde también se ejecutó la suite (`552 passed, 1 skipped`).
 
 ## Instalación
 
@@ -185,7 +185,7 @@ prompts-session2.md  registro de prompts de la Sesión 2
 
 ## Estado de los requisitos
 
-Evidencia en `test-results.txt` (552 pruebas aprobadas, 0 fallidas, 1 subcaso no ejecutado) y en `demo-evidence/`.
+Evidencia en `test-results.txt` (Windows 11: 553 aprobadas, 0 fallidas; nube: 552 aprobadas y 1 subcaso omitido por permisos) y en `demo-evidence/`.
 
 | Requisito | Estado | Evidencia |
 |---|---|---|
@@ -198,24 +198,24 @@ Evidencia en `test-results.txt` (552 pruebas aprobadas, 0 fallidas, 1 subcaso no
 | FR-07 Router pide rutas por HTTP | Cumplido | TC-05, TC-32, TC-34; `demo-evidence/f-registro-accesos-controller.txt` |
 | FR-08 Reenvío salto a salto | Cumplido | TC-06, TC-31 |
 | FR-09 Errores controlados | Cumplido | TC-07, TC-12, TC-31, TC-32; `demo-evidence/c2-…`, `d-…` |
-| FR-10 Bitácora por DAO | Cumplido | TC-06, TC-09, TC-16; TC-33 parcial (ver limitaciones) |
-| NFR-01 MVC | Parcial | AST de TC-13 aprobado; revisión manual de 06 §6 pendiente de firma |
+| FR-10 Bitácora por DAO | Cumplido | TC-06, TC-09, TC-16, TC-33 (todos los subcasos en Windows 11) |
+| NFR-01 MVC | Cumplido | AST de TC-13 aprobado; revisión manual de 06 §6 firmada por ambas (30/10/2026) |
 | NFR-02 DAO, sin E/S en servicios | Cumplido | TC-08, TC-09, AST de TC-13 |
-| NFR-03 Algoritmos fuera de los handlers | Parcial | AST de TC-13 aprobado (sin bucles en `http.py`); revisión manual pendiente de firma |
+| NFR-03 Algoritmos fuera de los handlers | Cumplido | AST de TC-13 aprobado (sin bucles de algoritmo en `http.py`); revisión manual firmada por ambas |
 | NFR-04 Contrato HTTP/JSON | Cumplido | TC-12, TC-31, TC-32 |
 | NFR-05 Configuración | Cumplido | TC-14 (ambos procesos en puertos no predeterminados) |
 | NFR-06 Errores documentados, procesos vivos | Cumplido | TC-07, TC-12, TC-31, TC-32, TC-33 |
 | NFR-07 OO y dependencias testeables | Cumplido | TC-08, TC-09 |
-| NFR-08 Trazabilidad | Parcial | Matriz verificada en la Sesión 1 (`VALIDACION.md`); tabla TC → estado en `test-results.txt`; TC-13 manual pendiente |
+| NFR-08 Trazabilidad | Cumplido | Matriz verificada en la Sesión 1 (`VALIDACION.md`); tabla TC → estado en `test-results.txt`; TC-13 manual firmada |
 | NFR-09 DAO sustituibles por fakes | Cumplido | TC-08, TC-09 |
 | NFR-10 p95 de `GET /route` ≤ 300 ms | Cumplido (máquina en la nube) | TC-15; `demo-evidence/nfr10/`: p95 F-01 = 2.414 ms, F-19 = 41.970 ms; repetir en el ordenador de la defensa |
 | NFR-11 Bitácora concurrente | Cumplido (máquina en la nube) | TC-16; `demo-evidence/nfr11/`: 4 × 25, 100 líneas, 100 IDs; fallo de escritura → 500 en TC-33 |
 
 ## Limitaciones conocidas
 
-1. **Mediciones y demostración en la nube.** NFR-10, NFR-11 y `demo-evidence/` proceden de la máquina en la nube; no se han ejecutado en Windows. `scripts/demo.sh` está pensado para Git Bash, pero no se ha ensayado allí.
-2. **TC-33, subcaso con permisos:** «JSONL real sin permiso de escritura» quedó NO EJECUTADO porque la máquina en la nube corre como administrador y los permisos no aplican; se ejecutará automáticamente en un equipo sin privilegios.
-3. **Revisión manual de código (TC-13, 06 §6) pendiente** de las dos estudiantes (lista en `test-results.txt`).
+1. **Mediciones en la nube.** NFR-10 y NFR-11 se midieron en la máquina Linux en la nube; no se han repetido en Windows (`scripts/measure_nfr10.py` y `scripts/measure_nfr11.py` admiten `--machine` y `--out`). La demostración y la suite completa sí se ejecutaron en Windows 11.
+2. **TC-33, subcaso con permisos:** «JSONL real sin permiso de escritura» quedó omitido en la nube porque esa máquina ejecuta como administrador; en Windows 11 se ejecutó y pasó (`553 passed`).
+3. **Revisión manual de código (TC-13, 06 §6):** completada y firmada por ambas estudiantes el 30/10/2026 (`test-results.txt`).
 4. **Interpretaciones sin cambio de especificación:** (a) orden de las reglas TOPO-* con estructuras no iterables: cada regla examina solo los valores de su tipo; una raíz o un enlace que no son objetos son `TOPO-TYPE`; un `source` no textual ausente de `nodes` es `TOPO-ENDPOINT` (lectura literal de `01` §4); (b) los números de `GET /topology` se serializan con un formateador propio de `04` §3.2 (`"1.0"`, `"1e-60"`, `"1.5e+13"`); (c) un costo negativo (solo posible con un grafo artificial sin ciclo) produce 500 `INTERNAL_ERROR`; (d) `CONTROLLER_URL` debe empezar por `http://` o `https://`; (e) los timeouts de escritura y de pool de httpx valen, respectivamente, el de lectura y el de conexión (ejemplo de `04` §4.2).
 5. **NetworkX 3.6.1** en lugar de 3.7, porque 3.7 exige Python ≥ 3.12 y la especificación admite 3.11.
 6. **Aviso de Starlette:** el `TestClient` de FastAPI emite `StarletteDeprecationWarning` («Using `httpx` with `starlette.testclient` is deprecated»); no afecta a los resultados.
