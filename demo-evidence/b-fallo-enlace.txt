@@ -1,0 +1,17 @@
+# Paso b — Fallo de B→D (enlace de la ruta): nueva ruta con versión 2
+Fecha (UTC): 2026-10-30T16:18:39Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
+        packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
+        R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
+
+$ http -X POST http://127.0.0.1:8100/links/fail -H Content-Type: application/json -d {"source": "B", "target": "D"}
+{"source":"B","target":"D","active":false,"changed":true,"topology_version":2}
+HTTP 200
+
+
+$ packet pkt-b1
+{"packet_id":"pkt-b1","status":"forwarded","route":{"source":"A","destination":"D","metric":"delay","path":["A","C","D"],"total_cost":"4","topology_version":2},"trace":[{"hop_index":0,"node":"A"},{"hop_index":1,"node":"C"},{"hop_index":2,"node":"D"}],"topology_version":2}
+HTTP 200
+
+

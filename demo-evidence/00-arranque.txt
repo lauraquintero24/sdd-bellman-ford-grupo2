@@ -1,0 +1,24 @@
+# Paso 0 — Arranque del Controller y del Router en puertos no predeterminados
+Fecha (UTC): 2026-10-30T16:18:39Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
+        packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
+        R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
+
+## Controller: .venv/bin/python -m controller.main --port 8100 --topology specs/fixtures/F-01.json
+## Router: .venv/bin/python -m router.main --port 8101 --controller-url http://127.0.0.1:8100 --log-file data/demo-forwarding.jsonl
+$ http http://127.0.0.1:8100/health
+{"status":"ok","application":"controller"}
+HTTP 200
+
+
+$ http http://127.0.0.1:8101/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+
+$ http http://127.0.0.1:8100/topology
+{"topology_version":1,"directed":true,"nodes":["A","B","C","D"],"links":[{"source":"A","target":"B","delay_ms":"1.0","bandwidth_mbps":"10.0","loss_probability":"0.01","active":true},{"source":"B","target":"D","delay_ms":"1.0","bandwidth_mbps":"10.0","loss_probability":"0.01","active":true},{"source":"A","target":"C","delay_ms":"2.0","bandwidth_mbps":"100.0","loss_probability":"0.02","active":true},{"source":"C","target":"D","delay_ms":"2.0","bandwidth_mbps":"100.0","loss_probability":"0.02","active":true}]}
+HTTP 200
+
+

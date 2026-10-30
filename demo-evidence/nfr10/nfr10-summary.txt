@@ -1,0 +1,16 @@
+NFR-10 / TC-15 — 2026-10-30T15:54:47Z
+Comando: python scripts/measure_nfr10.py --machine 'Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa'
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+  os: Linux-6.18.44-fc-v185-x86_64-with-glibc2.39
+  cpu: Intel(R) Xeon(R) Processor @ 2.80GHz
+  cpu_count: 4
+  ram: 16477352 kB
+  python: 3.13.17
+  fastapi: 0.162.0
+  uvicorn: 0.54.0
+  networkx: 3.6.1
+  httpx: 0.28.1
+F-01 A->D (puerto 48923): 10 calentamiento + 100 muestras; todas 200 y ruta esperada: True; p50=1.666 ms; p95=2.414 ms; max=7.048 ms; PASS
+F-19 N100->N001 (puerto 40181): 10 calentamiento + 100 muestras; todas 200 y ruta esperada: True; p50=31.317 ms; p95=41.970 ms; max=49.542 ms; PASS
+Veredicto (p95 <= 300 ms en ambos): PASS
+Latencias crudas: nfr10-raw.json
