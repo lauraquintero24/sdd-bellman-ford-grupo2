@@ -1248,3 +1248,16 @@ Estado: PENDIENTE DE RE-EJECUCIÓN EN WINDOWS TRAS LA CORRECCIÓN.
 Re-ejecución en la máquina Linux en la nube tras la corrección (2026-10-30T16:53:34Z, python -m pytest -q -rs):
 552 passed, 1 skipped, 1 warning in 18.81s (el subcaso omitido es el mismo de TC-33; en Linux la conexión
 rechazada falla al instante, así que esta ejecución no demuestra la corrección en Windows).
+
+================================================================================
+RE-EJECUCIÓN EN WINDOWS 11 TRAS LA CORRECCIÓN (30/10/2026) — ejecutada por el equipo
+================================================================================
+Entorno: Windows 11, Git Bash (UCRT64), Python 3.14.0, .venv con requirements.txt.
+Commit probado: 532093d (Merge pull request #2).
+$ python -m pytest -q
+553 passed, 1 warning in 25.98s
+- TC-07 y TC-34: PASAN con --connect-timeout 3 (antes: 504 en lugar de 503).
+- TC-33 (subcaso de permisos): EJECUTADA Y APROBADA en Windows (en la nube quedó omitida).
+$ bash scripts/demo.sh
+Paso d: Controller detenido -> HTTP 503 CONTROLLER_UNAVAILABLE; Controller sin respuesta -> HTTP 504 CONTROLLER_TIMEOUT.
+Estado del «PENDIENTE DE RE-EJECUCIÓN EN WINDOWS TRAS LA CORRECCIÓN»: RESUELTO.
