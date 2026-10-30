@@ -33,8 +33,11 @@ def test_tc34_two_separate_directories(tmp_path):
 
     c_port, r_port = free_port(), free_port()
     controller = _start(ctrl_dir, "controller.main", ["--port", str(c_port), "--topology", "topology.json"])
+    # --connect-timeout 3: en Windows una conexión rechazada a 127.0.0.1 no falla al instante (el equipo midió
+    # socket.connect a 127.0.0.1:9, puerto cerrado → «ConnectionRefusedError 2.03 s»); con el valor por defecto
+    # de 1.0 s (02 §7) httpx lanzaría ConnectTimeout (504) antes que ConnectError (503) con el Controller detenido.
     router = _start(rtr_dir, "router.main", ["--port", str(r_port), "--controller-url", f"http://127.0.0.1:{c_port}",
-                                             "--log-file", "forwarding.jsonl"])
+                                             "--log-file", "forwarding.jsonl", "--connect-timeout", "3"])
     try:
         wait_health(c_port), wait_health(r_port)
         response = httpx.post(f"http://127.0.0.1:{r_port}/packets", timeout=10,
