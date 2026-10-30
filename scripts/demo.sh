@@ -7,7 +7,7 @@
 # Arranca el Controller (F-01) y el Router en puertos no predeterminados, ejecuta los pasos a–e
 # y guarda en demo-evidence/ un archivo .txt por paso con la fecha, cada comando y su salida literal.
 # Variables opcionales: CONTROLLER_PORT_DEMO (8100), ROUTER_PORT_DEMO (8101), SILENT_PORT_DEMO (8109),
-# ROUTER2_PORT_DEMO (8102), PYTHON (intérprete).
+# ROUTER2_PORT_DEMO (8102), CONNECT_TIMEOUT_DEMO (3 en Git Bash, 1.0 en Linux), PYTHON (intérprete).
 set -u
 cd "$(dirname "$0")/.."
 
@@ -16,6 +16,13 @@ C_PORT="${CONTROLLER_PORT_DEMO:-8100}"
 R_PORT="${ROUTER_PORT_DEMO:-8101}"
 R2_PORT="${ROUTER2_PORT_DEMO:-8102}"
 S_PORT="${SILENT_PORT_DEMO:-8109}"
+# En Windows una conexión rechazada a 127.0.0.1 tarda ~2 s en fallar (medido por el equipo: socket.connect a
+# 127.0.0.1:9 → «ConnectionRefusedError 2.03 s»); con el connect timeout por defecto de 1.0 s (02 §7) el paso d
+# daría 504 en lugar de 503. En Git Bash el Router de la demo usa 3 s; en Linux, el valor por defecto.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) CONNECT_TIMEOUT="${CONNECT_TIMEOUT_DEMO:-3}" ;;
+  *) CONNECT_TIMEOUT="${CONNECT_TIMEOUT_DEMO:-1.0}" ;;
+esac
 OUT="demo-evidence"
 LOG_FILE="data/demo-forwarding.jsonl"
 
@@ -64,8 +71,8 @@ step "00-arranque.txt" "Paso 0 — Arranque del Controller y del Router en puert
 note "Controller: $PY -m controller.main --port $C_PORT --topology specs/fixtures/F-01.json"
 "$PY" -m controller.main --port "$C_PORT" --topology specs/fixtures/F-01.json > "$OUT/controller-process.log" 2>&1 &
 C_PID=$!; PIDS+=("$C_PID")
-note "Router: $PY -m router.main --port $R_PORT --controller-url $C_URL --log-file $LOG_FILE"
-"$PY" -m router.main --port "$R_PORT" --controller-url "$C_URL" --log-file "$LOG_FILE" > "$OUT/router-process.log" 2>&1 &
+note "Router: $PY -m router.main --port $R_PORT --controller-url $C_URL --log-file $LOG_FILE --connect-timeout $CONNECT_TIMEOUT"
+"$PY" -m router.main --port "$R_PORT" --controller-url "$C_URL" --log-file "$LOG_FILE" --connect-timeout "$CONNECT_TIMEOUT" > "$OUT/router-process.log" 2>&1 &
 R_PID=$!; PIDS+=("$R_PID")
 wait_health "$C_URL" && wait_health "$R_URL"
 run http "$C_URL/health"
