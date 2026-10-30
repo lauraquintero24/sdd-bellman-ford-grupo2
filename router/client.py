@@ -102,12 +102,22 @@ class HttpRouteClient(RouteClient):
         self._base_url = base_url.rstrip("/")
         self._connect_timeout_s = connect_timeout_s
         self._read_timeout_s = read_timeout_s
-        timeout = httpx.Timeout(connect=connect_timeout_s, read=read_timeout_s, write=read_timeout_s, pool=connect_timeout_s)
-        self._http = httpx.Client(base_url=self._base_url, timeout=timeout, transport=transport)
+        self._timeout = httpx.Timeout(
+            connect=connect_timeout_s, read=read_timeout_s, write=read_timeout_s, pool=connect_timeout_s
+        )
+        self._transport = transport
+        # Contexto SSL creado una vez: cada httpx.Client() recargaría los certificados raíz (~51 ms por llamada).
+        # p95 de POST /packets medido (F-01, procesos reales): 8,554 ms antes; 81,746 ms creando el cliente por
+        # llamada sin este contexto (variante A); 8,440 ms con él (variante A′). No es una conexión abierta.
+        self._ssl_context = httpx.create_ssl_context()
 
     def fetch_route(self, src: str, dst: str, metric: str) -> Route:
         try:
-            response = self._http.get("/route", params={"src": src, "dst": dst, "metric": metric})
+            # Un httpx.Client por llamada: no queda ningún cliente abierto durante la vida del proceso.
+            with httpx.Client(
+                base_url=self._base_url, timeout=self._timeout, transport=self._transport, verify=self._ssl_context
+            ) as http:
+                response = http.get("/route", params={"src": src, "dst": dst, "metric": metric})
         except httpx.ConnectError:
             raise ControllerUnavailableError("No fue posible conectar con el Controller.") from None
         except httpx.TimeoutException:
