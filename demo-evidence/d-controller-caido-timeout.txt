@@ -1,0 +1,30 @@
+# Paso d — Controller detenido (503) y Controller que no responde (504)
+Fecha (UTC): 2026-10-30T16:18:40Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
+        packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
+        R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
+
+## Se detiene el proceso Controller (PID 6999)
+$ packet pkt-d1
+{"packet_id":"pkt-d1","status":"failed","trace":[],"error":{"code":"CONTROLLER_UNAVAILABLE","message":"No fue posible conectar con el Controller.","details":{}}}
+HTTP 503
+
+
+$ http http://127.0.0.1:8101/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+
+## Servidor de prueba en 127.0.0.1:8109 que acepta la conexión y nunca responde
+## Router 2: .venv/bin/python -m router.main --port 8102 --controller-url http://127.0.0.1:8109 --log-file data/demo-forwarding.jsonl --read-timeout 0.5
+$ http -X POST http://127.0.0.1:8102/packets -H Content-Type: application/json -d {"packet_id": "pkt-d2", "source": "A", "destination": "D", "metric": "delay"}
+{"packet_id":"pkt-d2","status":"failed","trace":[],"error":{"code":"CONTROLLER_TIMEOUT","message":"El Controller no respondió a tiempo.","details":{}}}
+HTTP 504
+
+
+$ http http://127.0.0.1:8102/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+

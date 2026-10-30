@@ -1,0 +1,37 @@
+# Registro de accesos del Controller (TC-05, parte 3: un GET /route por paquete)
+Fecha (UTC): 2026-10-30T16:18:42Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa
+Atajos: http = curl --noproxy '*' -s -S -w '\nHTTP %{http_code}\n'
+        packet ID = http -X POST $R_URL/packets -H 'Content-Type: application/json' -d '{"packet_id": "ID", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}'
+        R_URL=http://127.0.0.1:8101  C_URL=http://127.0.0.1:8100
+
+## Cada paquete que llega al Controller produce exactamente un GET /route desde el puerto del Router;
+## la primera línea GET /route es la consulta directa del paso a (curl).
+$ cat demo-evidence/controller-process.log
+INFO:     Started server process [6999]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50350 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50362 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50378 - "GET /topology HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50380 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50400 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50406 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50410 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50420 - "GET /topology HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50434 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50442 - "POST /links/fail HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50452 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50466 - "POST /links/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50396 - "GET /route?src=A&dst=D&metric=delay HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [6999]
+
+
