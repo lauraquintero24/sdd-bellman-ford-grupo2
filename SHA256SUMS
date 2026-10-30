@@ -1,8 +1,8 @@
 705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da *./.gitattributes
 64fd0b416636138f564eeb5ef37ef81f716a0e244336adbe17278ecadabea1f5 *./CHANGELOG-SPECS.md
-cc755a57f0bb87e84adf489ab72c970c927d7ac8e21320a16de41e47c5cdf8e9 *./README.md
+773c6a0f56b2c979ba96eb452f2fea8f5318c721b9ff31d9bc31b8590487bfe7 *./README.md
 f0c08fe4f042f989ffe758228e76e57014601cdd938d30840128619230a370ed *./REVIEW-AND-BASELINE.md
-dc2fd73b8125975cf821a80c62298fc30f3a850c23d389927aa4b0dd365b7dc5 *./VALIDACION.md
+aff2cbd798e52c72a7b2366531c1ba77b2d7c53e4e9e89fe3daf58f2759bc5a1 *./VALIDACION.md
 e1168980c9ee44e3dc4b490b9f19785ddfe3293c567604c91bdac939082caab2 *./diagrams/02-1-componentes.mmd
 6fe88de1754ad7dbfd6969913be76ebe7d254fa2c5db8e5d6de9a3995e3a9927 *./diagrams/02-1-componentes.svg
 84543888d43b418207fc968de9feebe776055aa4171ed578ab85245e833b986d *./diagrams/02-2-clases-controller.mmd
@@ -22,7 +22,7 @@ ed1f5f87d6d4b8f36c447e3941c5cf056753d3930fd8ab786a781ec55bf09439 *./diagrams/03-
 5f310f6dfc320b780feed537dd2c64a701b9fa5b6a062b10dcf203777b876fdd *./evidencias/aprobaciones/conformidad-Mariana.pdf
 82a01d69424240b027e3c004b435934d9f0ae7b9ea4f30627239d84a44628855 *./evidencias/aprobaciones/firma-Laura.jpeg
 d27bdfb391ee48240e72f989a6fc2e6e2d6c3bfd71b782b1a399b25f0a947cee *./evidencias/aprobaciones/firma-Mariana.jpeg
-fec1dbaf37f1292e67f33f824115a4777e9f245fe7885bb4d2ce1e380c563d6c *./evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf
+50bcbc0af63d190c5099f52f92f208d507776f712e3af7c1e5dcebdeec53dcd0 *./evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf
 dccae149b1139e423ecd5f7143381b8e747d958edfc74876c76c3ab9c28c57c6 *./evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf
 ddb0c05d8208cba6f53ca5029f86dd0159c926de7f19af16b6a69a82397ea6ed *./evidencias/few_shot/P09-respuesta-chatgpt.png
 4ce41a71d04fece22642db7fe7dc89e006c07eac1803009519c1f529528f2409 *./evidencias/prompts/P01-prompt-maestro-desarrollo-integral.txt

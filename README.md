@@ -17,7 +17,7 @@ Este paquete contiene los entregables de la **Sesión 1**: las seis especificaci
 | Desglose del trabajo, dependencias, propiedad y trazabilidad | `specs/05-implementation-plan.md` | Completo |
 | ≥ 8 casos de prueba con resultados esperados, incluidos los de arquitectura | `specs/06-test-specification.md` (+ `specs/fixtures/`) | 37 casos especificados y 48 resultados esperados verificados; **no ejecutados** (Sesión 2) |
 | Registro de prompts con técnicas, crítica y refinamientos | `prompts-session1.md` (+ `evidencias/prompts/`) | Completo; la crítica personal de cada estudiante va en su constancia de reconfirmación |
-| Confirmación de ambas estudiantes y baseline congelada | `REVIEW-AND-BASELINE.md` | **Hecho:** versión 1.0 reconfirmada por ambas el 30/10/2026; falta el commit y tag `spec-1.0` |
+| Confirmación de ambas estudiantes y baseline congelada | `REVIEW-AND-BASELINE.md` | **Hecho:** versión 1.0 reconfirmada por ambas el 30/10/2026 y congelada en el commit `20c2289` (tag `spec-1.0`) | 
 
 ## Estructura
 
@@ -46,5 +46,5 @@ for f in diagrams/*.mmd; do mmdc -i "$f" -o "${f%.mmd}.svg" -b white; done   # o
 
 1. ~~Reconfirmación de la versión 1.0~~ — **hecha** el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf` y `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`; `REVIEW-AND-BASELINE.md` §2.4).
 2. **Informar al docente** de que en una iteración temprana la IA produjo un borrador de código, que no se incluye ni se usará (`REVIEW-AND-BASELINE.md` §2.2).
-3. **Congelar la baseline** con un commit propio y el tag `spec-1.0` (`REVIEW-AND-BASELINE.md` §3).
+3. ~~Congelar la baseline~~ — **hecho** el 30/10/2026: commit `20c2289`, tag `spec-1.0` (`REVIEW-AND-BASELINE.md` §3).
 4. **Sesión 2:** implementar desde la baseline, ejecutar al menos ocho pruebas aprobadas (incluidas TC-08 y TC-09), medir NFR-10 y NFR-11 y registrar evidencias reales.

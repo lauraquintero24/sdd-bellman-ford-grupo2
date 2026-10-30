@@ -63,7 +63,7 @@ RESULTADO: paquete íntegro. AVISO: no autentica firmas ni ejecuta software de l
 | Elemento | Estado | Responsable |
 |---|---|---|
 | Reconfirmación de la versión 1.0 | Hecha el 30/10/2026: dos constancias en `evidencias/aprobaciones/` (contenido no verificable por estas herramientas; firmas con nombre escrito, sin firma manuscrita ni criptográfica) | Ambas estudiantes (`REVIEW-AND-BASELINE.md` §2.4) |
-| Commit y tag Git `spec-1.0` | Pendiente: el paquete no contiene repositorio Git | Ambas estudiantes (`REVIEW-AND-BASELINE.md` §3, paso 5) |
+| Commit y tag Git `spec-1.0` | Hecho el 30/10/2026: commit `20c2289`, tag `spec-1.0` |
 | Ejecución de TC-01 a TC-39 | No ejecutadas: no existe código (Sesión 2) | Equipo, Sesión 2 |
 | Mediciones de NFR-10 (p95 ≤ 300 ms) y NFR-11 (100 líneas concurrentes) | No medidas | Equipo, Sesión 2 |
 | Factibilidad real del cronograma de 108 min | No medida (presupuesto) | Equipo, Sesión 2 |
