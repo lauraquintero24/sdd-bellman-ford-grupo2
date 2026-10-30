@@ -69,6 +69,7 @@ La versión 1.0 introduce los cambios C-01 a C-31 de `CHANGELOG-SPECS.md`; los m
 3. Si ambas aprueban: completar las columnas A y B de §1 y cambiar el campo «Estado» de este documento a **CONGELADA (spec-1.0)**.
 4. Regenerar el inventario desde la raíz del paquete: `find . -type f ! -name SHA256SUMS ! -path './.git/*' | sort | xargs sha256sum > SHA256SUMS` (o el generador de las herramientas entregadas aparte) y comprobarlo con `sha256sum -c SHA256SUMS`.
 5. `git add -A` → `git commit -m "Congelar especificaciones spec-1.0"` → `git tag spec-1.0`, y anotar aquí el SHA real que devuelva Git (en un commit posterior, sin reescribir el tag).
+   Commit de congelamiento: `20c2289` (tag `spec-1.0`, 30/10/2026).
 6. Si alguna no aprueba: registrar sus observaciones como cambio nuevo en `CHANGELOG-SPECS.md`, corregir y repetir desde el paso 1.
 
 ## 4. Cambios posteriores al congelamiento
