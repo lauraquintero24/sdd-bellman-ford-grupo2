@@ -1222,3 +1222,29 @@ Revisión cruzada del código (05 §7: «La otra estudiante revisó el código»
 Firma (nombre escrito) y fecha:
 - Mariana Arturo Pabón: ____________________   Fecha: __________
 - Laura Sofía Quintero Fernández: ____________________   Fecha: __________
+
+================================================================================
+EJECUCIÓN EN WINDOWS 11 (30/10/2026)
+Fuente: ejecución hecha por el equipo en su ordenador (Windows 11, Python 3.14, Git Bash) y comunicada
+literalmente; no la ejecutó la IA. Comando: python -m pytest -q
+--------------------------------------------------------------------------------
+Resultado (literal):  2 failed, 551 passed, 1 warning in 22.42s
+
+Pruebas que fallaron:
+- tests/test_tc07_tc14_two_processes.py::test_tc07_unreachable_controller_down_and_timeout
+- tests/test_tc34_process_independence.py::test_tc34_two_separate_directories
+Ambas esperan 503 CONTROLLER_UNAVAILABLE con el Controller detenido y reciben 504 CONTROLLER_TIMEOUT.
+
+Causa: en Windows una conexión rechazada a 127.0.0.1 no falla al instante. Dato medido por el equipo en ese
+Windows: socket.connect a 127.0.0.1:9 (puerto cerrado) → «ConnectionRefusedError 2.03 s». Con el connect
+timeout por defecto de 1.0 s (02 §7), httpx lanza ConnectTimeout (→ 504, 04 §5) antes que ConnectError (→ 503).
+No es un error del Router: con su configuración por defecto, Windows convierte «conexión rechazada» en timeout.
+
+Corrección (sin cambiar el valor por defecto ni la especificación): esas dos pruebas arrancan el Router con
+--connect-timeout 3; la demo (scripts/demo.sh) también, en Git Bash. Limitación documentada en el README (n.º 10).
+
+Estado: PENDIENTE DE RE-EJECUCIÓN EN WINDOWS TRAS LA CORRECCIÓN.
+
+Re-ejecución en la máquina Linux en la nube tras la corrección (2026-10-30T16:53:34Z, python -m pytest -q -rs):
+552 passed, 1 skipped, 1 warning in 18.81s (el subcaso omitido es el mismo de TC-33; en Linux la conexión
+rechazada falla al instante, así que esta ejecución no demuestra la corrección en Windows).

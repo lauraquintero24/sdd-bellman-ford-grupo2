@@ -54,8 +54,11 @@ def test_tc07_unreachable_controller_down_and_timeout(tmp_path):
     log = tmp_path / "forwarding.jsonl"
     c_port, r_port = free_port(), free_port()
     controller = start("controller.main", ["--port", str(c_port), "--topology", str(topology)])
+    # --connect-timeout 3: en Windows una conexión rechazada a 127.0.0.1 no falla al instante (el equipo midió
+    # socket.connect a 127.0.0.1:9, puerto cerrado → «ConnectionRefusedError 2.03 s»); con el valor por defecto
+    # de 1.0 s (02 §7) httpx lanzaría ConnectTimeout (504) antes que ConnectError (503) con el Controller detenido.
     router = start("router.main", ["--port", str(r_port), "--controller-url", f"http://127.0.0.1:{c_port}",
-                                   "--log-file", str(log)])
+                                   "--log-file", str(log), "--connect-timeout", "3"])
     try:
         wait_health(c_port), wait_health(r_port)
         # a. Fallar B→D y C→D → 404 ROUTE_UNREACHABLE (E-06)
