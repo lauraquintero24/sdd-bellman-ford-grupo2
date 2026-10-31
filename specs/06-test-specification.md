@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Versión | **1.0** (candidata a baseline `spec-1.0`) · 2026-10-29 |
+| Versión | **1.1** (borrador con C-32, aprobado por ambas el 31/10/2026; candidata a `spec-1.1`) · 2026-10-31 |
 | Estado | Pruebas **especificadas, no implementadas ni ejecutadas** (se ejecutan en la Sesión 2). Aprobación: ver `REVIEW-AND-BASELINE.md` |
 | Mínimo exigido (PDF p. 5) | ≥ 8 pruebas automatizadas aprobadas, **incluidas TC-08 y TC-09**, más una revisión de código que verifique que los controladores MVC no contienen algoritmos de enrutamiento ni de reenvío |
 
@@ -21,7 +21,7 @@
 
 ## 2. Fixtures
 
-Todos los archivos están en `specs/fixtures/` y cumplen `01` §4; son dirigidos salvo F-11. Los enlaces no indicados tienen `active=true`.
+Todos los archivos están en `specs/fixtures/` y cumplen `01` §4; son dirigidos salvo F-11 y F-20. Los enlaces no indicados tienen `active=true`.
 
 | Fixture | Contenido relevante | Usado en |
 |---|---|---|
@@ -44,6 +44,7 @@ Todos los archivos están en `specs/fixtures/` y cumplen `01` §4; son dirigidos
 | F-17 / F-17b | A→D con `p=0.25` / `p=0.250000000001` (frontera de la serie) | TC-39 |
 | F-18 / F-18b | A→D con `p=1e-60` (escrito como literal decimal) / `p=0` | TC-38 |
 | F-19 | Cadena de 100 nodos `N100`→…→`N001` (`d=1`) con cuerdas de dos saltos más caras (`d=3`): 197 arcos; la ruta óptima tiene 99 saltos | TC-15 (rendimiento; verificado con NetworkX, sin fila de oráculo) |
+| F-20 *(C-32)* | Los mismos 4 nodos y enlaces que F-01, **no dirigida** (A–B, B–D `d=1, b=10, p=0.01`; A–C, C–D `d=2, b=100, p=0.02`); idéntica a `config/topology-demo.json` | TC-40–TC-48, TC-50, demostración en modo nodo |
 
 ## 3. Oráculo de resultados esperados
 
@@ -101,6 +102,38 @@ Cada fila se recalculó con la verificación automática (`VALIDACION.md`) media
 | E-48 | TC-27 | F-08d | — | A→D | delay | 200 · ["A","B","D"] · "0.8" | 1 |
 
 Notas: la columna «Versión» es el estado interno del Controller; en las filas 404 se comprueba con `GET /topology`. En E-19 y E-47 una suma en `float` elegiría `[A,B,D]` (0.7999999999999999), de modo que ambas distinguen la aritmética exacta de `float`; en E-20 y E-48 `float` llegaría al mismo resultado por otra razón (un costo estrictamente menor). En E-17 el nodo B existe pero el único arco de A a B está inactivo; en E-28 el segundo fallo devuelve `changed=false` porque, en modo no dirigido, A–B y B–A son el mismo enlace; en E-33 restaurar un enlace ya activo devuelve `changed=false` y el enlace con `p=1` sigue excluido. La independencia del orden del JSON (TC-26) es una propiedad que debe demostrar la implementación; el oráculo, al enumerar todas las rutas, no depende del orden por construcción.
+
+### 3.1 Oráculo de tablas de forwarding *(C-32)*
+
+Calculado por enumeración exhaustiva de rutas simples con `Fraction`, DEC-08 y referencia de 120 cifras para `loss`, de forma independiente del código: el script de enumeración se incorpora a `tests/` en W-14 como oráculo de TC-43, y el motor 1.0 ya reproduce estas filas (comprobación cruzada del 31/10/2026). Notación de cada fila: `destino: siguiente salto, total_cost [ruta]`; `—` = `status "unreachable"` (sin siguiente salto, ruta ni costo). Las tablas incluyen todos los nodos salvo el propio router, en el orden de `nodes`.
+
+| Caso | Fixture | Operaciones previas | metric | Router | Filas | Versión |
+|---|---|---|---|---|---|---|
+| T-01 | F-01 | — | delay | A | B: B, "1" [A,B] · C: C, "2" [A,C] · D: B, "2" [A,B,D] | 1 |
+| T-02 | F-01 | — | delay | B | A: — · C: — · D: D, "1" [B,D] | 1 |
+| T-03 | F-01 | — | delay | C | A: — · B: — · D: D, "2" [C,D] | 1 |
+| T-04 | F-01 | — | delay | D | A: — · B: — · C: — | 1 |
+| T-05 | F-01 | — | inverse_bandwidth | A | B: B, "0.1" [A,B] · C: C, "0.01" [A,C] · D: C, "0.02" [A,C,D] | 1 |
+| T-06 | F-01 | — | loss | A | B: B, "0.0100503358535" [A,B] · C: C, "0.0202027073175" [A,C] · D: B, "0.020100671707" [A,B,D] | 1 |
+| T-07 | F-20 | — | delay | A | B: B, "1" [A,B] · C: C, "2" [A,C] · D: B, "2" [A,B,D] | 1 |
+| T-08 | F-20 | — | delay | B | A: A, "1" [B,A] · C: A, "3" [B,A,C] · D: D, "1" [B,D] | 1 |
+| T-09 | F-20 | — | delay | C | A: A, "2" [C,A] · B: A, "3" [C,A,B] · D: D, "2" [C,D] | 1 |
+| T-10 | F-20 | — | delay | D | A: B, "2" [D,B,A] · B: B, "1" [D,B] · C: C, "2" [D,C] | 1 |
+| T-11 | F-20 | — | inverse_bandwidth | A | B: B, "0.1" [A,B] · C: C, "0.01" [A,C] · D: C, "0.02" [A,C,D] | 1 |
+| T-12 | F-20 | — | inverse_bandwidth | B | A: A, "0.1" [B,A] · C: A, "0.11" [B,A,C] · D: D, "0.1" [B,D] | 1 |
+| T-13 | F-20 | — | inverse_bandwidth | C | A: A, "0.01" [C,A] · B: A, "0.11" [C,A,B] · D: D, "0.01" [C,D] | 1 |
+| T-14 | F-20 | — | inverse_bandwidth | D | A: C, "0.02" [D,C,A] · B: B, "0.1" [D,B] · C: C, "0.01" [D,C] | 1 |
+| T-15 | F-20 | — | loss | A | B: B, "0.0100503358535" [A,B] · C: C, "0.0202027073175" [A,C] · D: B, "0.020100671707" [A,B,D] | 1 |
+| T-16 | F-20 | — | loss | B | A: A, "0.0100503358535" [B,A] · C: A, "0.030253043171" [B,A,C] · D: D, "0.0100503358535" [B,D] | 1 |
+| T-17 | F-20 | — | loss | C | A: A, "0.0202027073175" [C,A] · B: A, "0.030253043171" [C,A,B] · D: D, "0.0202027073175" [C,D] | 1 |
+| T-18 | F-20 | — | loss | D | A: B, "0.020100671707" [D,B,A] · B: B, "0.0100503358535" [D,B] · C: C, "0.0202027073175" [D,C] | 1 |
+| T-19 | F-20 | fail B–D | delay | A | B: B, "1" [A,B] · C: C, "2" [A,C] · D: C, "4" [A,C,D] | 2 |
+| T-20 | F-20 | fail B–D | delay | B | A: A, "1" [B,A] · C: A, "3" [B,A,C] · D: A, "5" [B,A,C,D] | 2 |
+| T-21 | F-20 | fail B–D | delay | C | A: A, "2" [C,A] · B: A, "3" [C,A,B] · D: D, "2" [C,D] | 2 |
+| T-22 | F-20 | fail B–D | delay | D | A: C, "4" [D,C,A] · B: C, "5" [D,C,A,B] · C: C, "2" [D,C] | 2 |
+| T-23 | F-20 | fail B–D; restore B–D | delay | A–D | Iguales a T-07–T-10 | 3 |
+
+Notas: en T-08, T-12 y T-16 hay empate exacto entre [B,A,C] y [B,D,C] (mismo costo y saltos) y gana [B,A,C] por orden lexicográfico (DEC-08); lo mismo ocurre en T-09, T-13 y T-17 con [C,A,B] frente a [C,D,B]. En ambos casos el siguiente salto (A) reenvía por su propia fila (A→C o A→B directos), que coincide con el tramo restante: la propiedad de `02` §6.4.
 
 ## 4. Casos oficiales TC-01 a TC-09 (formato de plantilla de plan de pruebas)
 
@@ -267,6 +300,17 @@ second = service.compute_route(src="A", dst="D", metric="delay")
 | TC-37 | Empates exactos en las tres métricas | FR-03, FR-04 | F-14a, F-14a-near, F-14b | Consultar las métricas indicadas | E-34 a E-41; las rutas se comparan exactamente y no dependen de `total_cost` |
 | TC-38 | Presentación de `loss` en extremos | FR-04 | F-18, F-16, F-18b | Consultar `loss` | E-42, E-43, E-44; error relativo ≤ 1 × 10⁻¹⁰ frente a la referencia de 100 cifras; `"1e-60"` nunca se publica como `"0"` |
 | TC-39 | Separación entre selección y presentación | FR-04 | F-17, F-17b, F-01 | Frontera `q = 1/4`: F-17 ejecuta la rama de la serie y F-17b la de `Decimal.ln()` (comprobado con cobertura de ramas); cada resultado se contrasta con su propia referencia, no entre sí; `RoutingService` con `SpyCostPresenter` que devuelve `"999"`; `is_canonical_cost` sobre las salidas del presentador real | E-45, E-46; con el espía, la ruta no cambia y `format_cost` se llama una vez con el `score` exacto del motor; toda salida real cumple `is_canonical_cost`; el motor no usa `float` (AST) |
+| TC-40 *(C-32)* | Cuatro routers = cuatro servidores HTTP independientes | FR-11 | F-20, `config/routers.json` (puertos libres en la prueba) | Arrancar el Controller y 4 procesos Router en modo nodo; `GET /health` y `GET /status` de cada uno; listar los PID | 4 procesos distintos, cada uno responde en su puerto con su `router_id` y su URL; detener uno no afecta a los demás |
+| TC-41 *(C-32)* | Registro de routers: identidad, direcciones y puertos únicos | FR-11, NFR-05 | Registros válidos e inválidos (ID repetido o vacío, URL o puerto repetidos, URL sin puerto o sin `http`) | `parse_router_registry`; arranque con `router_id` ausente del registro o con `--port` distinto de su URL | Válido → 4 `RouterInfo` con URL y puertos únicos; cada inválido → `ValueError` con diagnóstico y el proceso no arranca |
+| TC-42 *(C-32)* | Cada router mantiene su propia tabla | FR-12 | F-20 | `GET /forwarding-table?metric=delay` de las 4 instancias | Cada respuesta lleva su `router_id` y su URL; las 4 tablas son distintas y coinciden con T-07–T-10; cada instancia escribe solo en su `data/routers/<id>/` |
+| TC-43 *(C-32)* | Siguiente salto y costo según Bellman-Ford | FR-12, FR-03 | F-01 y F-20, oráculo §3.1 | `RoutingService.compute_forwarding_table` con `FakeTopologyDAO` y `GET /forwarding-table` del Controller; espía que confirma una sola llamada al núcleo por tabla | T-01–T-18 exactas (`total_cost` literal en `delay`/`inverse_bandwidth`; tolerancia 1 × 10⁻¹⁰ en `loss`); filas inalcanzables sin `next_hop`; `router_id` inexistente → 404 `NODE_NOT_FOUND` |
+| TC-44 *(C-32)* | Sincronización por versión sin recálculos innecesarios | FR-12, NFR-12 | `NodeForwardingService` con `TableClient` espía y `FakeTableDAO` | Varias sincronizaciones y paquetes sin cambio de versión; luego cambio de versión | Sin cambio: 0 peticiones de tabla tras la primera sincronización; con cambio: exactamente 3 (una por métrica) y la tabla guardada pasa a la versión nueva; un evento en `table-events.jsonl` por cambio |
+| TC-45 *(C-32)* | Fallo y restauración actualizan las tablas afectadas | FR-06, FR-12, NFR-12 | F-20, procesos reales, intervalo 1 s | Fallar B–D; esperar ≤ 2 s; leer las 4 tablas; restaurar; esperar; leer | T-19–T-22 con versión 2; después T-23 con versión 3; `GET /ui` muestra los mismos valores (las tablas de la interfaz salen de esos endpoints) |
+| TC-46 *(C-32)* | El reenvío usa las decisiones de forwarding vigentes | FR-13, FR-07 | F-20, procesos reales | Paquete A→D `delay`; fallar B–D; repetir; restaurar; repetir. Registros de accesos de cada instancia | Trazas [A,B,D], [A,C,D], [A,B,D] iguales a `GET /route` de cada versión; un `POST /forward` real por salto en el registro de accesos del router siguiente; cada router registra su rol en su bitácora |
+| TC-47 *(C-32)* | Errores de comunicación entre routers | FR-13, FR-09, NFR-06 | `NodeForwardingService` con `NextHopClient` sobre `httpx.MockTransport`, y procesos reales | Siguiente router detenido; servidor que no responde; respuesta no conforme; bucle; exceso de saltos; versión distinta; Controller caído | 503 `NEXT_HOP_UNAVAILABLE`; 504 `NEXT_HOP_TIMEOUT`; 502 `NEXT_HOP_BAD_RESPONSE`; 508 `FORWARDING_LOOP`; 508 `HOP_LIMIT_EXCEEDED`; 409 `TOPOLOGY_CHANGED`; 503 `CONTROLLER_UNAVAILABLE`; nunca 200; registro `failed`; `/health` 200 |
+| TC-48 *(C-32)* | Tablas consultables por HTTP y visibles en la interfaz | FR-14 | Controller con `ROUTERS_FILE` | `GET /routers`; `GET /ui`; cabeceras CORS de `GET /forwarding-table` de un router | `GET /routers` = registro; `GET /ui` 200 `text/html` con los elementos de la interfaz y sin datos de tablas escritos en el HTML (los obtiene por HTTP); CORS `Access-Control-Allow-Origin: *` |
+| TC-49 *(C-32)* | Compatibilidad del modo legado | FR-07–FR-10 | Las pruebas TC-01–TC-39 | Ejecutar la batería completa | Todas las pruebas anteriores siguen aprobadas sin cambiar sus resultados esperados |
+| TC-50 *(C-32)* | Lanzador: una instancia por nodo | FR-11 | `scripts/start_all.py` con F-20 y registro de 4; registro con un nodo de menos | Arrancar y consultar; detener | 5 procesos (Controller + 4); con un registro que no coincide con `nodes`, el lanzador no arranca nada |
 
 ### 5.1 Detalle de TC-12 (F-01 recién cargado)
 
@@ -305,7 +349,8 @@ Ambas estudiantes revisan el código de la otra y firman el resultado en `test-r
 - `test-results.txt`: salida completa de `pytest -v` (fecha, versiones de Python y bibliotecas, PASS/FAIL por caso) y resultado de la revisión de código.
 - `demo-evidence/`: capturas o vídeo de los comportamientos obligatorios del PDF p. 5: ambos procesos en puertos configurables; paquete con ruta y traza; fallo de un enlace de la ruta y nueva respuesta; restauración y nueva consulta; una prueba con DAO falso (TC-08 o TC-09).
 - Mediciones crudas de TC-15 y TC-16.
+- *(C-32)* Demostración en modo nodo (5 escenarios): routers en sus direcciones, tablas distintas, paquete A→D salto a salto, fallo y restauración con las tablas actualizadas, router o Controller detenido; registros de accesos de cada instancia.
 
 ## 8. Estado al cierre de la Sesión 1
 
-TC-01 a TC-39 (excepto TC-24 y TC-35, retiradas) están **especificadas, no implementadas y no ejecutadas**. Ningún resultado de este documento es una observación de software en ejecución. Los resultados esperados de §3 sí están verificados matemáticamente (ver `VALIDACION.md`).
+TC-01 a TC-39 (excepto TC-24 y TC-35, retiradas) están **especificadas, no implementadas y no ejecutadas**. *(Versión 1.1: TC-01–TC-39 se ejecutaron en la Sesión 2, ver `test-results.txt`; TC-40–TC-50 están especificadas y **no implementadas** hasta que se apruebe este diff.)* Ningún resultado de este documento es una observación de software en ejecución. Los resultados esperados de §3 sí están verificados matemáticamente (ver `VALIDACION.md`).

@@ -2,14 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Versión | **1.0** (candidata a baseline `spec-1.0`) · 2026-10-29 |
+| Versión | **1.1** (borrador con C-32, aprobado por ambas el 31/10/2026; candidata a `spec-1.1`) · 2026-10-31 |
 | Estado de aprobación | Ver `REVIEW-AND-BASELINE.md` |
-| Trazabilidad | FR-01–FR-10, NFR-01–NFR-11, DEC-01–DEC-09 (`01`) · secuencias en `03` · contrato en `04` |
+| Trazabilidad | FR-01–FR-14, NFR-01–NFR-12, DEC-01–DEC-12 (`01`) · secuencias en `03` · contrato en `04` |
 
 ## 1. Reglas arquitectónicas vinculantes
 
 1. **Dos procesos independientes.** `controller` (plano de control) y `router` (plano de datos simulado) se ejecutan como procesos separados del sistema operativo, sin memoria, DAO ni archivos de estado compartidos. Solo se comunican por HTTP/JSON.
-2. **Solo el Controller calcula rutas.** El Router no importa NetworkX ni código del Controller; obtiene cada ruta con `GET /route` (DEC-06).
+2. **Solo el Controller calcula rutas.** El Router no importa NetworkX ni código del Controller. En modo legado obtiene cada ruta con `GET /route` (DEC-06); en modo nodo (C-32) recibe su tabla de forwarding con `GET /forwarding-table` y solo la consulta (DEC-10). Ningún módulo de `router/` contiene un algoritmo de caminos mínimos.
+7. **Una instancia Router por nodo (C-32).** En modo nodo se ejecuta la **misma** aplicación `router` una vez por nodo de la topología, cada una con su `router_id`, su URL del registro `ROUTERS_FILE` y su directorio `data/routers/<router_id>/`; no comparten memoria ni archivos y se comunican solo por HTTP.
 3. **MVC en ambas aplicaciones** (PDF p. 2): **Model** = objetos de dominio (`Topology`, `Link`, `Route`, `Packet`, `ForwardingResult`); **View** = esquemas Pydantic de entrada y salida HTTP; **Controller MVC** = clases `*HTTP` con los handlers FastAPI, que solo validan, delegan en servicios y serializan. La lógica de negocio vive en **servicios de dominio**. Aquí «Controller» como aplicación no se confunde con el controlador HTTP de MVC.
 4. **DAO en ambas aplicaciones:** `TopologyDAO` encapsula la obtención y el estado de la topología; `ForwardingLogDAO` encapsula el almacenamiento y la consulta de resultados de reenvío.
 5. **Regla de diseño (PDF p. 2):** ni los controladores HTTP ni los servicios abren archivos ni conocen implementaciones concretas de DAO; los servicios dependen de **interfaces** (módulos `ports.py`) recibidas por **inyección de dependencias** en su constructor. Las implementaciones concretas solo se crean en la raíz de composición (`create_controller_app`, `create_router_app`).
@@ -79,6 +80,55 @@ flowchart LR
 ```
 
 **Lectura del diagrama.** Las flechas continuas son dependencias de llamada; las punteadas, implementación, creación o importación. Solo los DAO concretos cruzan la **frontera de persistencia**: `JsonTopologyDAO` lee `topology.json` una vez al arrancar y conserva el estado mutable en memoria; `JsonlForwardingLogDAO` anexa una línea por resultado y las relee para consultas. `shared/` es un paquete instalable (o copiado de forma idéntica) en ambos procesos que solo contiene contratos de datos, excepciones y funciones puras, sin FastAPI, Pydantic, NetworkX, httpx ni estado.
+
+### 2.1 Despliegue en modo nodo (C-32)
+
+Diagrama fuente: `diagrams/02-5-despliegue-routers.mmd`. Cuatro instancias de la misma aplicación Router (una por nodo de F-20 o F-01) y el Controller; las flechas gruesas son reenvíos `POST /forward` reales entre procesos y las finas, la sincronización con el Controller.
+
+```mermaid
+flowchart LR
+    OP["Operador / navegador<br/>GET /ui"]
+    CLI["Cliente HTTP<br/>POST /packets"]
+    subgraph CTRL["Proceso Controller · http://127.0.0.1:8000"]
+        C_HTTP["ControllerHTTP<br/>/route · /topology · /topology/version<br/>/forwarding-table · /links/* · /routers · /ui"]
+        C_RS["RoutingService<br/>+ BellmanFordEngine"]
+        C_HTTP --> C_RS
+    end
+    subgraph RA["Router A · :8001"]
+        A_N["NodeHTTP + NodeForwardingService"]
+        A_T[("data/routers/A/<br/>forwarding-table.json<br/>forwarding.jsonl")]
+        A_N --> A_T
+    end
+    subgraph RB["Router B · :8002"]
+        B_N["NodeHTTP + NodeForwardingService"]
+        B_T[("data/routers/B/…")]
+        B_N --> B_T
+    end
+    subgraph RC["Router C · :8003"]
+        C_N["NodeHTTP + NodeForwardingService"]
+        C_T[("data/routers/C/…")]
+        C_N --> C_T
+    end
+    subgraph RD["Router D · :8004"]
+        D_N["NodeHTTP + NodeForwardingService"]
+        D_T[("data/routers/D/…")]
+        D_N --> D_T
+    end
+    REG[("config/routers.json<br/>router_id → URL")]
+    OP --> C_HTTP
+    OP -. "GET /status · /forwarding-table (CORS)" .-> A_N
+    CLI --> A_N
+    A_N -- "GET /topology/version<br/>GET /forwarding-table" --> C_HTTP
+    B_N -- "sincronización" --> C_HTTP
+    C_N -- "sincronización" --> C_HTTP
+    D_N -- "sincronización" --> C_HTTP
+    A_N == "POST /forward (salto)" ==> B_N
+    B_N == "POST /forward (salto)" ==> D_N
+    A_N == "POST /forward" ==> C_N
+    C_N == "POST /forward" ==> D_N
+    REG -. "leído al arrancar" .-> A_N
+    REG -. "leído al arrancar" .-> CTRL
+```
 
 ## 3. Diagrama de clases
 
@@ -481,6 +531,128 @@ classDiagram
 
 Además de estas clases, `shared/` contiene `error_contract.py` (constantes de `error.code` y nombres de campos JSON) y `cost_format.py` (función pura `is_canonical_cost(text: str) -> bool` que implementa la gramática de `01` §5.3). `MALFORMED_JSON` e `INTERNAL_ERROR` no son subclases de `AppError`: los generan los adaptadores HTTP (§9). `TopologyLoadError` pertenece al Controller y nunca se traduce a HTTP: aborta el arranque.
 
+### 3.4 Vista Router en modo nodo (C-32; propietaria: Estudiante B)
+
+Diagrama fuente: `diagrams/02-6-clases-router-nodo.mmd`. `RouterInfo`, `ForwardingEntry` y `ForwardingTable` viven en `shared/models.py` porque los producen el Controller y los validan los routers. `ForwardingLogDAO`, `Packet`, `Route` y los esquemas de error son los de §3.2. El modo legado (§3.2) no cambia.
+
+```mermaid
+classDiagram
+    direction LR
+    class RouterInfo {
+        <<shared>>
+        +str router_id
+        +str url
+    }
+    class ForwardingEntry {
+        <<shared>>
+        +str destination
+        +Optional~str~ next_hop
+        +Optional~tuple~ path
+        +Optional~str~ total_cost
+        +str status
+    }
+    class ForwardingTable {
+        <<shared>>
+        +str router_id
+        +str metric
+        +int topology_version
+        +tuple~ForwardingEntry~ entries
+    }
+    class NodeTables {
+        +str router_id
+        +int topology_version
+        +str synced_at
+        +dict~str, ForwardingTable~ tables
+    }
+    class NodeTraceHop {
+        +int hop_index
+        +str node
+        +str router_url
+    }
+    class NodeForwardingResult {
+        +str router_id
+        +str role
+        +str packet_id
+        +str source
+        +str destination
+        +str metric
+        +str status
+        +tuple~NodeTraceHop~ trace
+        +Optional~Route~ route
+        +Optional~int~ topology_version
+        +Optional~dict~ error
+    }
+    class HopPacket {
+        +Packet packet
+        +tuple~NodeTraceHop~ trace
+        +int topology_version
+    }
+    class TableClient {
+        <<interface>>
+        +fetch_topology_version() int
+        +fetch_forwarding_table(router_id: str, metric: str) ForwardingTable
+    }
+    class NextHopClient {
+        <<interface>>
+        +forward(url: str, hop: HopPacket) NodeForwardingResult
+    }
+    class ForwardingTableDAO {
+        <<interface>>
+        +load() Optional~NodeTables~
+        +save(tables: NodeTables) None
+    }
+    class HttpTableClient {
+        +HttpTableClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport = None)
+    }
+    class HttpNextHopClient {
+        +HttpNextHopClient(connect_timeout_s: float, read_timeout_s: float, transport = None)
+    }
+    class JsonForwardingTableDAO {
+        -Path path
+        -Path events_path
+        -Lock lock
+        +JsonForwardingTableDAO(path: Path, events_path: Path)
+    }
+    class NodeForwardingService {
+        -str router_id
+        -dict registry
+        -TableClient table_client
+        -ForwardingTableDAO table_dao
+        -NextHopClient next_hop_client
+        -ForwardingLogDAO log_dao
+        +NodeForwardingService(router_id, registry, table_client, table_dao, next_hop_client, log_dao)
+        +sync_if_changed() NodeTables
+        +current_table(metric: str) ForwardingTable
+        +status() dict
+        +handle(packet: Packet, trace: tuple = (), topology_version: int = None) NodeForwardingResult
+    }
+    class NodeHTTP {
+        <<Controller MVC>>
+        +NodeHTTP(service: NodeForwardingService)
+        +status() RouterStatusSchema
+        +get_forwarding_table(metric) NodeForwardingTableSchema
+        +post_packet(PacketRequestSchema) NodeForwardingResponseSchema
+        +forward(HopRequestSchema) NodeForwardingResponseSchema
+        +health() RouterHealthSchema
+    }
+    TableClient <|.. HttpTableClient
+    NextHopClient <|.. HttpNextHopClient
+    ForwardingTableDAO <|.. JsonForwardingTableDAO
+    NodeForwardingService --> TableClient : inyectada
+    NodeForwardingService --> ForwardingTableDAO : inyectada
+    NodeForwardingService --> NextHopClient : inyectada
+    NodeForwardingService --> RouterInfo : registro
+    NodeForwardingService ..> NodeForwardingResult : crea
+    NodeTables *-- ForwardingTable
+    ForwardingTable *-- ForwardingEntry
+    NodeForwardingResult *-- NodeTraceHop
+    HopPacket *-- NodeTraceHop
+    NextHopClient ..> HopPacket : envía
+    NodeHTTP --> NodeForwardingService : invoca
+```
+
+**Controller (Estudiante A), clases y métodos nuevos:** `BellmanFordEngine.find_all_paths(topology, src, metric) -> dict[str, PathScore]`; `RoutingService.topology_version() -> int` y `RoutingService.compute_forwarding_table(router_id, metric) -> ForwardingTable`; `ControllerHTTP.get_topology_version()`, `get_forwarding_table(router_id, metric)`, `list_routers()` y `ui()`; esquemas `TopologyVersionSchema`, `ForwardingEntrySchema`, `ForwardingTableResponseSchema`, `RouterInfoSchema`, `RouterListSchema` (`controller/view.py`) y la página `DASHBOARD_HTML` (`controller/ui.py`, View). `ControllerSettings` añade `routers: tuple[RouterInfo, ...]` (vacío si no se configura `ROUTERS_FILE`).
+
 ## 4. Correspondencia MVC/DAO y responsabilidades
 
 | Capa | Controller (Estudiante A) | Router (Estudiante B) | Responsabilidad | Puede depender de |
@@ -493,6 +665,7 @@ Además de estas clases, `shared/` contiene `error_contract.py` (constantes de `
 | DAO concreto | `JsonTopologyDAO`, `TopologyLoadError` (`controller/dao.py`) | `JsonlForwardingLogDAO` (`router/dao.py`) | Leer, validar y mantener la topología; anexar y releer resultados | `ports.py`, sistema de archivos |
 | Cliente de comunicación | — | `HttpRouteClient` (`router/client.py`) | Obtener y validar la ruta por HTTP; normalizar errores de red | `ports.py`, httpx, `shared` |
 | Composición | `create_controller_app` (`controller/app.py`) | `create_router_app` (`router/app.py`) | Leer configuración, crear implementaciones e inyectarlas | Todo su propio proceso y `shared` |
+| Modo nodo *(C-32)* | `find_all_paths`, `compute_forwarding_table`, `/forwarding-table`, `/topology/version`, `/routers`, `/ui` (View `controller/ui.py`) | Model `NodeTables`, `NodeTraceHop`, `HopPacket`, `NodeForwardingResult`; View `RouterStatusSchema`, `NodeForwardingTableSchema`, `HopRequestSchema`, `NodeForwardingResponseSchema`; Controller MVC `NodeHTTP`; servicio `NodeForwardingService`; puertos `TableClient`, `NextHopClient`, `ForwardingTableDAO`; clientes `HttpTableClient`, `HttpNextHopClient`; DAO `JsonForwardingTableDAO` | Tabla de forwarding por router, sincronización por versión y reenvío salto a salto | Las mismas reglas de esta tabla y de §8 |
 
 **`CostPresenter` y `Route.total_cost`.** `Route` no es un objeto interno del motor sino el contrato de datos que viaja al Router, y el contrato define `total_cost` como cadena canónica (`01` §5.3). Por eso `RoutingService` invoca `CostPresenter` antes de crear `Route`; la selección nunca usa ese campo, porque el motor trabaja solo con `PathScore`. Los `Settings` de cada proceso viven en `settings.py` (§8).
 
@@ -514,6 +687,14 @@ Además de estas clases, `shared/` contiene `error_contract.py` (constantes de `
 | `ForwardingLogDAO.save(result)` | `-> None` solo si la línea quedó escrita; los errores de E/S se convierten en `LogPersistenceError`. | Escribir desde un handler. |
 | `ForwardingLogDAO.list_recent(limit)` | `-> list[ForwardingResult]`: los `limit` últimos resultados en orden de escritura (recuperación exigida por el PDF p. 2; usado por TC-06 y TC-16). | Exponerlo por HTTP (no hay endpoint). |
 | `ControllerHTTP.*`, `PacketHTTP.*` | Reciben esquemas ya validados, invocan un método del servicio y devuelven esquemas de respuesta. | Leer archivos o ejecutar algoritmos. |
+| `BellmanFordEngine.find_all_paths(topology, src, metric)` *(C-32)* | `-> dict[str, PathScore]` con la mejor ruta (DEC-08) de `src` a **cada** destino alcanzable, sin incluir `src`; **una sola** llamada a `run_bellman_ford_on_weighted_graph`; misma construcción de grafo que `find_path` (§6.1). | Una rama de algoritmo distinta de la de `find_path`. |
+| `RoutingService.topology_version()` *(C-32)* | `-> int`: versión de una instantánea del DAO. | — |
+| `RoutingService.compute_forwarding_table(router_id, metric)` *(C-32)* | `-> ForwardingTable`; valida `metric` (`InvalidRequestError`) y que `router_id` exista en **una** instantánea (`NodeNotFoundError`, `details.field = "router_id"`); llama una vez a `find_all_paths` y una vez a `format_cost` por destino alcanzable; una `ForwardingEntry` por cada otro nodo, en el orden de `nodes`: alcanzable → `next_hop = path[1]`, `status = "active"`; inalcanzable → `next_hop`, `path` y `total_cost` en `None`, `status = "unreachable"`. | Que el Router reciba rutas parciales o inventadas. |
+| `NodeForwardingService.sync_if_changed()` *(C-32)* | `-> NodeTables`; llama a `table_client.fetch_topology_version()`; si coincide con la tabla guardada, no pide nada más (NFR-12); si no, pide las tres tablas, comprueba que `router_id` y `topology_version` coinciden y las guarda con `table_dao.save`. Errores del Controller → las excepciones de `HttpRouteClient` (§9). | Calcular o modificar filas. |
+| `NodeForwardingService.handle(packet, trace=(), topology_version=None)` *(C-32)* | `-> NodeForwardingResult`; algoritmo de §6.4; registra un `NodeForwardingResult` por paquete procesado en este router con `log_dao.save` (rol `ingress`, `transit` o `egress`), tanto en el éxito como en el fallo, y relanza la excepción en los fallos (igual que `ForwardingService`). | Reenviar sin confirmar la versión vigente o a una URL que no esté en el registro. |
+| `NextHopClient.forward(url, hop)` *(C-32)* | `-> NodeForwardingResult` del siguiente salto; un `POST {{url}}/forward`; `ConnectError` → `NextHopUnavailableError`, cualquier timeout → `NextHopTimeoutError`, respuesta no conforme → `NextHopBadResponseError`; un error con sobre válido y código de §9 se reproduce con la misma excepción. | Reintentar o elegir otro vecino. |
+| `ForwardingTableDAO.save(tables)` / `load()` *(C-32)* | Guarda de forma atómica la instantánea en `forwarding-table.json` y anexa una línea a `table-events.jsonl` con la versión anterior, la nueva y las filas cambiadas; `load()` devuelve la última instantánea o `None`. Errores de E/S → `LogPersistenceError`. | Guardar estado de otro router. |
+| `NodeHTTP.*` *(C-32)* | Igual que `PacketHTTP`: validan con la View, invocan un método de `NodeForwardingService` y serializan. | Consultar tablas o elegir vecinos en el handler. |
 
 ## 6. Diseño interno del motor de rutas y del presentador de costos
 
@@ -557,6 +738,30 @@ mejora_primaria(x, y) := x < y en modo additive;  x > y en modo product
 3. `loss`: `S = score`; si `S = 1` → `"0"`. Con `q = 1 − S` exacto: si `0 < q ≤ 1/4`, costo = `Σ_{j=1..25} q^j / j` (sin formar `1 − Decimal(S)` redondeado, lo que evita la cancelación con `p = 1e-60`; el error relativo de truncamiento es ≤ `q^25 / (26(1 − q))` ≤ 4.6 × 10⁻¹⁷); si `q > 1/4`, costo = `−(Decimal(S.numerator) / Decimal(S.denominator)).ln()`.
 4. Para `loss`, redondear el valor calculado a 12 cifras significativas (`ROUND_HALF_EVEN`). En todos los casos, escribir en el formato canónico de `01` §5.3: el resultado debe cumplir `is_canonical_cost` y, para `loss`, un error relativo ≤ 1 × 10⁻¹⁰ frente a una referencia de al menos 100 cifras (TC-38, TC-39).
 
+### 6.4 Tablas de forwarding y reenvío salto a salto (C-32)
+
+**Cálculo de la tabla (Controller).** `compute_forwarding_table(R, m)` ejecuta el núcleo de §6.2 **una vez** desde `R` y obtiene la etiqueta óptima de cada destino; con el orden total de DEC-08, si la mejor ruta de `R` a `D` es `R, X, …, D`, el tramo `X, …, D` es la mejor ruta de `X` a `D` (cualquier tramo mejor por `(costo, saltos, ruta)` daría una ruta mejor desde `R`, porque el prefijo es idéntico). Por eso el reenvío salto a salto, con cada router usando **su** tabla, recorre exactamente la ruta que devuelve `GET /route` para la misma versión (TC-46).
+
+**Procesamiento de un paquete en el router `R`** (`handle`, ingreso con `trace = ()`; tránsito con la traza y la versión recibidas):
+
+```text
+1. si R aparece en trace                      → ForwardingLoopError (508)
+2. si len(trace) + 1 > número de nodos        → HopLimitExceededError (508)
+3. tablas = sync_if_changed()                   # GET /topology/version; tabla nueva solo si cambió
+4. si topology_version recibida ≠ tablas.topology_version → TopologyChangedError (409)
+5. trace = trace + (NodeTraceHop(len(trace), R, url(R)),)
+6. si packet.destination == R                   → resultado forwarded (rol egress, o ingress si el origen es R)
+7. fila = tabla[metric][destination]  (ausente → NodeNotFoundError; status unreachable → RouteUnreachableError)
+8. resultado = next_hop_client.forward(url(fila.next_hop), HopPacket(packet, trace, versión))
+9. comprobar: resultado.trace empieza por trace, termina en destination, sin repetidos y con la misma versión
+   (si no → NextHopBadResponseError)
+10. registrar y devolver resultado (rol ingress o transit)
+```
+
+Los timeouts de conexión y lectura de `NextHopClient` son los de `CONTROLLER_CONNECT_TIMEOUT_SECONDS` y `CONTROLLER_READ_TIMEOUT_SECONDS`. Cada router espera la respuesta del siguiente, de modo que un salto que no responde produce 504 en el router que lo esperaba y ese error se propaga hacia el origen.
+
+**Sincronización periódica.** En modo nodo, `create_router_app` arranca un hilo que llama a `sync_if_changed()` cada `TABLE_SYNC_INTERVAL_SECONDS` (0 lo desactiva; lo usan las pruebas que sincronizan a mano) y lo detiene al cerrar la aplicación. Un error de sincronización no borra la tabla guardada: se informa en `GET /status` (`sync_status = "error"`) y se reintenta.
+
 ## 7. Composición, inyección de dependencias y configuración (NFR-05, NFR-07)
 
 `create_controller_app(settings, dao=None)` usa el `dao` recibido o, si no se pasa, crea `JsonTopologyDAO(settings.topology_file)`; crea `BellmanFordEngine()`, `CostPresenter()` y `RoutingService(dao=…, engine=…, presenter=…)`; registra `ControllerHTTP` y los manejadores de `controller/http_errors.py`. `create_router_app(settings, route_client=None, log_dao=None)` usa los dobles recibidos o crea `HttpRouteClient(…)` y `JsonlForwardingLogDAO(settings.log_file)`; crea `ForwardingService(client=…, log_dao=…)` y registra `PacketHTTP` y `router/http_errors.py`. Los parámetros opcionales son el **punto de inyección de las pruebas de API** (TC-06, TC-11, TC-16, TC-31, TC-32, TC-33); los constructores de los servicios, en cambio, no tienen valores por defecto: omitir una dependencia es un error. Los dobles (`FakeTopologyDAO`, `FakeRouteClient`, `SpyRouteClient`, `FakeForwardingLogDAO`, `SpyCostPresenter`) viven solo en `tests/`.
@@ -572,6 +777,13 @@ mejora_primaria(x, y) := x < y en modo additive;  x > y en modo product
 | Router | `FORWARDING_LOG_FILE` | `--log-file` | `data/forwarding.jsonl` |
 | Router | `CONTROLLER_CONNECT_TIMEOUT_SECONDS` | `--connect-timeout` | `1.0` |
 | Router | `CONTROLLER_READ_TIMEOUT_SECONDS` | `--read-timeout` | `2.0` |
+| Controller *(C-32)* | `ROUTERS_FILE` | `--routers` | ninguno (`GET /routers` devuelve una lista vacía) |
+| Router *(C-32)* | `ROUTER_ID` | `--router-id` | ninguno: **modo legado** |
+| Router *(C-32)* | `ROUTERS_FILE` | `--routers` | `config/routers.json` (obligatorio en modo nodo) |
+| Router *(C-32)* | `FORWARDING_TABLE_FILE` | `--table-file` | `data/routers/<router_id>/forwarding-table.json` |
+| Router *(C-32)* | `TABLE_SYNC_INTERVAL_SECONDS` | `--sync-interval` | `1.0` (`0` desactiva la sincronización periódica) |
+
+**Modo nodo (C-32).** Con `ROUTER_ID`, `create_router_app` crea `HttpTableClient`, `HttpNextHopClient`, `JsonForwardingTableDAO(settings.table_file, …/table-events.jsonl)` y `JsonlForwardingLogDAO(settings.log_file)` —con `FORWARDING_LOG_FILE` por defecto `data/routers/<router_id>/forwarding.jsonl`—, construye `NodeForwardingService(...)`, registra `NodeHTTP`, habilita CORS (`*`, métodos GET y POST) para la interfaz web y arranca la sincronización periódica; acepta `table_client`, `table_dao` y `next_hop_client` opcionales como puntos de inyección de pruebas. En modo nodo el host y el puerto salen de la URL del propio `router_id` en el registro; `--host`/`--port` explícitos distintos de esa URL impiden el arranque. El registro `config/routers.json` tiene la forma `{"routers": [{"router_id": "A", "url": "http://127.0.0.1:8001"}, …]}`; IDs no vacíos y únicos, URL `http://` o `https://` con puerto explícito, URL y puertos únicos; se valida con la función pura `parse_router_registry(text)` de `shared/registry.py`. El lanzador `scripts/start_all.py` (y su envoltorio `scripts/start-all.ps1` para Windows) arranca el Controller con `--routers` y **una instancia por nodo** de la topología (por defecto `config/topology-demo.json`), y no arranca si el conjunto de IDs del registro difiere del de `nodes`.
 
 Precedencia: opción CLI > variable de entorno > valor por defecto. Impiden el arranque con un diagnóstico claro: un puerto fuera de 1–65535, un timeout ≤ 0, un `TOPOLOGY_FILE` inexistente o inválido, y un `FORWARDING_LOG_FILE` cuyo directorio no admite escritura. El archivo de bitácora se crea si no existe; el directorio por defecto `data/` se crea al arrancar, mientras que el directorio de una ruta indicada explícitamente debe existir.
 
@@ -591,14 +803,19 @@ controller/
   engine.py       # BellmanFordEngine, LinkCostPolicy, RouteLabel, PathScore
   presenter.py    # CostPresenter
   dao.py          # JsonTopologyDAO, TopologyLoadError
+  ui.py           # View (C-32): DASHBOARD_HTML, página de la interfaz web
 router/
   main.py, settings.py (RouterSettings), app.py, http.py (PacketHTTP), http_errors.py, view.py,
   models.py (Packet, ForwardingResult, TraceHop), ports.py (RouteClient, ForwardingLogDAO),
   service.py (ForwardingService), client.py (HttpRouteClient), dao.py (JsonlForwardingLogDAO)
+  (C-32: http.py añade NodeHTTP; service.py, NodeForwardingService; client.py, HttpTableClient y
+   HttpNextHopClient; dao.py, JsonForwardingTableDAO; models.py, NodeTables, NodeTraceHop, HopPacket,
+   NodeForwardingResult; view.py, los esquemas de modo nodo)
 shared/
-  models.py (Route), errors.py (AppError y subclases), error_contract.py (constantes),
-  cost_format.py (is_canonical_cost)
-config/topology.json   tests/   (se crean en la Sesión 2)
+  models.py (Route; C-32: RouterInfo, ForwardingEntry, ForwardingTable), errors.py (AppError y subclases),
+  error_contract.py (constantes), cost_format.py (is_canonical_cost), registry.py (C-32: parse_router_registry)
+config/topology.json   config/topology-demo.json (C-32, = F-20)   config/routers.json (C-32)   tests/
+scripts/start_all.py   scripts/start-all.ps1 (C-32)
 ```
 
 | Módulo | Puede importar | No puede importar | Verificación |
@@ -606,7 +823,7 @@ config/topology.json   tests/   (se crean en la Sesión 2)
 | `shared/*` | Biblioteca estándar | FastAPI, Starlette, Pydantic, NetworkX, httpx, `controller`, `router` | TC-13 |
 | `controller/models.py`, `ports.py`, `service.py`, `engine.py`, `presenter.py` | `shared`, `models`, `ports`; `service.py` además `engine.py` y `presenter.py` (tipos de sus dependencias inyectadas); NetworkX solo en `engine.py` | FastAPI, Pydantic, `router`, `controller/dao.py`, `open()` | TC-08, TC-13 |
 | `router/models.py`, `ports.py`, `service.py` | `shared`, `models`, `ports` | FastAPI, NetworkX, httpx, `controller`, `router/dao.py`, `router/client.py`, `open()` | TC-09, TC-13 |
-| `controller/http.py`, `router/http.py`, `*/http_errors.py`, `*/view.py` | FastAPI, Pydantic, servicio propio, `models`, `shared` | `dao.py`, `client.py`, `engine.py`, `open()` | TC-13 |
+| `controller/http.py`, `router/http.py`, `*/http_errors.py`, `*/view.py`, `controller/ui.py` | FastAPI, Pydantic, servicio propio, `models`, `shared` | `dao.py`, `client.py`, `engine.py`, `open()` | TC-13 |
 | `controller/dao.py`, `router/dao.py`, `router/client.py` | Biblioteca estándar, `shared`, `models`, `ports`; httpx solo en `client.py` | Código del otro proceso | TC-13, TC-34 |
 | `controller/app.py`, `router/app.py` | Todo su propio proceso y `shared` | Código del otro proceso | TC-34 |
 
@@ -620,6 +837,8 @@ config/topology.json   tests/   (se crean en la Sesión 2)
 | `BellmanFordEngine` | `RouteUnreachableError`; `NegativeCycleError` (invariante violado: imposible con una topología validada) | 404; 500 `NEGATIVE_CYCLE` |
 | `HttpRouteClient` | `ControllerUnavailableError` (`httpx.ConnectError`: conexión rechazada o DNS), `ControllerTimeoutError` (`ConnectTimeout`, `ReadTimeout`, `WriteTimeout`, `PoolTimeout`), `ControllerBadResponseError` (cualquier otro `httpx.TransportError`, p. ej. conexión cortada a mitad de respuesta, y toda respuesta no conforme o con estado no previsto); reproduce `NodeNotFoundError` / `RouteUnreachableError` si el Controller respondió 404 con ese `error.code` | 503 / 504 / 502; 404 |
 | `ForwardingService`, `JsonlForwardingLogDAO` | `LogPersistenceError` | 500 |
+| `NodeForwardingService`, `JsonForwardingTableDAO` *(C-32)* | `ForwardingTableUnavailableError` (sin tabla todavía), `TopologyChangedError`, `ForwardingLoopError`, `HopLimitExceededError`, `RouteUnreachableError` / `NodeNotFoundError` (de la tabla local), `LogPersistenceError` | 503 / 409 / 508 / 508 / 404 / 500 |
+| `HttpNextHopClient` *(C-32)* | `NextHopUnavailableError` (`ConnectError`), `NextHopTimeoutError` (timeouts), `NextHopBadResponseError` (otro error de transporte o respuesta no conforme); reproduce cualquier error con sobre válido y código de esta tabla | 503 / 504 / 502; el estado del código reproducido |
 | FastAPI (ruta o método inexistente) | — | 404 `UNKNOWN_ENDPOINT` / 405 `METHOD_NOT_ALLOWED`, con el mismo sobre `error` |
 | Cualquier otra excepción | — | 500 `INTERNAL_ERROR`, sin traza en la respuesta |
 
@@ -632,6 +851,8 @@ Cada `http_errors.py` contiene la tabla `error.code → estado HTTP` de su proce
 | S1 — reenvío exitoso | `PacketHTTP.post_packet`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ControllerHTTP.get_route`, `RoutingService.compute_route`, `TopologyDAO.get_topology`, `BellmanFordEngine.find_path`, `CostPresenter.format_cost`, `ForwardingLogDAO.save` |
 | S2 — fallo, nueva ruta y restauración | `ControllerHTTP.fail_link`, `ControllerHTTP.restore_link`, `RoutingService.set_link_status`, `TopologyDAO.set_link_status` y el flujo de S1 |
 | S3 — Controller no disponible | `PacketHTTP.post_packet`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ForwardingLogDAO.save`, `PacketHTTP.health` |
+| S4 — Reenvío salto a salto *(C-32)* | `NodeHTTP.post_packet`, `NodeHTTP.forward`, `NodeForwardingService.handle`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `NextHopClient.forward`, `ForwardingLogDAO.save` |
+| S5 — Actualización de tablas tras un fallo *(C-32)* | `ControllerHTTP.fail_link`, `RoutingService.set_link_status`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `TableClient.fetch_forwarding_table`, `ControllerHTTP.get_forwarding_table`, `RoutingService.compute_forwarding_table`, `BellmanFordEngine.find_all_paths`, `ForwardingTableDAO.save` |
 
 ## 11. Fuentes
 

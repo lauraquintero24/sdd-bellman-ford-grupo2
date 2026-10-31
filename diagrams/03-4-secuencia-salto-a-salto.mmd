@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    actor Cliente
+    participant NA as Router A (NodeHTTP + NodeForwardingService)
+    participant NB as Router B (NodeHTTP + NodeForwardingService)
+    participant ND as Router D (NodeHTTP + NodeForwardingService)
+    participant CA as ControllerHTTP
+    Cliente->>NA: POST /packets {pkt-1, A→D, delay}
+    NA->>CA: GET /topology/version
+    CA-->>NA: 200 {topology_version 1}
+    Note over NA: versión igual a la tabla local → sin pedir tabla<br/>fila D: next_hop B · trace = (0, A)
+    NA->>NB: POST /forward {pkt-1, trace [(0,A)], topology_version 1}
+    NB->>CA: GET /topology/version
+    CA-->>NB: 200 {topology_version 1}
+    Note over NB: fila D: next_hop D · trace = (0,A), (1,B)
+    NB->>ND: POST /forward {pkt-1, trace [(0,A),(1,B)], topology_version 1}
+    ND->>CA: GET /topology/version
+    CA-->>ND: 200 {topology_version 1}
+    Note over ND: destino alcanzado · trace = (0,A), (1,B), (2,D)<br/>registra rol egress
+    ND-->>NB: 200 forwarded, trace A, B, D
+    Note over NB: valida prefijo, destino y versión · registra rol transit
+    NB-->>NA: 200 forwarded, trace A, B, D
+    Note over NA: valida y registra rol ingress
+    NA-->>Cliente: 200 forwarded, route.path [A, B, D], trace con router_url

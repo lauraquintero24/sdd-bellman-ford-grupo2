@@ -4,7 +4,7 @@
 |---|---|
 | Versión candidata | **1.0** — 2026-10-29 — seis especificaciones, `specs/fixtures/`, `diagrams/` y `prompts-session1.md` (SHA-256 en `SHA256SUMS`) |
 | Baseline objetivo | Tag Git `spec-1.0` |
-| Estado | **CONGELADA (spec-1.0)** — reconfirmada por ambas estudiantes el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf`, `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`). Commit y tag Git `spec-1.0`: pendientes (§3, paso 5). Este es el único documento donde cambia el estado. |
+| Estado | **Versión 1.1 en revisión (cambio C-32)** — C-32 aprobado por ambas el 31/10/2026 («Apruebo C-32 — Laura Sofia Quintero Fernandez», «Apruebo C-32 — Mariana Arturo Pabón»); pendiente: aprobación de ambas del diff de `specs/` y tag `spec-1.1` (§4). La versión anterior sigue **CONGELADA (spec-1.0)** — reconfirmada por ambas estudiantes el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf`, `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`). Commit y tag Git `spec-1.0`: pendientes (§3, paso 5). Este es el único documento donde cambia el estado. |
 
 ## 1. Revisión cruzada (PDF p. 4: diagramas, requisitos, API y pruebas concuerdan)
 
@@ -74,4 +74,6 @@ La versión 1.0 introduce los cambios C-01 a C-31 de `CHANGELOG-SPECS.md`; los m
 
 ## 4. Cambios posteriores al congelamiento
 
-Cualquier cambio de diseño posterior se registra en `CHANGELOG-SPECS.md` con motivo, artefactos afectados y aprobación de ambas antes de modificar el código (PDF p. 4). La implementación de la Sesión 2 sigue la baseline congelada; si el código no la cumple, se corrige el código o se registra el fallo, nunca se ajusta el requisito para que coincida con un código incorrecto (PDF p. 5).
+Cualquier cambio de diseño posterior se registra en `CHANGELOG-SPECS.md` con motivo, artefactos afectados y aprobación de ambas antes de modificar el código (PDF p. 4).
+
+**C-32 (31/10/2026).** Primer cambio posterior a `spec-1.0`: ver `CHANGELOG-SPECS.md`. Procedimiento: (1) aprobación del cambio por ambas — hecha; (2) redacción de `specs/` 1.1 y revisión del diff por ambas — en curso; (3) implementación solo tras (2); (4) regeneración de `SHA256SUMS`, commit y tag `spec-1.1` por el equipo; `spec-1.0` no se modifica ni se mueve. La implementación de la Sesión 2 sigue la baseline congelada; si el código no la cumple, se corrige el código o se registra el fallo, nunca se ajusta el requisito para que coincida con un código incorrecto (PDF p. 5).

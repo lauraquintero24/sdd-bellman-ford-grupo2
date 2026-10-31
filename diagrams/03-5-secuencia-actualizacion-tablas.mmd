@@ -1,0 +1,27 @@
+sequenceDiagram
+    autonumber
+    actor Operador
+    participant CA as ControllerHTTP
+    participant RS as RoutingService
+    participant BF as BellmanFordEngine
+    participant NA as Router A (sincronización periódica)
+    participant TD as JsonForwardingTableDAO (A)
+    Operador->>CA: POST /links/fail {source B, target D}
+    CA->>RS: set_link_status(B, D, false)
+    RS-->>CA: LinkChangeResult changed true, version 2
+    CA-->>Operador: 200 {active false, changed true, topology_version 2}
+    loop cada TABLE_SYNC_INTERVAL_SECONDS
+        NA->>CA: GET /topology/version
+        CA-->>NA: 200 {topology_version 2}
+    end
+    Note over NA: 2 ≠ 1 (versión guardada) → pedir las tres tablas
+    NA->>CA: GET /forwarding-table?router_id=A&metric=delay
+    CA->>RS: compute_forwarding_table(A, delay)
+    RS->>BF: find_all_paths(topology v2, A, delay)
+    BF-->>RS: mejores rutas desde A (un único núcleo)
+    RS-->>CA: ForwardingTable v2: D → next_hop C, "4"
+    CA-->>NA: 200 tabla delay v2
+    Note over NA: ídem inverse_bandwidth y loss
+    NA->>TD: save(NodeTables v2)
+    TD-->>NA: forwarding-table.json reemplazado · línea en table-events.jsonl
+    Note over NA: GET /forwarding-table (y /ui) muestran la tabla v2,<br/>con la versión sin cambios no se vuelve a pedir ninguna tabla (NFR-12)

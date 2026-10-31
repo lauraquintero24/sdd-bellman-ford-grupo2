@@ -1,0 +1,42 @@
+flowchart LR
+    OP["Operador / navegador<br/>GET /ui"]
+    CLI["Cliente HTTP<br/>POST /packets"]
+    subgraph CTRL["Proceso Controller · http://127.0.0.1:8000"]
+        C_HTTP["ControllerHTTP<br/>/route · /topology · /topology/version<br/>/forwarding-table · /links/* · /routers · /ui"]
+        C_RS["RoutingService<br/>+ BellmanFordEngine"]
+        C_HTTP --> C_RS
+    end
+    subgraph RA["Router A · :8001"]
+        A_N["NodeHTTP + NodeForwardingService"]
+        A_T[("data/routers/A/<br/>forwarding-table.json<br/>forwarding.jsonl")]
+        A_N --> A_T
+    end
+    subgraph RB["Router B · :8002"]
+        B_N["NodeHTTP + NodeForwardingService"]
+        B_T[("data/routers/B/…")]
+        B_N --> B_T
+    end
+    subgraph RC["Router C · :8003"]
+        C_N["NodeHTTP + NodeForwardingService"]
+        C_T[("data/routers/C/…")]
+        C_N --> C_T
+    end
+    subgraph RD["Router D · :8004"]
+        D_N["NodeHTTP + NodeForwardingService"]
+        D_T[("data/routers/D/…")]
+        D_N --> D_T
+    end
+    REG[("config/routers.json<br/>router_id → URL")]
+    OP --> C_HTTP
+    OP -. "GET /status · /forwarding-table (CORS)" .-> A_N
+    CLI --> A_N
+    A_N -- "GET /topology/version<br/>GET /forwarding-table" --> C_HTTP
+    B_N -- "sincronización" --> C_HTTP
+    C_N -- "sincronización" --> C_HTTP
+    D_N -- "sincronización" --> C_HTTP
+    A_N == "POST /forward (salto)" ==> B_N
+    B_N == "POST /forward (salto)" ==> D_N
+    A_N == "POST /forward" ==> C_N
+    C_N == "POST /forward" ==> D_N
+    REG -. "leído al arrancar" .-> A_N
+    REG -. "leído al arrancar" .-> CTRL

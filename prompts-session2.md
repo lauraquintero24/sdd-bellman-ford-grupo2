@@ -114,6 +114,20 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Requisitos relacionados | FR-07, FR-09, NFR-06, NFR-10; TC-15, TC-32; `02` §5, §7; `04` §4.2 |
 | Verificación personal |Ejecuté en Windows 11 la suite completa tras la variante A′ (553 passed) y scripts/demo.sh, que siguió devolviendo 503 CONTROLLER_UNAVAILABLE con el Controller detenido. |
 
+## S2-P09 — Retroalimentación del profesor: routers con dirección propia, tablas de forwarding e interfaz (C-32, fase de especificación)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-31 |
+| Técnica | [Equipo] Prompt de rol (ingeniero senior) con requisitos numerados, escenarios de aceptación, pruebas obligatorias y orden de trabajo SDD (especificaciones antes que código); decisiones de diseño y aprobaciones explícitas en mensajes posteriores |
+| Objetivo | [IA] Registrar el cambio C-32 en las especificaciones 1.1 sin escribir código hasta la aprobación del diff |
+| Texto del prompt | El prompt «CORRECCIÓN DEL PROYECTO SDD BELLMAN-FORD SEGÚN RETROALIMENTACIÓN DEL PROFESOR» (secciones 1–7 y criterio final de aceptación) y las respuestas «Apruebo C-32 — Laura Sofia Quintero Fernandez», «Apruebo C-32 — Mariana Arturo Pabón» con las decisiones 1–7 (sincronización por consulta periódica de `GET /topology/version`; reenvío HTTP salto a salto con límite de saltos y detección de bucles; `config/topology-demo.json` no dirigida para la demostración; sin cambio de costo de enlaces; autoría según 05 §2 y commits tras «Revisado y aprobado»; especificaciones primero con diff y espera; no tocar `spec-1.0`) |
+| Salida relevante | [IA] Diagnóstico: el requisito de tablas por router contradecía `01` §1, DEC-06 y FR-07 (un `GET /route` por paquete, sin caché), por lo que se propuso C-32. Especificaciones 1.1: FR-11–FR-14, NFR-12, DEC-10–DEC-12, DEC-06 revisada, endpoints `GET /topology/version`, `GET /forwarding-table`, `GET /routers`, `GET /ui`, `GET /status`, `POST /forward`, secuencias S4–S5, oráculo de tablas T-01–T-23, TC-40–TC-50, fixture F-20, cuatro diagramas nuevos |
+| Problema detectado | [IA] (1) Con F-01 (dirigida) tres de las cuatro tablas son casi todo «inalcanzable». (2) En F-20 hay empates exactos (B→C y C→B) que exigen que el reenvío salto a salto siga coincidiendo con `GET /route`. (3) Un `;` en una nota de la secuencia S5 rompía el análisis de Mermaid |
+| Corrección hecha | [IA] (1) Decisión del equipo: F-20 no dirigida para la demostración (DEC-12). (2) Se documentó en `02` §6.4 por qué el tramo de una ruta óptima con el orden total de DEC-08 es óptimo y se añadió TC-46; el oráculo independiente (enumeración de rutas) y el motor 1.0 coinciden en T-01–T-22. (3) `;` sustituido por `,` en el diagrama y en `03` |
+| Requisitos relacionados | FR-06, FR-07, FR-11–FR-14, NFR-12; DEC-06, DEC-10–DEC-12; TC-40–TC-50 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
 ### Anexo S2-P01 — texto literal
 
 ````text
