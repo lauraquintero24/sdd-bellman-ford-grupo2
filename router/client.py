@@ -9,7 +9,8 @@ import json
 
 import httpx
 
-from router.ports import RouteClient, TableClient
+from router.models import HopPacket, NodeForwardingResult, NodeTraceHop
+from router.ports import NextHopClient, RouteClient, TableClient
 from shared.cost_format import is_canonical_cost
 from shared.error_contract import (
     DETAILS_FIELD_RENAMES,
@@ -21,13 +22,24 @@ from shared.error_contract import (
     METRICS,
     ROUTE_FIELDS,
     ROUTE_UNREACHABLE,
+    STATUS_FAILED,
+    STATUS_FORWARDED,
 )
 from shared.errors import (
+    AppError,
     ControllerBadResponseError,
     ControllerTimeoutError,
     ControllerUnavailableError,
+    ForwardingLoopError,
+    ForwardingTableUnavailableError,
+    HopLimitExceededError,
+    LogPersistenceError,
+    NextHopBadResponseError,
+    NextHopTimeoutError,
+    NextHopUnavailableError,
     NodeNotFoundError,
     RouteUnreachableError,
+    TopologyChangedError,
 )
 from shared.models import ForwardingEntry, ForwardingTable, Route
 
@@ -228,3 +240,129 @@ class HttpTableClient(TableClient):
             raise _NonConforming(f"estado HTTP no previsto: {response.status_code}")
         except _NonConforming:
             raise ControllerBadResponseError(_BAD_RESPONSE) from None
+
+
+# --- Reenvío salto a salto (C-32, 02 §6.4, 04 §4.4) ---
+
+# Errores de un router vecino que se reproducen tal cual (04 §4.4); el estado HTTP lo asigna http_errors.py.
+_HOP_ERRORS: dict[str, type[AppError]] = {
+    cls.code: cls
+    for cls in (
+        NodeNotFoundError, RouteUnreachableError, TopologyChangedError, NextHopBadResponseError,
+        NextHopUnavailableError, NextHopTimeoutError, ForwardingTableUnavailableError, ForwardingLoopError,
+        HopLimitExceededError, ControllerBadResponseError, ControllerUnavailableError, ControllerTimeoutError,
+        LogPersistenceError,
+    )
+}
+_NEXT_HOP_BAD = "La respuesta del siguiente router no cumple el contrato."
+_RESPONSE_FIELDS = {"packet_id", "status", "route", "trace", "topology_version", "forwarding_mode"}
+
+
+def _hop_body(hop: HopPacket) -> dict:
+    packet = hop.packet
+    return {
+        "packet_id": packet.packet_id,
+        "source": packet.source,
+        "destination": packet.destination,
+        "payload": packet.payload,
+        "metric": packet.metric,
+        "topology_version": hop.topology_version,
+        "trace": [{"hop_index": h.hop_index, "node": h.node, "router_url": h.router_url} for h in hop.trace],
+    }
+
+
+def _parse_hop_trace(items) -> tuple[NodeTraceHop, ...]:
+    if not isinstance(items, list):
+        raise _NonConforming("trace no es una lista")
+    trace = []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict) or set(item) != {"hop_index", "node", "router_url"}:
+            raise _NonConforming("campos de un salto")
+        if item["hop_index"] != index or isinstance(item["hop_index"], bool):
+            raise _NonConforming("hop_index no consecutivo")
+        if not _is_text(item["node"]) or not _is_text(item["router_url"]):
+            raise _NonConforming("salto sin nodo o sin URL")
+        trace.append(NodeTraceHop(index, item["node"], item["router_url"]))
+    return tuple(trace)
+
+
+def _parse_hop_result(body, hop: HopPacket) -> NodeForwardingResult:
+    """Forma de NodeForwardingResponseSchema (04 §4.4); la coherencia con la traza enviada la comprueba el servicio."""
+    packet = hop.packet
+    if not isinstance(body, dict) or set(body) != _RESPONSE_FIELDS:
+        raise _NonConforming("campos de la respuesta")
+    if body["packet_id"] != packet.packet_id or body["status"] != STATUS_FORWARDED:
+        raise _NonConforming("packet_id o estado incoherentes")
+    if body["forwarding_mode"] != "hop_by_hop" or not _is_version(body["topology_version"]):
+        raise _NonConforming("modo o versión inválidos")
+    trace = _parse_hop_trace(body["trace"])
+    route = body["route"]
+    if not isinstance(route, dict) or set(route) != set(ROUTE_FIELDS):
+        raise _NonConforming("campos de route")
+    if (route["source"], route["destination"], route["metric"]) != (packet.source, packet.destination, packet.metric):
+        raise _NonConforming("route no corresponde al paquete")
+    if route["path"] != [h.node for h in trace] or route["topology_version"] != body["topology_version"]:
+        raise _NonConforming("route.path o versión no coinciden con la traza")
+    if not isinstance(route["total_cost"], str) or not is_canonical_cost(route["total_cost"]):
+        raise _NonConforming("total_cost no canónico")
+    return NodeForwardingResult(
+        router_id=trace[-1].node if trace else "",
+        role="downstream",
+        packet_id=packet.packet_id,
+        source=packet.source,
+        destination=packet.destination,
+        metric=packet.metric,
+        status=STATUS_FORWARDED,
+        trace=trace,
+        route=Route(packet.source, packet.destination, packet.metric, tuple(route["path"]), route["total_cost"],
+                    route["topology_version"]),
+        topology_version=body["topology_version"],
+        error=None,
+    )
+
+
+def _hop_error(body):
+    """Sobre PacketErrorSchema con un código reproducible → la misma excepción; si no, None."""
+    if not isinstance(body, dict) or set(body) != {"packet_id", "status", "trace", ERROR_KEY}:
+        return None
+    error = body[ERROR_KEY]
+    if body["status"] != STATUS_FAILED or not isinstance(error, dict) or set(error) != set(ERROR_FIELDS):
+        return None
+    code, message, details = error["code"], error["message"], error["details"]
+    if code not in _HOP_ERRORS or not isinstance(message, str) or not isinstance(details, dict):
+        return None
+    return _HOP_ERRORS[code](message, dict(details))
+
+
+class HttpNextHopClient(NextHopClient):
+    """Reenvío al siguiente router con ``POST {url}/forward`` (C-32); un httpx.Client por llamada."""
+
+    def __init__(
+        self, connect_timeout_s: float, read_timeout_s: float, transport: httpx.BaseTransport | None = None
+    ) -> None:
+        self._timeout = httpx.Timeout(
+            connect=connect_timeout_s, read=read_timeout_s, write=read_timeout_s, pool=connect_timeout_s
+        )
+        self._transport = transport
+        self._ssl_context = httpx.create_ssl_context()  # una vez por instancia (ver HttpRouteClient)
+
+    def forward(self, url: str, hop: HopPacket) -> NodeForwardingResult:
+        try:
+            with httpx.Client(timeout=self._timeout, transport=self._transport, verify=self._ssl_context) as http:
+                response = http.post(url.rstrip("/") + "/forward", json=_hop_body(hop))
+        except httpx.ConnectError:
+            raise NextHopUnavailableError("No fue posible conectar con el siguiente router.") from None
+        except httpx.TimeoutException:
+            raise NextHopTimeoutError("El siguiente router no respondió a tiempo.") from None
+        except httpx.HTTPError:
+            raise NextHopBadResponseError(_NEXT_HOP_BAD) from None
+        try:
+            body = _parse_json(response)
+            if response.status_code == 200:
+                return _parse_hop_result(body, hop)
+            error = _hop_error(body)
+            if error is not None:
+                raise error
+            raise _NonConforming(f"estado HTTP no previsto: {response.status_code}")
+        except _NonConforming:
+            raise NextHopBadResponseError(_NEXT_HOP_BAD) from None

@@ -9,13 +9,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from router.models import Packet
+from router.models import NodeForwardingResult, NodeTraceHop, Packet
 from router.service import ForwardingService, NodeForwardingService
+from shared.errors import InvalidRequestError
 from router.view import (
     ForwardingEntrySchema,
     ForwardingResponseSchema,
+    HopRequestSchema,
     Metric,
+    NodeForwardingResponseSchema,
     NodeForwardingTableSchema,
+    NodeTraceHopSchema,
     PacketRequestSchema,
     RouteSchema,
     RouterHealthSchema,
@@ -78,9 +82,48 @@ class NodeHTTP:
         self.router.add_api_route(
             "/forwarding-table", self.get_forwarding_table, methods=["GET"], response_model=NodeForwardingTableSchema
         )
+        self.router.add_api_route(
+            "/packets", self.post_packet, methods=["POST"], response_model=NodeForwardingResponseSchema
+        )
+        self.router.add_api_route("/forward", self.forward, methods=["POST"], response_model=NodeForwardingResponseSchema)
 
     def health(self) -> RouterHealthSchema:
         return RouterHealthSchema(status="ok", application="router")
+
+    def post_packet(self, body: PacketRequestSchema) -> NodeForwardingResponseSchema:
+        packet = Packet(body.packet_id, body.source, body.destination, body.payload, body.metric)
+        return self._respond(body.packet_id, lambda: self._service.handle(packet))
+
+    def forward(self, body: HopRequestSchema) -> NodeForwardingResponseSchema:
+        packet = Packet(body.packet_id, body.source, body.destination, body.payload, body.metric)
+        trace = tuple(NodeTraceHop(hop.hop_index, hop.node, hop.router_url) for hop in body.trace)
+        return self._respond(body.packet_id, lambda: self._service.handle(packet, trace, body.topology_version))
+
+    @staticmethod
+    def _respond(packet_id: str, call) -> NodeForwardingResponseSchema:
+        try:
+            result: NodeForwardingResult = call()
+        except InvalidRequestError:
+            raise  # error de entrada: solo el sobre {"error": …} (04 §4.4)
+        except Exception as exc:
+            exc.packet_id = packet_id  # http_errors.py construye PacketErrorSchema (02 §9)
+            raise
+        route = result.route
+        return NodeForwardingResponseSchema(
+            packet_id=result.packet_id,
+            status=result.status,
+            route=RouteSchema(
+                source=route.source,
+                destination=route.destination,
+                metric=route.metric,
+                path=list(route.path),
+                total_cost=route.total_cost,
+                topology_version=route.topology_version,
+            ),
+            trace=[NodeTraceHopSchema(hop_index=h.hop_index, node=h.node, router_url=h.router_url) for h in result.trace],
+            topology_version=result.topology_version,
+            forwarding_mode="hop_by_hop",
+        )
 
     def status(self) -> RouterStatusSchema:
         return RouterStatusSchema(**self._service.status())

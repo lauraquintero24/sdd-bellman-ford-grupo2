@@ -7,11 +7,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from router.client import HttpRouteClient, HttpTableClient
+from router.client import HttpNextHopClient, HttpRouteClient, HttpTableClient
 from router.dao import JsonForwardingTableDAO, JsonlForwardingLogDAO
 from router.http import NodeHTTP, PacketHTTP
 from router.http_errors import install_error_handlers
-from router.ports import ForwardingLogDAO, ForwardingTableDAO, RouteClient, TableClient
+from router.ports import ForwardingLogDAO, ForwardingTableDAO, NextHopClient, RouteClient, TableClient
 from router.service import ForwardingService, NodeForwardingService
 from router.settings import RouterSettings
 from shared.errors import AppError
@@ -25,8 +25,9 @@ def create_router_app(
     log_dao: ForwardingLogDAO | None = None,
     table_client: TableClient | None = None,
     table_dao: ForwardingTableDAO | None = None,
+    next_hop_client: NextHopClient | None = None,
 ) -> FastAPI:
-    """``route_client``, ``log_dao``, ``table_client`` y ``table_dao`` son los puntos de inyección de las pruebas.
+    """``route_client``, ``log_dao``, ``table_client``, ``table_dao`` y ``next_hop_client`` son puntos de inyección de pruebas.
 
     Sin ``settings.router_id`` la aplicación funciona en modo legado (1.0); con él, en modo nodo (C-32).
     """
@@ -47,11 +48,15 @@ def create_router_app(
     table_store = table_dao if table_dao is not None else JsonForwardingTableDAO(
         settings.table_file, settings.table_file.parent / "table-events.jsonl"
     )
+    hops = next_hop_client if next_hop_client is not None else HttpNextHopClient(
+        settings.connect_timeout_s, settings.read_timeout_s
+    )
     node = NodeForwardingService(
         router_id=settings.router_id,
         registry=settings.routers,
         table_client=tables,
         table_dao=table_store,
+        next_hop_client=hops,
         log_dao=forwarding_log,
     )
     sync_loop = TableSyncLoop(node, settings.sync_interval_s)
@@ -69,7 +74,6 @@ def create_router_app(
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
     app.include_router(NodeHTTP(node).router)
     install_error_handlers(app)
-    app.state.node_service = node
     return app
 
 

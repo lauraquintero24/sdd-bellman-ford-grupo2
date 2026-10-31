@@ -43,9 +43,13 @@ def wait_health(port: int, timeout: float = 15.0) -> httpx.Response:
 
 
 def stop(process: subprocess.Popen) -> None:
+    """Detiene el proceso (idempotente) y conserva su salida en ``stdout_text`` / ``stderr_text``."""
+    if hasattr(process, "stdout_text"):
+        return
     process.terminate()
     try:
-        process.communicate(timeout=10)
+        out, err = process.communicate(timeout=10)
     except subprocess.TimeoutExpired:
         process.kill()
-        process.communicate()
+        out, err = process.communicate()
+    process.stdout_text, process.stderr_text = out or "", err or ""

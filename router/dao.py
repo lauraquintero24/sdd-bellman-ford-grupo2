@@ -9,7 +9,7 @@ import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
-from router.models import ForwardingResult, NodeTables, TraceHop
+from router.models import ForwardingResult, NodeForwardingResult, NodeTables, NodeTraceHop, TraceHop
 from router.ports import ForwardingLogDAO, ForwardingTableDAO
 from shared.errors import LogPersistenceError
 from shared.models import ForwardingEntry, ForwardingTable, Route
@@ -33,8 +33,15 @@ def _route_to_dict(route: Route | None) -> dict | None:
     }
 
 
-def _record(result: ForwardingResult) -> dict:
-    return {
+def _hop_to_dict(hop) -> dict:
+    record = {"hop_index": hop.hop_index, "node": hop.node}
+    if isinstance(hop, NodeTraceHop):
+        record["router_url"] = hop.router_url
+    return record
+
+
+def _record(result: ForwardingResult | NodeForwardingResult) -> dict:
+    record = {
         "recorded_at": _recorded_at(),
         "packet_id": result.packet_id,
         "source": result.source,
@@ -42,14 +49,33 @@ def _record(result: ForwardingResult) -> dict:
         "metric": result.metric,
         "status": result.status,
         "route": _route_to_dict(result.route),
-        "trace": [{"hop_index": hop.hop_index, "node": hop.node} for hop in result.trace],
+        "trace": [_hop_to_dict(hop) for hop in result.trace],
         "topology_version": result.topology_version,
         "error": result.error,
     }
+    if isinstance(result, NodeForwardingResult):  # modo nodo (C-32, 04 §6): router_id y role al final
+        record["router_id"] = result.router_id
+        record["role"] = result.role
+    return record
 
 
-def _from_record(record: dict) -> ForwardingResult:
+def _from_record(record: dict) -> ForwardingResult | NodeForwardingResult:
     route = record["route"]
+    route = None if route is None else Route(**{**route, "path": tuple(route["path"])})
+    if "role" in record:
+        return NodeForwardingResult(
+            router_id=record["router_id"],
+            role=record["role"],
+            packet_id=record["packet_id"],
+            source=record["source"],
+            destination=record["destination"],
+            metric=record["metric"],
+            status=record["status"],
+            trace=tuple(NodeTraceHop(h["hop_index"], h["node"], h["router_url"]) for h in record["trace"]),
+            route=route,
+            topology_version=record["topology_version"],
+            error=record["error"],
+        )
     return ForwardingResult(
         packet_id=record["packet_id"],
         source=record["source"],
@@ -57,7 +83,7 @@ def _from_record(record: dict) -> ForwardingResult:
         metric=record["metric"],
         status=record["status"],
         trace=tuple(TraceHop(hop["hop_index"], hop["node"]) for hop in record["trace"]),
-        route=None if route is None else Route(**{**route, "path": tuple(route["path"])}),
+        route=route,
         topology_version=record["topology_version"],
         error=record["error"],
     )

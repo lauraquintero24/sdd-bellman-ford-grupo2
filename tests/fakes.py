@@ -152,3 +152,29 @@ def asgi_bridge(test_client) -> httpx.MockTransport:
                               headers={"content-type": response.headers.get("content-type", "application/json")})
 
     return httpx.MockTransport(handler)
+
+
+class RouterMesh:
+    """Transporte httpx que entrega cada petición a la aplicación Router de la URL de destino y la registra."""
+
+    def __init__(self) -> None:
+        self.clients: dict[str, object] = {}
+        self.requests: list[tuple[str, str, dict]] = []  # (url base, ruta, cuerpo JSON)
+
+    def add(self, url: str, test_client) -> None:
+        self.clients[url.rstrip("/")] = test_client
+
+    def transport(self) -> httpx.MockTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            base = f"{request.url.scheme}://{request.url.host}:{request.url.port}"
+            if base not in self.clients:
+                raise httpx.ConnectError("conexión rechazada (router no registrado en la malla)", request=request)
+            self.requests.append((base, request.url.path, json.loads(request.content or b"{}")))
+            response = self.clients[base].request(
+                request.method, request.url.path, content=request.content,
+                headers={"content-type": "application/json"},
+            )
+            return httpx.Response(response.status_code, content=response.content,
+                                  headers={"content-type": "application/json"})
+
+        return httpx.MockTransport(handler)

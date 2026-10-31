@@ -34,7 +34,8 @@ def _controller(fixture="F-20"):
 
 def _node(router_id, client, table_dao=None):
     return NodeForwardingService(router_id=router_id, registry=REGISTRY, table_client=client,
-                                 table_dao=table_dao or FakeForwardingTableDAO(), log_dao=FakeForwardingLogDAO())
+                                 table_dao=table_dao or FakeForwardingTableDAO(), next_hop_client=None,
+                                 log_dao=FakeForwardingLogDAO())
 
 
 def test_no_table_requests_while_version_is_unchanged():
