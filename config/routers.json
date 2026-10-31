@@ -1,0 +1,8 @@
+{
+  "routers": [
+    {"router_id": "A", "url": "http://127.0.0.1:8001"},
+    {"router_id": "B", "url": "http://127.0.0.1:8002"},
+    {"router_id": "C", "url": "http://127.0.0.1:8003"},
+    {"router_id": "D", "url": "http://127.0.0.1:8004"}
+  ]
+}
