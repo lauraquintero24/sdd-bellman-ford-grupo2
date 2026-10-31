@@ -8,12 +8,19 @@ from shared.errors import (
     ControllerBadResponseError,
     ControllerTimeoutError,
     ControllerUnavailableError,
+    ForwardingLoopError,
+    ForwardingTableUnavailableError,
+    HopLimitExceededError,
     InvalidRequestError,
     LinkNotFoundError,
     LogPersistenceError,
     NegativeCycleError,
+    NextHopBadResponseError,
+    NextHopTimeoutError,
+    NextHopUnavailableError,
     NodeNotFoundError,
     RouteUnreachableError,
+    TopologyChangedError,
 )
 
 
@@ -34,9 +41,11 @@ def test_router_error_codes(cls, code):
 
 def test_every_app_error_code_is_in_the_contract():
     classes = [InvalidRequestError, NodeNotFoundError, LinkNotFoundError, RouteUnreachableError, NegativeCycleError,
-               LogPersistenceError, ControllerBadResponseError, ControllerUnavailableError, ControllerTimeoutError]
+               LogPersistenceError, ControllerBadResponseError, ControllerUnavailableError, ControllerTimeoutError,
+               ForwardingTableUnavailableError, TopologyChangedError, NextHopBadResponseError, NextHopUnavailableError,
+               NextHopTimeoutError, ForwardingLoopError, HopLimitExceededError]
     assert {c.code for c in classes} <= ec.ERROR_CODES
-    assert len(ec.ERROR_CODES) == 13  # matriz de 04 §5
+    assert len(ec.ERROR_CODES) == 20  # matriz de 04 §5: 13 de 1.0 + 7 del modo nodo (C-32)
 
 
 def test_contract_constants():

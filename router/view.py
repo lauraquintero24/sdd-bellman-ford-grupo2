@@ -64,3 +64,32 @@ class PacketErrorSchema(BaseModel):
     status: str
     trace: list[TraceHopSchema]
     error: ErrorBodySchema
+
+
+# --- Modo nodo (C-32, 04 §4.4) ---
+
+class RouterStatusSchema(BaseModel):
+    router_id: str
+    url: str
+    mode: str
+    topology_version: int | None
+    synced_at: str | None
+    sync_status: str
+    sync_error: dict | None
+
+
+class ForwardingEntrySchema(BaseModel):
+    destination: str
+    next_hop: str | None
+    path: list[str] | None
+    total_cost: str | None
+    status: str
+
+
+class NodeForwardingTableSchema(BaseModel):
+    router_id: str
+    url: str
+    metric: str
+    topology_version: int
+    synced_at: str | None
+    entries: list[ForwardingEntrySchema]

@@ -5,10 +5,12 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import httpx
+
 from controller.models import Link, LinkChangeResult, Topology
 from controller.ports import TopologyDAO
 from router.models import ForwardingResult
-from router.ports import ForwardingLogDAO, RouteClient
+from router.ports import ForwardingLogDAO, ForwardingTableDAO, RouteClient, TableClient
 from shared.errors import LinkNotFoundError, NodeNotFoundError
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "specs" / "fixtures"
@@ -97,3 +99,56 @@ class FakeForwardingLogDAO(ForwardingLogDAO):
 
     def list_recent(self, limit: int) -> list[ForwardingResult]:
         return self.saved[-limit:] if limit > 0 else []
+
+
+# --- Dobles del modo nodo (C-32) ---
+
+class SpyTableClient(TableClient):
+    """Cliente de tablas que consulta un RoutingService real en memoria y cuenta cada petición."""
+
+    def __init__(self, routing_service) -> None:
+        self.routing_service = routing_service
+        self.version_calls = 0
+        self.table_calls: list[tuple[str, str]] = []
+        self.error: Exception | None = None
+
+    def fetch_topology_version(self) -> int:
+        self.version_calls += 1
+        if self.error is not None:
+            raise self.error
+        return self.routing_service.topology_version()
+
+    def fetch_forwarding_table(self, router_id: str, metric: str):
+        self.table_calls.append((router_id, metric))
+        if self.error is not None:
+            raise self.error
+        return self.routing_service.compute_forwarding_table(router_id, metric)
+
+
+class FakeForwardingTableDAO(ForwardingTableDAO):
+    """Tabla local en memoria; registra cada instantánea guardada."""
+
+    def __init__(self, stored=None) -> None:
+        self.stored = stored
+        self.saved: list = []
+
+    def load(self):
+        return self.stored
+
+    def save(self, tables) -> None:
+        self.saved.append(tables)
+        self.stored = tables
+
+
+def asgi_bridge(test_client) -> httpx.MockTransport:
+    """Transporte httpx que entrega cada petición a una aplicación FastAPI en el mismo proceso (TestClient)."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        response = test_client.request(
+            request.method, request.url.path, params=dict(request.url.params), content=request.content,
+            headers={"content-type": request.headers.get("content-type", "application/json")},
+        )
+        return httpx.Response(response.status_code, content=response.content,
+                              headers={"content-type": response.headers.get("content-type", "application/json")})
+
+    return httpx.MockTransport(handler)

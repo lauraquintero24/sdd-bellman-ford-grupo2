@@ -44,7 +44,9 @@ RULES = {
 PATHLIB_IO = {"read_text", "write_text", "read_bytes", "write_bytes", "open"}
 CONCRETE = {"JsonTopologyDAO": {"controller/dao.py", "controller/app.py"},
             "JsonlForwardingLogDAO": {"router/dao.py", "router/app.py"},
-            "HttpRouteClient": {"router/client.py", "router/app.py"}}
+            "HttpRouteClient": {"router/client.py", "router/app.py"},
+            "JsonForwardingTableDAO": {"router/dao.py", "router/app.py"},
+            "HttpTableClient": {"router/client.py", "router/app.py"}}
 EXISTING = sorted(m for m in RULES if (ROOT / m).is_file())
 
 

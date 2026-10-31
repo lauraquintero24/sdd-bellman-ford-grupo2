@@ -34,7 +34,8 @@ def _imported_top_modules(path: Path) -> set[str]:
 
 @pytest.mark.parametrize("path", sorted(SHARED_DIR.glob("*.py")), ids=lambda p: p.name)
 def test_shared_imports_only_stdlib(path):
-    forbidden = _imported_top_modules(path) - set(sys.stdlib_module_names)
+    # Se admite el propio paquete shared (p. ej. registry.py usa RouterInfo de models.py, C-32); nada más.
+    forbidden = _imported_top_modules(path) - set(sys.stdlib_module_names) - {"shared"}
     assert not forbidden, f"{path.name} importa módulos no estándar: {forbidden}"
 
 
