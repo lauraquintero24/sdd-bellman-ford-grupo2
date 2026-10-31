@@ -11,6 +11,8 @@ from fastapi import APIRouter, Query
 from controller.service import RoutingService
 from controller.view import (
     ControllerHealthSchema,
+    ForwardingEntrySchema,
+    ForwardingTableResponseSchema,
     LinkRequestSchema,
     LinkSchema,
     LinkStatusSchema,
@@ -18,6 +20,7 @@ from controller.view import (
     NodeId,
     RouteResponseSchema,
     TopologyResponseSchema,
+    TopologyVersionSchema,
 )
 
 
@@ -27,7 +30,13 @@ class ControllerHTTP:
         self.router = APIRouter()
         self.router.add_api_route("/health", self.health, methods=["GET"], response_model=ControllerHealthSchema)
         self.router.add_api_route("/topology", self.get_topology, methods=["GET"], response_model=TopologyResponseSchema)
+        self.router.add_api_route(
+            "/topology/version", self.get_topology_version, methods=["GET"], response_model=TopologyVersionSchema
+        )
         self.router.add_api_route("/route", self.get_route, methods=["GET"], response_model=RouteResponseSchema)
+        self.router.add_api_route(
+            "/forwarding-table", self.get_forwarding_table, methods=["GET"], response_model=ForwardingTableResponseSchema
+        )
         self.router.add_api_route("/links/fail", self.fail_link, methods=["POST"], response_model=LinkStatusSchema)
         self.router.add_api_route("/links/restore", self.restore_link, methods=["POST"], response_model=LinkStatusSchema)
 
@@ -64,6 +73,29 @@ class ControllerHTTP:
             path=list(route.path),
             total_cost=route.total_cost,
             topology_version=route.topology_version,
+        )
+
+    def get_topology_version(self) -> TopologyVersionSchema:
+        return TopologyVersionSchema(topology_version=self._service.topology_version())
+
+    def get_forwarding_table(
+        self, router_id: Annotated[NodeId, Query()], metric: Annotated[Metric, Query()]
+    ) -> ForwardingTableResponseSchema:
+        table = self._service.compute_forwarding_table(router_id, metric)
+        return ForwardingTableResponseSchema(
+            router_id=table.router_id,
+            metric=table.metric,
+            topology_version=table.topology_version,
+            entries=[
+                ForwardingEntrySchema(
+                    destination=entry.destination,
+                    next_hop=entry.next_hop,
+                    path=list(entry.path) if entry.path is not None else None,
+                    total_cost=entry.total_cost,
+                    status=entry.status,
+                )
+                for entry in table.entries
+            ],
         )
 
     def fail_link(self, body: LinkRequestSchema) -> LinkStatusSchema:

@@ -43,3 +43,7 @@ LOG_RECORD_FIELDS = (
     "recorded_at", "packet_id", "source", "destination", "metric", "status",
     "route", "trace", "topology_version", "error",
 )
+
+# Estado de una fila de la tabla de forwarding (C-32, 04 §3.7)
+ENTRY_ACTIVE = "active"
+ENTRY_UNREACHABLE = "unreachable"

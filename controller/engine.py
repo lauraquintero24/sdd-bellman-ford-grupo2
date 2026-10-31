@@ -57,13 +57,7 @@ class BellmanFordEngine:
         if src == dst:
             return PathScore(path=(src,), score=Fraction(0) if mode == ADDITIVE else Fraction(1))
 
-        graph = nx.DiGraph() if topology.directed else nx.Graph()
-        graph.add_nodes_from(topology.nodes)
-        for link in topology.links:
-            if link.is_usable():
-                graph.add_edge(link.source, link.target, weight=self._policy.weight(link, metric))
-
-        labels = self.run_bellman_ford_on_weighted_graph(graph, src, mode)
+        labels = self.run_bellman_ford_on_weighted_graph(self._build_graph(topology, metric), src, mode)
         label = labels.get(dst)
         if label is None:
             raise RouteUnreachableError(
@@ -71,6 +65,23 @@ class BellmanFordEngine:
                 {"source": src, "destination": dst, "metric": metric},
             )
         return PathScore(path=label.path, score=label.score)
+
+    def find_all_paths(self, topology: Topology, src: str, metric: str) -> dict[str, PathScore]:
+        """Mejor ruta (DEC-08) de ``src`` a cada destino alcanzable, con una sola ejecución del núcleo (C-32)."""
+        mode = METRIC_MODES.get(metric)
+        if mode is None:
+            raise InvalidRequestError(f"La métrica {metric} no está admitida.", {"fields": ["metric"]})
+        labels = self.run_bellman_ford_on_weighted_graph(self._build_graph(topology, metric), src, mode)
+        return {node: PathScore(path=label.path, score=label.score) for node, label in labels.items() if node != src}
+
+    def _build_graph(self, topology: Topology, metric: str) -> nx.Graph:
+        """Grafo de 02 §6.1: solo enlaces utilizables, peso exacto en el atributo ``weight``."""
+        graph = nx.DiGraph() if topology.directed else nx.Graph()
+        graph.add_nodes_from(topology.nodes)
+        for link in topology.links:
+            if link.is_usable():
+                graph.add_edge(link.source, link.target, weight=self._policy.weight(link, metric))
+        return graph
 
     def run_bellman_ford_on_weighted_graph(self, graph: nx.Graph, src: str, mode: str) -> dict[str, RouteLabel]:
         """Núcleo común de relajación, desempate DEC-08 y detección de ciclo negativo (02 §6.2).
