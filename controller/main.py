@@ -3,6 +3,7 @@
 Una configuración o topología inválida impide el arranque con un diagnóstico (02 §7, TC-10, TC-14).
 """
 
+import logging
 import sys
 
 import uvicorn
@@ -22,6 +23,10 @@ def main(argv: list[str] | None = None) -> int:
     except TopologyLoadError as exc:
         print(f"Controller no arrancado: topología inválida [{exc.rule}]: {exc.detail}", file=sys.stderr)
         return 2
+    handler = logging.StreamHandler()  # stderr; INFO para la duración de las peticiones (controller/app.py)
+    handler.setFormatter(logging.Formatter("%(levelname)s:     %(name)s: %(message)s"))
+    logging.getLogger("controller").addHandler(handler)
+    logging.getLogger("controller").setLevel(logging.INFO)
     uvicorn.run(app, host=settings.host, port=settings.port)
     return 0
 
