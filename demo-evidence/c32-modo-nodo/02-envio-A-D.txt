@@ -1,0 +1,17 @@
+# Escenario 2 — Paquete A→D reenviado salto a salto por HTTP
+Fecha (UTC): 2026-11-01T00:18:05Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa; capturas con Chromium en Linux
+
+$ GET http://127.0.0.1:8000/route?src=A&dst=D&metric=delay
+{"source":"A","destination":"D","metric":"delay","path":["A","B","D"],"total_cost":"2","topology_version":1}
+HTTP 200
+
+$ POST http://127.0.0.1:8001/packets  {"packet_id": "pkt-1", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}
+{"packet_id":"pkt-1","status":"forwarded","route":{"source":"A","destination":"D","metric":"delay","path":["A","B","D"],"total_cost":"2","topology_version":1},"trace":[{"hop_index":0,"node":"A","router_url":"http://127.0.0.1:8001"},{"hop_index":1,"node":"B","router_url":"http://127.0.0.1:8002"},{"hop_index":2,"node":"D","router_url":"http://127.0.0.1:8004"}],"topology_version":1,"forwarding_mode":"hop_by_hop"}
+HTTP 200
+
+$ POST http://127.0.0.1:8002/packets  {"packet_id": "pkt-2", "source": "B", "destination": "C", "metric": "delay", "payload": "demo"}
+{"packet_id":"pkt-2","status":"forwarded","route":{"source":"B","destination":"C","metric":"delay","path":["B","A","C"],"total_cost":"3","topology_version":1},"trace":[{"hop_index":0,"node":"B","router_url":"http://127.0.0.1:8002"},{"hop_index":1,"node":"A","router_url":"http://127.0.0.1:8001"},{"hop_index":2,"node":"C","router_url":"http://127.0.0.1:8003"}],"topology_version":1,"forwarding_mode":"hop_by_hop"}
+HTTP 200
+
+## B→C: empate exacto entre B-A-C y B-D-C (costo 3); DEC-08 elige B-A-C

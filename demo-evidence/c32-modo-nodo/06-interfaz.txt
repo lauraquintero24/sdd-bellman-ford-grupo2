@@ -1,0 +1,13 @@
+# Interfaz web /ui en un navegador (scripts/capture_ui.js)
+Fecha (UTC): 2026-11-01T00:18:08Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa; capturas con Chromium en Linux
+
+## $ node scripts/capture_ui.js http://127.0.0.1:8000/ui demo-evidence/c32-modo-nodo
+Routers mostrados: ["A http://127.0.0.1:8001 en línea v3","B http://127.0.0.1:8002 en línea v3","C http://127.0.0.1:8003 en línea v3","D http://127.0.0.1:8004 en línea v3"]
+Tabla de B (v3): ["A A B → A 1 activa","C A B → A → C 3 activa","D D B → D 1 activa"]
+Envío A→D: Reenviado · ruta A → B → D · costo 2 (delay) · versión 3 0. A (http://127.0.0.1:8001) 1. B (http://127.0.0.1:8002) 2. D (http://127.0.0.1:8004)
+Tabla de B tras fallar B–D (v4): ["A A B → A 1 activa","C A B → A → C 3 activa","D A B → A → C → D 5 activa"]
+Envío A→D tras el fallo: Reenviado · ruta A → C → D · costo 4 (delay) · versión 4 0. A (http://127.0.0.1:8001) 1. C (http://127.0.0.1:8003) 2. D (http://127.0.0.1:8004)
+Tabla de B tras restaurar (v5): ["A A B → A 1 activa","C A B → A → C 3 activa","D D B → D 1 activa"]
+
+(código de salida 0)

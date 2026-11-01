@@ -49,6 +49,26 @@ def check_inputs(topology: Path, routers: Path):
     return nodes, registry
 
 
+def default_connect_timeout() -> str | None:
+    """3 s en Windows (una conexión rechazada a 127.0.0.1 tarda ~2 s; limitación 10 del README); si no, el valor por defecto."""
+    return "3" if sys.platform == "win32" else None
+
+
+def controller_command(host: str, port: int, topology: Path) -> list[str]:
+    return ["controller.main", "--host", host, "--port", str(port), "--topology", str(topology)]
+
+
+def router_command(router_id: str, routers: Path, controller_url: str, sync_interval: str | None = None,
+                   connect_timeout: str | None = None, extra: tuple[str, ...] = ()) -> list[str]:
+    """La misma aplicación ``router`` para cada nodo; solo cambia ``--router-id`` (FR-11)."""
+    command = ["router.main", "--router-id", router_id, "--routers", str(routers), "--controller-url", controller_url]
+    if sync_interval is not None:
+        command += ["--sync-interval", sync_interval]
+    if connect_timeout is not None:
+        command += ["--connect-timeout", connect_timeout]
+    return command + list(extra)
+
+
 def _wait(url: str, process: subprocess.Popen, timeout: float = 30.0) -> None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -70,7 +90,7 @@ def main(argv=None) -> int:
     except (OSError, ValueError, KeyError) as exc:
         print(f"Lanzador: no se arranca nada: {exc}", file=sys.stderr)
         return 2
-    connect_timeout = args.connect_timeout or ("3" if sys.platform == "win32" else None)
+    connect_timeout = args.connect_timeout or default_connect_timeout()
     logs = ROOT / args.logs
     logs.mkdir(parents=True, exist_ok=True)
     controller_url = f"http://{args.controller_host}:{args.controller_port}"
@@ -98,16 +118,10 @@ def main(argv=None) -> int:
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, lambda *_: stopping.append(True))
     try:
-        launch("controller", controller_url, ["controller.main", "--host", args.controller_host,
-                                              "--port", str(args.controller_port), "--topology", str(topology)])
+        launch("controller", controller_url, controller_command(args.controller_host, args.controller_port, topology))
         _wait(controller_url, processes[-1][2])
         for info in registry:
-            command = ["router.main", "--router-id", info.router_id, "--routers", str(routers),
-                       "--controller-url", controller_url]
-            if args.sync_interval is not None:
-                command += ["--sync-interval", args.sync_interval]
-            if connect_timeout is not None:
-                command += ["--connect-timeout", connect_timeout]
+            command = router_command(info.router_id, routers, controller_url, args.sync_interval, connect_timeout)
             launch(f"router-{info.router_id}", info.url, command)
         for name, url, process in processes[1:]:
             _wait(url, process)

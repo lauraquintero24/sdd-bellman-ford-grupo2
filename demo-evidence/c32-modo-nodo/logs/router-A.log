@@ -1,0 +1,43 @@
+INFO:     Started server process [854]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58894 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58900 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58914 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58926 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58936 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58940 - "GET /forwarding-table?metric=inverse_bandwidth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58942 - "GET /forwarding-table?metric=loss HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58944 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58960 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58970 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58978 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58994 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59006 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59010 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59016 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59022 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59032 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59040 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59048 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59054 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59070 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59078 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59084 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59084 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59084 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59084 - "OPTIONS /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59090 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56942 - "POST /packets HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:56950 - "GET /health HTTP/1.1" 200 OK
+Sincronización de tabla fallida: CONTROLLER_UNAVAILABLE (No fue posible conectar con el Controller.)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [854]

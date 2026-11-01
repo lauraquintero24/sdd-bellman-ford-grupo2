@@ -1,0 +1,34 @@
+# Escenario 5 — Router B detenido y Controller detenido: errores controlados
+Fecha (UTC): 2026-11-01T00:18:12Z
+Máquina: Máquina Linux en la nube (sesión de Claude Code en la web); no es el ordenador de la defensa; capturas con Chromium en Linux
+
+## Se detiene el proceso Router B (PID 855)
+$ POST http://127.0.0.1:8001/packets  {"packet_id": "pkt-5", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}
+{"packet_id":"pkt-5","status":"failed","trace":[],"error":{"code":"NEXT_HOP_UNAVAILABLE","message":"No fue posible conectar con el siguiente router.","details":{"at_router":"A"}}}
+HTTP 503
+
+$ GET http://127.0.0.1:8001/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+$ GET http://127.0.0.1:8004/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+## Se detiene el proceso Controller (PID 850)
+$ POST http://127.0.0.1:8003/packets  {"packet_id": "pkt-6", "source": "C", "destination": "D", "metric": "delay", "payload": "demo"}
+{"packet_id":"pkt-6","status":"failed","trace":[],"error":{"code":"CONTROLLER_UNAVAILABLE","message":"No fue posible conectar con el Controller.","details":{"at_router":"C"}}}
+HTTP 503
+
+$ GET http://127.0.0.1:8003/status
+{"router_id":"C","url":"http://127.0.0.1:8003","mode":"node","topology_version":5,"synced_at":"2026-11-01T00:18:11.579Z","sync_status":"error","sync_error":{"code":"CONTROLLER_UNAVAILABLE","message":"No fue posible conectar con el Controller."}}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/health
+{"status":"ok","application":"router"}
+HTTP 200
+
