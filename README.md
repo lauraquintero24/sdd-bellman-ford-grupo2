@@ -148,7 +148,7 @@ python scripts/measure_nfr10.py --machine "descripción de la máquina"
 python scripts/measure_nfr11.py --machine "descripción de la máquina"
 ```
 
-- `scripts/demo.sh` arranca Controller (8100) y Router (8101) y guarda en `demo-evidence/` un archivo por paso con fecha, comando y salida literal: paquete con ruta y traza (a), fallo de un enlace de la ruta (b), restauración con versión 1 → 2 → 3 (c), destino inalcanzable (c2), Controller detenido → 503 y Controller que no responde → 504 (d), bitácora JSONL (e) y registro de accesos del Controller (f). Detecta `.venv/Scripts/python.exe` (Windows) o `.venv/bin/python` (Linux); los puertos se cambian con `CONTROLLER_PORT_DEMO`, `ROUTER_PORT_DEMO`, `ROUTER2_PORT_DEMO` y `SILENT_PORT_DEMO`. **En Windows (Git Bash) la demo arranca el Router con `--connect-timeout 3`** (en Linux, con el valor por defecto 1.0; se cambia con `CONNECT_TIMEOUT_DEMO`), para que el paso d muestre 503 con el Controller detenido: ver la limitación 10. **Solo se ha ejecutado en Linux;** debe ensayarse en el ordenador de la defensa.
+- `scripts/demo.sh` arranca Controller (8100) y Router (8101) y guarda en `demo-evidence/` un archivo por paso con fecha, comando y salida literal: paquete con ruta y traza (a), fallo de un enlace de la ruta (b), restauración con versión 1 → 2 → 3 (c), destino inalcanzable (c2), Controller detenido → 503 y Controller que no responde → 504 (d), bitácora JSONL (e) y registro de accesos del Controller (f). Detecta `.venv/Scripts/python.exe` (Windows) o `.venv/bin/python` (Linux); los puertos se cambian con `CONTROLLER_PORT_DEMO`, `ROUTER_PORT_DEMO`, `ROUTER2_PORT_DEMO` y `SILENT_PORT_DEMO`. **En Windows (Git Bash) la demo arranca el Router con `--connect-timeout 3`** (en Linux, con el valor por defecto 1.0; se cambia con `CONNECT_TIMEOUT_DEMO`), para que el paso d muestre 503 con el Controller detenido: ver la limitación 10. **Ejecutado en Windows 11 con Git Bash** el 30/10/2026 (portátil de Laura): las evidencias `a-…`–`f-…` de `demo-evidence/` son de esa ejecución. Ensayarlo de nuevo si la defensa se hace en otro ordenador.
 - Si en Windows se arranca el Router a mano para la demostración, usar también `--connect-timeout 3`:
 
 ```bash
@@ -169,7 +169,7 @@ shared/       models.py (Route) · errors.py (AppError y subclases) · error_con
 config/       topology.json (copia de F-01, valor por defecto de TOPOLOGY_FILE)
 tests/        test_tcXX_*.py (una o más por caso de 06), fakes.py (dobles), oracle.py (48 filas de 06 §3), conftest.py
 scripts/      demo.sh · measure_nfr10.py · measure_nfr11.py
-demo-evidence/  salidas literales de la demostración y mediciones (nfr10/, nfr11/)
+demo-evidence/  salidas literales de la demostración y mediciones (nfr10/, nfr11/); modo nodo C-32: c32-modo-nodo/ (Linux), c32-modo-nodo-windows/ y c32-ui-windows/ (Windows 11)
 test-results.txt  salida de pytest, tabla TC → estado y revisión manual (por firmar)
 prompts-session2.md  registro de prompts de la Sesión 2
 ```
@@ -223,3 +223,106 @@ Evidencia en `test-results.txt` (Windows 11: 553 aprobadas, 0 fallidas; nube: 55
 8. **Estado en memoria:** fallos y restauraciones se pierden al reiniciar el Controller (`01` §4.7). El Router confía en la optimalidad de la ruta del Controller (`04` §4.3).
 9. No se aplicó la línea de corte de `05` §1: `CostPresenter` implementa el procedimiento completo de `02` §6.3.
 10. **Controller detenido en Windows con el connect timeout por defecto: 504 en lugar de 503.** En Windows una conexión rechazada a 127.0.0.1 no falla al instante: el equipo midió `socket.connect` a 127.0.0.1:9 (puerto cerrado) → «ConnectionRefusedError 2.03 s». Con `CONTROLLER_CONNECT_TIMEOUT_SECONDS` = 1.0 (valor por defecto de `02` §7) httpx agota antes el plazo de conexión y lanza `ConnectTimeout`, que `04` §5 traduce a 504 `CONTROLLER_TIMEOUT`, en lugar de `ConnectError` → 503 `CONTROLLER_UNAVAILABLE`. Por eso, en Windows, TC-07 y TC-34 fallaban (`2 failed, 551 passed`, ver `test-results.txt`). Corrección sin cambiar el valor por defecto ni la especificación: esas dos pruebas y la demo en Git Bash arrancan el Router con `--connect-timeout 3`. En Linux la conexión rechazada falla al instante y el comportamiento no cambia. Con la configuración por defecto, en Windows un Controller detenido se sigue viendo como 504; cambiar el valor por defecto exigiría un cambio de especificación aprobado por ambas (`CHANGELOG-SPECS.md`).
+
+---
+
+# Corrección C-32 — Un router por nodo, tablas de forwarding e interfaz web
+
+> Retroalimentación del profesor: cada router con su propia dirección HTTP y su propia tabla de forwarding, visible en una interfaz. Cambio de especificación **C-32** (aprobado por ambas el 31/10/2026; `CHANGELOG-SPECS.md`, versión 1.1 de `specs/`, con las aclaraciones C-32.1–C-32.10). El modo anterior del Router (sin `ROUTER_ID`, «modo legado») sigue igual y todas sus pruebas siguen aprobadas.
+> **Dónde se obtuvieron los resultados de esta sección:** pruebas, `demo-evidence/c32-modo-nodo/` (incluidas las capturas `ui-*.png`, tomadas con Chromium en **Linux**) en la máquina Linux en la nube. **En Windows 11** (portátil de Laura, Python 3.14.0, 01/11/2026): suite `687 passed`, `scripts/demo_nodes.py --machine` → `demo-evidence/c32-modo-nodo-windows/`, y `scripts\start-all.ps1` con capturas manuales de `/ui` → `demo-evidence/c32-ui-windows/` (`test-results.txt`, `CHANGELOG.md`).
+
+## Qué cambia
+
+| Antes (1.0) | Ahora (modo nodo, C-32) |
+|---|---|
+| Un proceso Router que acepta paquetes de cualquier origen y pide `GET /route` al Controller por paquete | **Una instancia de la misma aplicación `router` por nodo** (A, B, C, D), cada una con su `--router-id`, su puerto (registro `config/routers.json`) y su directorio `data/routers/<id>/` |
+| Sin tabla local | **Tabla de forwarding por router** (`GET /forwarding-table?metric=…` en cada router): destino, siguiente salto, ruta, costo, estado y versión; la calcula el Controller con Bellman-Ford (`GET /forwarding-table?router_id=…&metric=…`) y el router solo la guarda (`forwarding-table.json`, historial en `table-events.jsonl`) |
+| — | **Sincronización por versión:** cada router consulta `GET /topology/version` cada segundo y en cada salto; pide su tabla de nuevo **solo** si la versión cambió (sin recálculos innecesarios, NFR-12) |
+| La traza se construía dentro de un único Router | **Reenvío HTTP real salto a salto** (`POST /forward`) usando la tabla de cada router, con detección de bucles, límite de saltos y versión por salto |
+| Solo `/docs` | **Interfaz web** en `http://127.0.0.1:8000/ui` |
+
+## Ejecutar en Windows 11 (PowerShell)
+
+Instalación, una vez:
+
+```bash
+python -m venv .venv
+```
+
+```bash
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Arrancar el Controller y los cuatro routers (topología de demostración `config/topology-demo.json`, F-20 no dirigida, y registro `config/routers.json`):
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1
+```
+
+Abrir la interfaz en el navegador: **http://127.0.0.1:8000/ui**. `Ctrl+C` en la consola detiene todos los procesos. Opciones: `-Topology config\topology.json` (F-01, dirigida: B, C y D tendrán destinos inalcanzables), `-ControllerPort 8000`, `-SyncInterval 1.0`. La salida de cada proceso queda en `data\logs\`.
+
+Con Git Bash (o en Linux) el mismo lanzador, sin PowerShell:
+
+```bash
+python scripts/start_all.py
+```
+
+Arrancar un router a mano (ejemplo, router B; en Windows añadir `--connect-timeout 3`, limitación 10):
+
+```bash
+python -m router.main --router-id B --routers config/routers.json --controller-url http://127.0.0.1:8000
+```
+
+## Interfaz web (`/ui`)
+
+- **Routers:** cada instancia con su dirección HTTP, su estado (en línea / sincronizando / no disponible) y la versión de su tabla.
+- **Tabla de forwarding** del router elegido (clic en la fila) y métrica (`delay`, `inverse_bandwidth`, `loss`). Se consulta cada 2 s, pero **solo se redibuja cuando cambia la versión** (o el router o la métrica).
+- **Enviar un paquete:** origen, destino y métrica; muestra la ruta, el costo y la traza con la URL de cada salto, y un historial.
+- **Enlaces:** botones «Fallar» y «Restaurar»; las tablas de los routers cambian solas a la nueva versión.
+
+La página no contiene datos: los obtiene por HTTP del Controller y de cada router (CORS abierto en los routers, uso de laboratorio).
+
+## Endpoints nuevos
+
+| Proceso | Método y ruta | Uso |
+|---|---|---|
+| Controller | `GET /topology/version` | Versión vigente (sincronización) |
+| Controller | `GET /forwarding-table?router_id=A&metric=delay` | Tabla calculada para un router |
+| Controller | `GET /routers`, `GET /ui` | Registro de routers e interfaz web |
+| Router (nodo) | `GET /status` | Identidad, URL y estado de sincronización |
+| Router (nodo) | `GET /forwarding-table?metric=delay` | Tabla local de ese router |
+| Router (nodo) | `POST /packets` | Ingreso de un paquete (el origen debe ser ese router) |
+| Router (nodo) | `POST /forward` | Salto entre routers |
+
+Errores nuevos: 409 `TOPOLOGY_CHANGED`, 502/503/504 `NEXT_HOP_*`, 503 `FORWARDING_TABLE_UNAVAILABLE`, 508 `FORWARDING_LOOP` / `HOP_LIMIT_EXCEEDED` (`specs/04-api-contract.md` §4.4).
+
+## Demostración reproducible (5 escenarios)
+
+```bash
+python scripts/demo_nodes.py --machine "descripción de la máquina"
+```
+
+Arranca los cinco procesos como el lanzador y guarda en `demo-evidence/c32-modo-nodo/` (la ejecución de Linux; la de Windows 11 se conservó aparte en `demo-evidence/c32-modo-nodo-windows/`) un archivo por escenario con cada petición y su respuesta literal: (0) arranque y PID, (1) cada router en su dirección con su tabla, (2) paquete A→D salto a salto, (3) fallo de B–D con las tablas actualizadas, (4) restauración, (5) router B y Controller detenidos, más (7) la bitácora y los eventos de tabla de cada router y los registros de accesos (`logs/`). Con `--screenshots` añade capturas de `/ui` mediante `scripts/capture_ui.js` (opcional: requiere Node.js y Playwright).
+
+## Pruebas nuevas
+
+`python -m pytest -q` ejecuta también TC-40–TC-50: `test_tc40_tc45_tc46_five_processes.py` (5 procesos reales), `test_tc41_router_registry.py`, `test_tc42_router_tables_api.py`, `test_tc43_forwarding_table_controller.py` (oráculo T-01–T-22), `test_tc44_table_sync.py`, `test_tc46_hop_by_hop.py` (todas las parejas = `GET /route`), `test_tc47_hop_errors.py`, `test_tc48_interface.py` y `test_tc50_launcher.py`. Resultados reales en `test-results.txt`.
+
+## Estado de los requisitos de C-32
+
+| Requisito | Estado | Evidencia |
+|---|---|---|
+| FR-11 Una instancia con dirección propia por router | Cumplido (nube y Windows 11) | TC-40 (5 procesos), TC-41, TC-50; `demo-evidence/c32-modo-nodo/00-arranque.txt`; Windows 11: `demo-evidence/c32-modo-nodo-windows/00-arranque.txt` y `start-all.ps1` (`c32-ui-windows/`) |
+| FR-12 Tabla de forwarding por router, actualizada al cambiar la topología | Cumplido (nube y Windows 11) | TC-42, TC-43 (T-01–T-22), TC-44, TC-45; escenarios 1, 3 y 4 (en `c32-modo-nodo/` y `c32-modo-nodo-windows/`); capturas v1–v3 de `c32-ui-windows/` |
+| FR-13 Reenvío HTTP salto a salto, bucles y límite de saltos | Cumplido (nube y Windows 11) | TC-46, TC-47; escenarios 2 y 5; `logs/router-*.log` (`POST /forward`), en ambas carpetas de demostración |
+| FR-14 Interfaz web | Cumplido (nube y Windows 11) | TC-48; capturas `ui-1` a `ui-4` (Chromium en Linux); `demo-evidence/c32-ui-windows/` (3 capturas manuales en Windows 11 con `start-all.ps1`) |
+| NFR-12 Sin recálculos innecesarios | Cumplido (nube) | TC-44 (0 peticiones de tabla con la versión sin cambios); escenarios 3–4 (tablas actualizadas en < 1 s) |
+
+## Limitaciones de C-32
+
+11. **`scripts/start-all.ps1` sin prueba automática:** no se puede ejecutar en la máquina en la nube (sin PowerShell); el lanzador Python que envuelve sí está probado (TC-50). Se ejecutó a mano en Windows 11 (portátil de Laura, 01/11/2026): arrancó Controller + 4 routers (8000–8004), `/ui` funcionó (`demo-evidence/c32-ui-windows/`) y tras Ctrl+C no quedó ningún proceso escuchando en 8000–8004 (netstat vacío, declarado por el equipo, sin archivo de salida).
+12. **Cambio de costo de enlaces en ejecución: fuera de alcance** (decisión del equipo, `01` §1): los costos solo cambian editando el archivo y reiniciando.
+13. **Controller detenido = reenvío bloqueado** (DEC-06 revisada): cada salto confirma la versión con el Controller; sin él, 503 aunque el router tenga tabla guardada (más estricto que un switch SDN real, pero evita tablas obsoletas). La interfaz y `/status` siguen respondiendo.
+14. **CORS `*` en los routers en modo nodo,** necesario para la interfaz; solo para laboratorio (`01` §9).
+15. **Consistencia temporal:** tras un cambio de versión las instancias se actualizan en ≤ 2 s o en el siguiente paquete; un paquete en vuelo durante el cambio puede recibir 409 `TOPOLOGY_CHANGED` y debe reenviarse.
+16. **Topología:** los routers del registro deben coincidir con los nodos (el lanzador lo comprueba); con F-01 dirigida, B, C y D tienen destinos inalcanzables (correcto, pero poco ilustrativo; por eso la demostración usa F-20).

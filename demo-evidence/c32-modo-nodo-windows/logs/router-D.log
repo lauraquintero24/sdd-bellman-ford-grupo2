@@ -1,0 +1,17 @@
+INFO:     Started server process [27852]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8004 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56307 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56318 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56322 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56330 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56338 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56346 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56381 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56389 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56394 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56418 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56426 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56431 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56447 - "GET /health HTTP/1.1" 200 OK

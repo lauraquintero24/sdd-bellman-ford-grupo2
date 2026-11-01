@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Versión | **1.0** (candidata a baseline `spec-1.0`) · 2026-10-29 |
+| Versión | **1.1** (borrador con C-32, aprobado por ambas el 31/10/2026; candidata a `spec-1.1`) · 2026-10-31 |
 | Estado de aprobación | Ver `REVIEW-AND-BASELINE.md` |
 | Reglas | Todo participante es una clase de `02` §3 (las interfaces `TopologyDAO` y `ForwardingLogDAO` se muestran por su tipo; en ejecución son `JsonTopologyDAO` y `JsonlForwardingLogDAO`). Toda petición HTTP coincide con `04`. Las flechas `-->>` son respuestas o propagación de excepciones, no llamadas nuevas. |
 
@@ -182,6 +182,76 @@ sequenceDiagram
 
 **Modelo de fallos:** `HttpRouteClient` convierte cada fallo de red (todo `httpx.TransportError`, incluida una conexión cortada a mitad de respuesta, que se trata como respuesta no conforme) en una subclase de `AppError`; `ForwardingService.forward` guarda un `ForwardingResult` con `packet_id`, `source`, `destination`, `metric`, `status="failed"`, `trace=()`, `route=None`, `topology_version=None` y `error`, y relanza **la misma** excepción; `router/http_errors.py` la traduce a `PacketErrorSchema` con el estado HTTP que su tabla asigna al `error.code` (las excepciones no llevan estado HTTP). El Router no reintenta, no usa caché y no calcula rutas (DEC-06). `GET /health` informa la vida del proceso, no la del Controller. Las respuestas no exponen la excepción original ni la dirección del Controller. Pruebas: TC-07, TC-31, TC-32, TC-33.
 
+## Secuencia 4 — Reenvío salto a salto entre instancias Router (modo nodo, C-32)
+
+**Precondiciones:** Controller con F-20 (o F-01) y cuatro instancias Router (A–D) en modo nodo, con sus tablas sincronizadas en la versión 1; métrica `delay`.
+**Resultado:** cada salto es un `POST /forward` real a la URL del siguiente router según **su propia** tabla; la traza `A, B, D` coincide con `GET /route?src=A&dst=D&metric=delay`; cada router registra el paquete en su bitácora. Diagrama fuente: `diagrams/03-4-secuencia-salto-a-salto.mmd`.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente
+    participant NA as Router A (NodeHTTP + NodeForwardingService)
+    participant NB as Router B (NodeHTTP + NodeForwardingService)
+    participant ND as Router D (NodeHTTP + NodeForwardingService)
+    participant CA as ControllerHTTP
+    Cliente->>NA: POST /packets {pkt-1, A→D, delay}
+    NA->>CA: GET /topology/version
+    CA-->>NA: 200 {topology_version 1}
+    Note over NA: versión igual a la tabla local → sin pedir tabla<br/>fila D: next_hop B · trace = (0, A)
+    NA->>NB: POST /forward {pkt-1, trace [(0,A)], topology_version 1}
+    NB->>CA: GET /topology/version
+    CA-->>NB: 200 {topology_version 1}
+    Note over NB: fila D: next_hop D · trace = (0,A), (1,B)
+    NB->>ND: POST /forward {pkt-1, trace [(0,A),(1,B)], topology_version 1}
+    ND->>CA: GET /topology/version
+    CA-->>ND: 200 {topology_version 1}
+    Note over ND: destino alcanzado · trace = (0,A), (1,B), (2,D)<br/>registra rol egress
+    ND-->>NB: 200 forwarded, trace A, B, D
+    Note over NB: valida prefijo, destino y versión · registra rol transit
+    NB-->>NA: 200 forwarded, trace A, B, D
+    Note over NA: valida y registra rol ingress
+    NA-->>Cliente: 200 forwarded, route.path [A, B, D], trace con router_url
+```
+
+**Reglas:** cada router comprueba la versión con el Controller antes de decidir y solo pide su tabla si cambió (DEC-10, NFR-12); una versión distinta entre saltos produce 409 `TOPOLOGY_CHANGED`; un nodo repetido, 508 `FORWARDING_LOOP`; más saltos que nodos, 508 `HOP_LIMIT_EXCEEDED`; un siguiente router caído o lento, 503 `NEXT_HOP_UNAVAILABLE` o 504 `NEXT_HOP_TIMEOUT`, que se propagan hasta el origen con `status: "failed"` y registro `failed` en cada router que procesó el paquete. Pruebas: TC-46, TC-47.
+
+## Secuencia 5 — Actualización de las tablas tras un fallo de enlace (modo nodo, C-32)
+
+**Precondiciones:** F-20 recién cargado (versión 1); tablas sincronizadas. **Resultado:** tras fallar B–D, todas las instancias publican su tabla de la versión 2 en ≤ 2 × `TABLE_SYNC_INTERVAL_SECONDS` (o antes, al procesar un paquete), con los valores de `06` §3.1; al restaurar, la versión 3 recupera las filas originales. Diagrama fuente: `diagrams/03-5-secuencia-actualizacion-tablas.mmd`.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Operador
+    participant CA as ControllerHTTP
+    participant RS as RoutingService
+    participant BF as BellmanFordEngine
+    participant NA as Router A (sincronización periódica)
+    participant TD as JsonForwardingTableDAO (A)
+    Operador->>CA: POST /links/fail {source B, target D}
+    CA->>RS: set_link_status(B, D, false)
+    RS-->>CA: LinkChangeResult changed true, version 2
+    CA-->>Operador: 200 {active false, changed true, topology_version 2}
+    loop cada TABLE_SYNC_INTERVAL_SECONDS
+        NA->>CA: GET /topology/version
+        CA-->>NA: 200 {topology_version 2}
+    end
+    Note over NA: 2 ≠ 1 (versión guardada) → pedir las tres tablas
+    NA->>CA: GET /forwarding-table?router_id=A&metric=delay
+    CA->>RS: compute_forwarding_table(A, delay)
+    RS->>BF: find_all_paths(topology v2, A, delay)
+    BF-->>RS: mejores rutas desde A (un único núcleo)
+    RS-->>CA: ForwardingTable v2: D → next_hop C, "4"
+    CA-->>NA: 200 tabla delay v2
+    Note over NA: ídem inverse_bandwidth y loss
+    NA->>TD: save(NodeTables v2)
+    TD-->>NA: forwarding-table.json reemplazado · línea en table-events.jsonl
+    Note over NA: GET /forwarding-table (y /ui) muestran la tabla v2,<br/>con la versión sin cambios no se vuelve a pedir ninguna tabla (NFR-12)
+```
+
+**Reglas:** el Controller no conoce a los routers para sincronizar: cada router pregunta la versión (DEC-10). Un destino que queda sin camino aparece con `status: "unreachable"` y sin siguiente salto. Si el Controller no responde, el router conserva la última tabla, informa `sync_status: "error"` en `GET /status` y, al recibir un paquete, responde 503/504/502 (DEC-06). Pruebas: TC-44, TC-45.
+
 ## Matriz de consistencia secuencia → métodos → endpoints → pruebas
 
 | Secuencia | Métodos (declarados en `02` §3) | Endpoints (`04`) | Requisitos | Pruebas |
@@ -189,5 +259,7 @@ sequenceDiagram
 | S1 | `PacketHTTP.post_packet`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ControllerHTTP.get_route`, `RoutingService.compute_route`, `TopologyDAO.get_topology`, `BellmanFordEngine.find_path`, `CostPresenter.format_cost`, `ForwardingLogDAO.save` | `POST /packets`, `GET /route` | FR-01, FR-03, FR-05, FR-07, FR-08, FR-10 | TC-01, TC-05, TC-06, TC-08, TC-09 |
 | S2 | `ControllerHTTP.fail_link`, `ControllerHTTP.restore_link`, `RoutingService.set_link_status`, `TopologyDAO.set_link_status` y los métodos de S1 | `POST /links/fail`, `POST /links/restore`, `GET /route`, `POST /packets` | FR-06, FR-07, FR-09 | TC-03, TC-04, TC-17, TC-18 |
 | S3 | `PacketHTTP.post_packet`, `PacketHTTP.health`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ForwardingLogDAO.save` | `POST /packets`, `GET /route`, `GET /health` | FR-07, FR-09, FR-10, NFR-06 | TC-07, TC-31, TC-32, TC-33 |
+| S4 *(C-32)* | `NodeHTTP.post_packet`, `NodeHTTP.forward`, `NodeForwardingService.handle`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `NextHopClient.forward`, `ForwardingLogDAO.save` | `POST /packets`, `POST /forward`, `GET /topology/version` | FR-07, FR-11, FR-13 | TC-46, TC-47 |
+| S5 *(C-32)* | `ControllerHTTP.fail_link`, `RoutingService.set_link_status`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_forwarding_table`, `RoutingService.compute_forwarding_table`, `BellmanFordEngine.find_all_paths`, `ForwardingTableDAO.save` | `POST /links/fail`, `POST /links/restore`, `GET /topology/version`, `GET /forwarding-table` | FR-06, FR-12, NFR-12 | TC-44, TC-45 |
 
 **Concurrencia:** `get_topology()` devuelve una instantánea inmutable; el DAO protege su estado y su versión con un candado de proceso, de modo que una consulta nunca mezcla dos versiones. No se garantiza consistencia entre varias instancias del Controller (fuera de alcance).

@@ -70,6 +70,34 @@ class LinkStatusSchema(BaseModel):
     topology_version: int
 
 
+class TopologyVersionSchema(BaseModel):
+    topology_version: int
+
+
+class ForwardingEntrySchema(BaseModel):
+    destination: str
+    next_hop: str | None
+    path: list[str] | None
+    total_cost: str | None
+    status: str
+
+
+class ForwardingTableResponseSchema(BaseModel):
+    router_id: str
+    metric: str
+    topology_version: int
+    entries: list[ForwardingEntrySchema]
+
+
+class RouterInfoSchema(BaseModel):
+    router_id: str
+    url: str
+
+
+class RouterListSchema(BaseModel):
+    routers: list[RouterInfoSchema]
+
+
 class ControllerHealthSchema(BaseModel):
     status: str
     application: str

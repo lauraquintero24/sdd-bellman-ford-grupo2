@@ -20,3 +20,32 @@ class Route:
     path: tuple[str, ...]
     total_cost: str
     topology_version: int
+
+
+@dataclass(frozen=True)
+class RouterInfo:
+    """Entrada del registro de routers (C-32): identidad y dirección HTTP de una instancia."""
+
+    router_id: str
+    url: str
+
+
+@dataclass(frozen=True)
+class ForwardingEntry:
+    """Fila de una tabla de forwarding (04 §3.7). Inalcanzable: ``next_hop``, ``path`` y ``total_cost`` en None."""
+
+    destination: str
+    next_hop: str | None
+    path: tuple[str, ...] | None
+    total_cost: str | None
+    status: str
+
+
+@dataclass(frozen=True)
+class ForwardingTable:
+    """Tabla de forwarding de un router para una métrica, calculada por el Controller sobre una versión."""
+
+    router_id: str
+    metric: str
+    topology_version: int
+    entries: tuple[ForwardingEntry, ...]

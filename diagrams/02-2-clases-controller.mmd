@@ -75,12 +75,16 @@ classDiagram
     class ControllerHTTP {
         <<Controller MVC>>
         -RoutingService service
-        +ControllerHTTP(service: RoutingService)
+        +ControllerHTTP(service: RoutingService, routers: tuple~RouterInfo~ = ())
         +get_topology() TopologyResponseSchema
         +get_route(src: str, dst: str, metric: str) RouteResponseSchema
         +fail_link(LinkRequestSchema) LinkStatusSchema
         +restore_link(LinkRequestSchema) LinkStatusSchema
         +health() ControllerHealthSchema
+        +get_topology_version() TopologyVersionSchema
+        +get_forwarding_table(router_id: str, metric: str) ForwardingTableResponseSchema
+        +list_routers() RouterListSchema
+        +ui() HTMLResponse
     }
     class TopologyResponseSchema {
         <<View>>

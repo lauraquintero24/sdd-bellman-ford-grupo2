@@ -58,3 +58,33 @@ class ControllerUnavailableError(AppError):
 
 class ControllerTimeoutError(AppError):
     code = "CONTROLLER_TIMEOUT"
+
+
+# --- Errores del Router en modo nodo (C-32, 04 §4.4) ---
+
+class ForwardingTableUnavailableError(AppError):
+    code = "FORWARDING_TABLE_UNAVAILABLE"
+
+
+class TopologyChangedError(AppError):
+    code = "TOPOLOGY_CHANGED"
+
+
+class NextHopBadResponseError(AppError):
+    code = "NEXT_HOP_BAD_RESPONSE"
+
+
+class NextHopUnavailableError(AppError):
+    code = "NEXT_HOP_UNAVAILABLE"
+
+
+class NextHopTimeoutError(AppError):
+    code = "NEXT_HOP_TIMEOUT"
+
+
+class ForwardingLoopError(AppError):
+    code = "FORWARDING_LOOP"
+
+
+class HopLimitExceededError(AppError):
+    code = "HOP_LIMIT_EXCEEDED"

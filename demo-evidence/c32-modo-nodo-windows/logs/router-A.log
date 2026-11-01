@@ -1,0 +1,27 @@
+INFO:     Started server process [13828]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56300 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56310 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56319 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56324 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56331 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56339 - "GET /forwarding-table?metric=inverse_bandwidth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56340 - "GET /forwarding-table?metric=loss HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56342 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56352 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56359 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56360 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56361 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56378 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56382 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56390 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56397 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56401 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56415 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56419 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56427 - "POST /packets HTTP/1.1" 200 OK
+Siguiente router http://127.0.0.1:8002/forward: ConnectError tras 2.026 s
+INFO:     127.0.0.1:56433 - "POST /packets HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:56442 - "GET /health HTTP/1.1" 200 OK

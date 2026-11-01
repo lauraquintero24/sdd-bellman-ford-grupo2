@@ -2,7 +2,7 @@
 
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 
 def _check_id(value: str) -> str:
@@ -64,3 +64,63 @@ class PacketErrorSchema(BaseModel):
     status: str
     trace: list[TraceHopSchema]
     error: ErrorBodySchema
+
+
+# --- Modo nodo (C-32, 04 §4.4) ---
+
+class RouterStatusSchema(BaseModel):
+    router_id: str
+    url: str
+    mode: str
+    topology_version: int | None
+    synced_at: str | None
+    sync_status: str
+    sync_error: dict | None
+
+
+class ForwardingEntrySchema(BaseModel):
+    destination: str
+    next_hop: str | None
+    path: list[str] | None
+    total_cost: str | None
+    status: str
+
+
+class NodeForwardingTableSchema(BaseModel):
+    router_id: str
+    url: str
+    metric: str
+    topology_version: int
+    synced_at: str | None
+    entries: list[ForwardingEntrySchema]
+
+
+class NodeTraceHopSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    hop_index: int
+    node: Identifier
+    router_url: Identifier
+
+
+class HopRequestSchema(BaseModel):
+    """Cuerpo de POST /forward (salto entre routers, 04 §4.4)."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    packet_id: Identifier
+    source: Identifier
+    destination: Identifier
+    payload: str = ""
+    metric: Metric
+    topology_version: Annotated[int, Field(ge=1)]
+    trace: list[NodeTraceHopSchema]
+
+
+class NodeForwardingResponseSchema(BaseModel):
+    packet_id: str
+    status: str
+    route: RouteSchema
+    trace: list[NodeTraceHopSchema]
+    topology_version: int
+    forwarding_mode: str

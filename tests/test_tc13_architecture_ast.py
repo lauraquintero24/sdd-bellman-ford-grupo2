@@ -25,6 +25,7 @@ RULES = {
     "controller/http.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
     "controller/http_errors.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
     "controller/view.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
+    "controller/ui.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),  # 02 §8 (C-32)
     "controller/dao.py": FRAMEWORKS + ("networkx", "router", "httpx"),
     "controller/app.py": ("router",),
     "controller/main.py": ("router",),
@@ -44,7 +45,10 @@ RULES = {
 PATHLIB_IO = {"read_text", "write_text", "read_bytes", "write_bytes", "open"}
 CONCRETE = {"JsonTopologyDAO": {"controller/dao.py", "controller/app.py"},
             "JsonlForwardingLogDAO": {"router/dao.py", "router/app.py"},
-            "HttpRouteClient": {"router/client.py", "router/app.py"}}
+            "HttpRouteClient": {"router/client.py", "router/app.py"},
+            "JsonForwardingTableDAO": {"router/dao.py", "router/app.py"},
+            "HttpTableClient": {"router/client.py", "router/app.py"},
+            "HttpNextHopClient": {"router/client.py", "router/app.py"}}
 EXISTING = sorted(m for m in RULES if (ROOT / m).is_file())
 
 

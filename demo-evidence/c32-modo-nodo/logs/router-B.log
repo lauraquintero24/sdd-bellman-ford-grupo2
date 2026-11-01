@@ -1,0 +1,32 @@
+INFO:     Started server process [855]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8002 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59954 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59964 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59980 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59986 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59992 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60008 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60016 - "POST /packets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60024 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60038 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60046 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60058 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60070 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60080 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60080 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60110 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [855]

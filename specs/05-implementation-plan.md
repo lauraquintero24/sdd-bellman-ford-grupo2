@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Versión | **1.0** (candidata a baseline `spec-1.0`) · 2026-10-29 |
+| Versión | **1.1** (borrador con C-32, aprobado por ambas el 31/10/2026; candidata a `spec-1.1`) · 2026-10-31 |
 | Estado de aprobación | Ver `REVIEW-AND-BASELINE.md`. Plan **sin código** (PDF p. 3); las duraciones son presupuestos, no mediciones. |
 | Equipo | **Estudiante A — Mariana Arturo Pabón:** Controller · **Estudiante B — Laura Sofía Quintero Fernández:** Router |
 | Calendario oficial | Sesión 1: 108 min (especificación) · Sesión 2: 108 min (implementación) · Defensa: 20 min por equipo |
@@ -52,6 +52,12 @@ Minutos presupuestados por estudiante. Cada tarea se cierra solo con su entregab
 | W-RB | B | 10 | 93–103 | W-13 | Reserva de contingencia; si sobra: TC-16 (NFR-11), TC-32, TC-33 y complementarias del Router | NFR-11 |
 | W-12A | A | 5 | 103–108 | W-RA, W-13 | README (comandos y estado de requisitos), `test-results.txt` y revisión manual de código de TC-13 (`06` §6); borrador entregado a B en el minuto 105 | NFR-01, NFR-03, NFR-08 |
 | W-12B | B | 5 | 103–108 | W-RA, W-RB | `demo-evidence/` y ZIP; empaqueta en el minuto 105 el borrador de W-12A (sincronización parcial que el grafo no modela) | — |
+| W-14 *(C-32)* | A | — | Post-sesión | W-12A | `find_all_paths`, `RoutingService.compute_forwarding_table` y `topology_version`; `GET /forwarding-table` y `GET /topology/version`; oráculo de tablas de `06` §3.1 (TC-43) | FR-12, NFR-12 |
+| W-15 *(C-32)* | A | — | Post-sesión | W-14 | `ROUTERS_FILE` en el Controller, `GET /routers` y la interfaz `GET /ui` (`controller/ui.py`); TC-48 | FR-14 |
+| W-16 *(C-32)* | B | — | Post-sesión | W-14 | Modo nodo del Router: `ROUTER_ID`, registro (`shared/registry.py`), `JsonForwardingTableDAO`, `HttpTableClient`, `NodeForwardingService.sync_if_changed`, sincronización periódica, `GET /status` y `GET /forwarding-table`; TC-41, TC-42, TC-44 | FR-11, FR-12, NFR-12 |
+| W-17 *(C-32)* | B | — | Post-sesión | W-16 | Reenvío salto a salto: `HttpNextHopClient`, `NodeForwardingService.handle`, `POST /packets` y `POST /forward` en `NodeHTTP`, errores 409/502/503/504/508; TC-46, TC-47 | FR-13, FR-09 |
+| W-18 *(C-32)* | B | — | Post-sesión | W-16 | `config/routers.json`, `config/topology-demo.json` (= F-20), `scripts/start_all.py` y `scripts/start-all.ps1`; TC-40, TC-50 | FR-11, NFR-05 |
+| W-19 *(C-32)* | A + B | — | Post-sesión | W-15, W-17, W-18 | TC-45 y TC-49 con procesos reales, demostración de los 5 escenarios en `demo-evidence/`, README y `test-results.txt` | FR-06, FR-11–FR-14 |
 
 **Dependencias:** el grafo de tareas es acíclico (comprobado por la verificación automática; ver `VALIDACION.md`). Los dos carriles se sincronizan en G0 (cada una necesita la parte de `shared/` que escribe la otra: W-03 y W-06 dependen de W-02A y W-02B), en la integración (W-11A/W-11B) y en el cierre; entre esos puntos cada estudiante trabaja contra los fakes y el contrato `04`, sin bloquear a la otra.
 
@@ -65,6 +71,7 @@ Minutos presupuestados por estudiante. Cada tarea se cierra solo con su entregab
 | 4. Integrar | 15 | W-11A | W-11B | G5 (min 83): paquete reenviado por HTTP real; fallo y restauración observados |
 | 5. Probar y verificar | 20 | W-09 (10) → W-RA (10) | W-10 (7) → W-13 (3) → W-RB (10) | G6 (min 93): ≥ 8 PASS reales, incluidas TC-08 y TC-09, o incumplimiento registrado |
 | 6. Entregar | 5 | W-12A | W-12B | G7 (min 108): repositorio, evidencias y ZIP |
+| Post-sesión *(C-32)* | — | W-14 → W-15 | W-16 → W-17, W-18 | G8: Controller y cuatro routers en modo nodo con tablas correctas, reenvío salto a salto, fallo y restauración observados en la interfaz; TC-40–TC-50 y las pruebas anteriores aprobadas |
 
 **Ruta crítica (CPM sobre presupuestos):** carril A = 10 + 23 + 14 + 8 + 4 + 9 + 15 + 10 + 10 + 5 = **108 min**; carril B = 10 + 23 + 14 + 13 + 8 + 15 + 7 + 3 + 10 + 5 = **108 min**. Las tareas productivas de cada carril forman una cadena crítica de 98 min; las reservas W-RA y W-RB (10 min cada una) son la **holgura explícita** del plan y absorben retrasos de cualquier tarea anterior sin mover la entrega. Sin ensayo cronometrado, la factibilidad sigue siendo un **riesgo abierto** (R-01, R-06), no un hecho verificado.
 
@@ -106,6 +113,11 @@ Minutos presupuestados por estudiante. Cada tarea se cierra solo con su entregab
 | NFR-09 | DEC-05 | Interfaces DAO y fakes | — | — | — | W-03, W-06, W-09, W-10 | TC-08, TC-09 |
 | NFR-10 | DEC-09 | `ControllerHTTP`, `RoutingService` | `get_route` | `GET /route` | S1 | W-RA | TC-15 |
 | NFR-11 | DEC-05 | `JsonlForwardingLogDAO` | `save` | `POST /packets` | S1, S3 | W-06, W-RB | TC-16, TC-33 |
+| FR-11 *(C-32)* | DEC-11, DEC-12 | `RouterSettings`, registro, `NodeHTTP`, lanzador | `load_router_settings`, `parse_router_registry`, `status` | `GET /status` (cada router) | S4 | W-16, W-18 | TC-40, TC-41, TC-50 |
+| FR-12 *(C-32)* | DEC-08, DEC-10 | `BellmanFordEngine`, `RoutingService`, `NodeForwardingService`, `JsonForwardingTableDAO` | `find_all_paths`, `compute_forwarding_table`, `sync_if_changed`, `save` | `GET /forwarding-table` (Controller y routers), `GET /topology/version` | S5 | W-14, W-16 | TC-42, TC-43, TC-44, TC-45 |
+| FR-13 *(C-32)* | DEC-06, DEC-11 | `NodeForwardingService`, `HttpNextHopClient`, `NodeHTTP` | `handle`, `forward` | `POST /packets`, `POST /forward` | S4 | W-17 | TC-46, TC-47 |
+| FR-14 *(C-32)* | DEC-12 | `ControllerHTTP`, `controller/ui.py` | `list_routers`, `ui` | `GET /routers`, `GET /ui` | S5 | W-15 | TC-48 |
+| NFR-12 *(C-32)* | DEC-10 | `NodeForwardingService`, `TableClient` | `sync_if_changed` | `GET /topology/version` | S5 | W-16 | TC-44, TC-45 |
 
 | Decisión | Tareas | Pruebas que la verifican |
 |---|---|---|
@@ -118,6 +130,10 @@ Minutos presupuestados por estudiante. Cada tarea se cierra solo con su entregab
 | DEC-07 Ciclos negativos | W-04.1 | TC-11 |
 | DEC-08 Desempate | W-04.1, W-04A | TC-19–TC-23, TC-26 |
 | DEC-09 Aritmética exacta y presentación | W-03, W-04.2 | TC-27, TC-37, TC-38, TC-39 |
+| DEC-06 revisada *(C-32)* | W-16, W-17 | TC-05, TC-07, TC-47, TC-49 |
+| DEC-10 Sincronización por versión *(C-32)* | W-14, W-16 | TC-44, TC-45 |
+| DEC-11 Reenvío salto a salto *(C-32)* | W-17 | TC-46, TC-47 |
+| DEC-12 Topología de demostración y registro *(C-32)* | W-18 | TC-40, TC-43, TC-50 |
 
 ## 7. Definición de terminado (por tarea y por requisito)
 
@@ -136,4 +152,5 @@ Minutos presupuestados por estudiante. Cada tarea se cierra solo con su entregab
 1. **Congelamiento:** se sigue el procedimiento único de `REVIEW-AND-BASELINE.md` §3 (reconfirmación de ambas, regeneración de `SHA256SUMS`, `git add -A`, commit y tag `spec-1.0`). Se anota el SHA que devuelva Git; nunca se inventa.
 2. **Cambios posteriores (PDF p. 4):** todo cambio de diseño se registra en `CHANGELOG-SPECS.md` con motivo, artefactos afectados y aprobación de ambas antes de modificar código.
 3. **Sesión 2:** commits individuales en las ramas de §2; `prompts-session2.md` antes de W-12; pruebas, evidencias y limitaciones documentadas sin maquillar.
-4. **Defensa:** demostración en vivo (paquete, fallo y restauración, caída del Controller, TC-08/TC-09) y explicación de ambos procesos por cada estudiante.
+4. **Cambio C-32 (31/10/2026):** aprobado por ambas antes de modificar código; las especificaciones 1.1 se congelan con el tag `spec-1.1` cuando ambas aprueben este diff; `spec-1.0` no se modifica.
+5. **Defensa:** demostración en vivo (paquete, fallo y restauración, caída del Controller, TC-08/TC-09) y explicación de ambos procesos por cada estudiante.

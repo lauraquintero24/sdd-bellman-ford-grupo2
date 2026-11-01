@@ -1,0 +1,29 @@
+# Escenario 4 — Restauración de B–D: las tablas vuelven a las mejores rutas
+Fecha (UTC): 2026-11-01T18:08:34Z
+Máquina: Windows 11, portátil de Laura
+
+$ POST http://127.0.0.1:8000/links/restore  {"source": "B", "target": "D"}
+{"source":"B","target":"D","active":true,"changed":true,"topology_version":3}
+HTTP 200
+
+## Las cuatro tablas pasaron a la versión 3 en 1.14 s
+$ GET http://127.0.0.1:8001/forwarding-table?metric=delay
+{"router_id":"A","url":"http://127.0.0.1:8001","metric":"delay","topology_version":3,"synced_at":"2026-11-01T18:08:35.198Z","entries":[{"destination":"B","next_hop":"B","path":["A","B"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"C","path":["A","C"],"total_cost":"2","status":"active"},{"destination":"D","next_hop":"B","path":["A","B","D"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8002/forwarding-table?metric=delay
+{"router_id":"B","url":"http://127.0.0.1:8002","metric":"delay","topology_version":3,"synced_at":"2026-11-01T18:08:35.167Z","entries":[{"destination":"A","next_hop":"A","path":["B","A"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"A","path":["B","A","C"],"total_cost":"3","status":"active"},{"destination":"D","next_hop":"D","path":["B","D"],"total_cost":"1","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/forwarding-table?metric=delay
+{"router_id":"C","url":"http://127.0.0.1:8003","metric":"delay","topology_version":3,"synced_at":"2026-11-01T18:08:35.211Z","entries":[{"destination":"A","next_hop":"A","path":["C","A"],"total_cost":"2","status":"active"},{"destination":"B","next_hop":"A","path":["C","A","B"],"total_cost":"3","status":"active"},{"destination":"D","next_hop":"D","path":["C","D"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8004/forwarding-table?metric=delay
+{"router_id":"D","url":"http://127.0.0.1:8004","metric":"delay","topology_version":3,"synced_at":"2026-11-01T18:08:35.197Z","entries":[{"destination":"A","next_hop":"B","path":["D","B","A"],"total_cost":"2","status":"active"},{"destination":"B","next_hop":"B","path":["D","B"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"C","path":["D","C"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ POST http://127.0.0.1:8001/packets  {"packet_id": "pkt-4", "source": "A", "destination": "D", "metric": "delay", "payload": "demo"}
+{"packet_id":"pkt-4","status":"forwarded","route":{"source":"A","destination":"D","metric":"delay","path":["A","B","D"],"total_cost":"2","topology_version":3},"trace":[{"hop_index":0,"node":"A","router_url":"http://127.0.0.1:8001"},{"hop_index":1,"node":"B","router_url":"http://127.0.0.1:8002"},{"hop_index":2,"node":"D","router_url":"http://127.0.0.1:8004"}],"topology_version":3,"forwarding_mode":"hop_by_hop"}
+HTTP 200
+

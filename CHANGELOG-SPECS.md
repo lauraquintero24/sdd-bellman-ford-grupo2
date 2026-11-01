@@ -38,6 +38,33 @@ Regla (PDF p. 4): todo cambio de diseño posterior a una revisión se registra c
 | C-30 | Vista Controller vertical con `Route` detallado; esquemas de error en las Views; módulos `http_errors` en los diagramas; `settings.py`; esquemas renombrados `LinkRequestSchema`/`LinkStatusSchema`; variante de S2 y timeout de S3 corregidos; registro de prompts con marcas [IA]/[Equipo] y estado fechado; oráculo de 48 filas (se quitan dos duplicadas de TC-26); tuplas en TC-05/TC-08 | Tercera auditoría independiente: legibilidad, semántica y atribución de autoría | `02` §3, §8; `03`; `06`; `prompts-session1.md` | Sí: nombres de esquemas View |
 | C-31 | Cuarta auditoría: atributo de peso `weight` en los grafos del motor; `service.py` puede importar `engine.py` y `presenter.py`; el Model no valida (solo `JsonTopologyDAO`); G1–G3 de TC-11 completos; `router/http_errors.py` construye `PacketErrorSchema`; constructores de `ControllerHTTP`/`PacketHTTP`; precedencia de reglas `TOPO-*` y claves JSON duplicadas; `details` de `INVALID_REQUEST`; formato decimal de `GET /topology` independiente del lenguaje; TC-14 programada; excepciones del Router asignadas a B; orden de arcos irrelevante en el núcleo; contribución y cronología en `REVIEW-AND-BASELINE.md` | Ambigüedades que permitían pruebas y código incompatibles; atribución | `01` §2, §4; `02` §3–§9; `03`; `04` §1, §3.2, §3.4, §7; `05`; `06`; `REVIEW-AND-BASELINE.md`; `prompts-session1.md` | Sí: formato de `GET /topology`, precedencia de reglas |
 
+## Versión 1.1 — 2026-10-31 (respecto de 1.0 / `spec-1.0`)
+
+Origen: retroalimentación del profesor tras la Sesión 2 (una dirección HTTP por router, tabla de forwarding por router e interfaz). Propuesta redactada con asistencia de IA (registro S2-P09 de `prompts-session2.md`). **Aprobación:** «Apruebo C-32 — Laura Sofia Quintero Fernandez» y «Apruebo C-32 — Mariana Arturo Pabón» (31/10/2026), con las decisiones de diseño: sincronización por consulta periódica de la versión, reenvío HTTP real salto a salto, `config/topology-demo.json` no dirigida para la demostración y sin cambio de costo de enlaces. Pendiente: aprobación de ambas del diff de `specs/` y tag `spec-1.1`.
+
+| ID | Cambio | Motivo | Artefactos afectados | ¿Cambia el comportamiento especificado? |
+|---|---|---|---|---|
+| C-32 | **Modo nodo del Router**: una instancia de la misma aplicación por nodo (`ROUTER_ID`, registro `ROUTERS_FILE`, datos en `data/routers/<id>/`); tabla de forwarding por router calculada por el Controller (`GET /forwarding-table`, `find_all_paths`), sincronizada por `GET /topology/version` (DEC-10) y guardada con `ForwardingTableDAO`; reenvío HTTP real salto a salto (`POST /forward`) con límite de saltos, detección de bucles y versión por salto (DEC-11); interfaz web `GET /ui` y `GET /routers`; lanzador `scripts/start_all.py` / `start-all.ps1`; topología de demostración F-20 = `config/topology-demo.json` (DEC-12). DEC-06 revisada (sin cálculo local en ningún modo; tabla local con decisiones del Controller). FR-11–FR-14, NFR-12, códigos 409 `TOPOLOGY_CHANGED`, 502/503/504 `NEXT_HOP_*`, 503 `FORWARDING_TABLE_UNAVAILABLE`, 508 `FORWARDING_LOOP`/`HOP_LIMIT_EXCEEDED`. El modo legado (sin `ROUTER_ID`) conserva el comportamiento de 1.0. Cambio de costo de enlaces en ejecución: fuera de alcance (limitación declarada). | Retroalimentación del profesor: cada router con su dirección HTTP y su tabla de forwarding visible y actualizada | `01` §1, §2 (FR-07, FR-11–FR-14), §3 (NFR-12), §6, §7 (DEC-06, DEC-10–DEC-12), §8 (UC-06), §9; `02` §1, §2.1, §3.4, §4, §5, §6.4, §7, §8, §9, §10; `03` S4, S5 y matriz; `04` §1, §3.6–§3.8, §4.4, §5, §6, §7; `05` §3, §4, §6, §8; `06` §2 (F-20), §3.1 (T-01–T-23), §5 (TC-40–TC-50), §7, §8; `specs/fixtures/F-20.json`; `diagrams/02-5`, `02-6`, `03-4`, `03-5` (`.mmd` y `.svg`, Mermaid CLI 11.4.2) | Sí: Router por nodo, endpoints nuevos, FR-07 y DEC-06 revisados, códigos de error nuevos |
+
+### Aclaraciones de C-32 (01/11/2026, durante la implementación W-14–W-19)
+
+Diferencias entre el diseño 1.1 y la implementación que el equipo pidió registrar en la especificación; ninguna cambia endpoints ni códigos de error. Redactadas con asistencia de IA (S2-P10 de `prompts-session2.md`).
+
+| ID | Aclaración | Origen | Artefactos |
+|---|---|---|---|
+| C-32.1 | `NodeTables` incluye `url` | `04` §6 guarda la URL en `forwarding-table.json` (W-16) | `02` §3.4, diagrama `02-6` |
+| C-32.2 | `shared/` puede importar el propio paquete `shared` | `shared/registry.py` usa `RouterInfo` (W-16); la regla prohíbe frameworks y los otros procesos | `02` §8; `tests/test_tc13_shared_contracts.py` |
+| C-32.3 | `NodeForwardingService` recibe `next_hop_client` (entre `table_dao` y `log_dao`) | Firma final de W-17, igual al diagrama `02-6` | `02` §3.4 |
+| C-32.4 | El límite de saltos se comprueba después de sincronizar (número de nodos de la tabla vigente) | W-17 | `02` §6.4 |
+| C-32.5 | Cada router consulta `GET /topology/version` en cada salto que procesa | W-17; DEC-10 ya lo preveía «antes de procesar cada paquete» | `01` NFR-12, DEC-06; `02` §6.4 |
+| C-32.6 | `ControllerHTTP(service, routers=())`: el registro llega desde `create_controller_app`; métodos `get_topology_version`, `get_forwarding_table`, `list_routers`, `ui` en el diagrama | W-14, W-15 | `02` §3.1, §3.4, diagrama `02-2` |
+| C-32.7 | `source` ≠ `router_id` → 400 solo con sobre y sin registro; los demás fallos se registran con `trace = []` y `details.at_router` del router donde se originó | Fallo real detectado por TC-47 (faltaba `at_router` en errores del cliente de siguiente salto) | `02` §6.4; `04` §4.4, §6 |
+| C-32.8 | En respuestas intermedias de `POST /forward`, `route.total_cost` es el costo desde el router que responde; el de ingreso pone el de su fila | W-17 | `02` §6.4; `04` §4.4 |
+| C-32.9 | Lanzador: `ROUTERS_FILE` al Controller por entorno, `--connect-timeout 3` en Windows, `data/logs/`, `--stop-file` | W-18 | `02` §7 |
+| C-32.10 | TC-13 (AST) incluye `controller/ui.py` con las reglas de las Views y las clases concretas `JsonForwardingTableDAO`, `HttpTableClient`, `HttpNextHopClient` solo en `dao.py`/`client.py`/`app.py` (`02` §1.5) | W-15–W-17 | `06` §5 (TC-13); `tests/test_tc13_architecture_ast.py` |
+
+Diagramas `02-2` y `02-6` regenerados con Mermaid CLI 11.4.2.
+
 ## Historial anterior (resumen)
 
 | Versión | Cambio principal |

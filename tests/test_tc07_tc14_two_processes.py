@@ -53,12 +53,14 @@ def test_tc07_unreachable_controller_down_and_timeout(tmp_path):
     shutil.copy(FIXTURES_DIR / "F-01.json", topology)
     log = tmp_path / "forwarding.jsonl"
     c_port, r_port = free_port(), free_port()
-    controller = start("controller.main", ["--port", str(c_port), "--topology", str(topology)])
+    logs = tmp_path / "logs"  # nunca tuberías sin leer en procesos largos (tests/process_utils.start)
+    controller = start("controller.main", ["--port", str(c_port), "--topology", str(topology)],
+                       log_file=logs / "controller.log")
     # --connect-timeout 3: en Windows una conexión rechazada a 127.0.0.1 no falla al instante (el equipo midió
     # socket.connect a 127.0.0.1:9, puerto cerrado → «ConnectionRefusedError 2.03 s»); con el valor por defecto
     # de 1.0 s (02 §7) httpx lanzaría ConnectTimeout (504) antes que ConnectError (503) con el Controller detenido.
     router = start("router.main", ["--port", str(r_port), "--controller-url", f"http://127.0.0.1:{c_port}",
-                                   "--log-file", str(log), "--connect-timeout", "3"])
+                                   "--log-file", str(log), "--connect-timeout", "3"], log_file=logs / "router.log")
     try:
         wait_health(c_port), wait_health(r_port)
         # a. Fallar B→D y C→D → 404 ROUTE_UNREACHABLE (E-06)
@@ -85,7 +87,7 @@ def test_tc07_unreachable_controller_down_and_timeout(tmp_path):
     r2_port = free_port()
     router2 = start("router.main", ["--port", str(r2_port), "--controller-url",
                                     f"http://127.0.0.1:{server.getsockname()[1]}", "--log-file", str(log),
-                                    "--read-timeout", "0.5"])
+                                    "--read-timeout", "0.5"], log_file=logs / "router2.log")
     try:
         wait_health(r2_port)
         response = _post(r2_port, "pkt-c")
@@ -111,9 +113,11 @@ def test_tc14_both_processes_by_environment_and_cli(tmp_path):
     shutil.copy(FIXTURES_DIR / "F-01.json", topology)
     log = tmp_path / "log.jsonl"
     c_port, r_port = free_port(), free_port()
-    controller = start("controller.main", [], env={"CONTROLLER_PORT": str(c_port), "TOPOLOGY_FILE": str(topology)})
+    controller = start("controller.main", [], env={"CONTROLLER_PORT": str(c_port), "TOPOLOGY_FILE": str(topology)},
+                       log_file=tmp_path / "logs" / "controller.log")
     router = start("router.main", ["--port", str(r_port)],  # CLI para el puerto, entorno para el resto
-                   env={"ROUTER_PORT": "1", "CONTROLLER_URL": f"http://127.0.0.1:{c_port}", "FORWARDING_LOG_FILE": str(log)})
+                   env={"ROUTER_PORT": "1", "CONTROLLER_URL": f"http://127.0.0.1:{c_port}", "FORWARDING_LOG_FILE": str(log)},
+                   log_file=tmp_path / "logs" / "router.log")
     try:
         assert wait_health(c_port).status_code == 200 and wait_health(r_port).status_code == 200
         response = _post(r_port, "pkt-env")

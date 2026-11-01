@@ -1,0 +1,114 @@
+classDiagram
+    direction LR
+    class RouterInfo {
+        <<shared>>
+        +str router_id
+        +str url
+    }
+    class ForwardingEntry {
+        <<shared>>
+        +str destination
+        +Optional~str~ next_hop
+        +Optional~tuple~ path
+        +Optional~str~ total_cost
+        +str status
+    }
+    class ForwardingTable {
+        <<shared>>
+        +str router_id
+        +str metric
+        +int topology_version
+        +tuple~ForwardingEntry~ entries
+    }
+    class NodeTables {
+        +str router_id
+        +str url
+        +int topology_version
+        +str synced_at
+        +dict~str, ForwardingTable~ tables
+    }
+    class NodeTraceHop {
+        +int hop_index
+        +str node
+        +str router_url
+    }
+    class NodeForwardingResult {
+        +str router_id
+        +str role
+        +str packet_id
+        +str source
+        +str destination
+        +str metric
+        +str status
+        +tuple~NodeTraceHop~ trace
+        +Optional~Route~ route
+        +Optional~int~ topology_version
+        +Optional~dict~ error
+    }
+    class HopPacket {
+        +Packet packet
+        +tuple~NodeTraceHop~ trace
+        +int topology_version
+    }
+    class TableClient {
+        <<interface>>
+        +fetch_topology_version() int
+        +fetch_forwarding_table(router_id: str, metric: str) ForwardingTable
+    }
+    class NextHopClient {
+        <<interface>>
+        +forward(url: str, hop: HopPacket) NodeForwardingResult
+    }
+    class ForwardingTableDAO {
+        <<interface>>
+        +load() Optional~NodeTables~
+        +save(tables: NodeTables) None
+    }
+    class HttpTableClient {
+        +HttpTableClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport = None)
+    }
+    class HttpNextHopClient {
+        +HttpNextHopClient(connect_timeout_s: float, read_timeout_s: float, transport = None)
+    }
+    class JsonForwardingTableDAO {
+        -Path path
+        -Path events_path
+        -Lock lock
+        +JsonForwardingTableDAO(path: Path, events_path: Path)
+    }
+    class NodeForwardingService {
+        -str router_id
+        -dict registry
+        -TableClient table_client
+        -ForwardingTableDAO table_dao
+        -NextHopClient next_hop_client
+        -ForwardingLogDAO log_dao
+        +NodeForwardingService(router_id, registry, table_client, table_dao, next_hop_client, log_dao)
+        +sync_if_changed() NodeTables
+        +current_table(metric: str) ForwardingTable
+        +status() dict
+        +handle(packet: Packet, trace: tuple = (), topology_version: int = None) NodeForwardingResult
+    }
+    class NodeHTTP {
+        <<Controller MVC>>
+        +NodeHTTP(service: NodeForwardingService)
+        +status() RouterStatusSchema
+        +get_forwarding_table(metric) NodeForwardingTableSchema
+        +post_packet(PacketRequestSchema) NodeForwardingResponseSchema
+        +forward(HopRequestSchema) NodeForwardingResponseSchema
+        +health() RouterHealthSchema
+    }
+    TableClient <|.. HttpTableClient
+    NextHopClient <|.. HttpNextHopClient
+    ForwardingTableDAO <|.. JsonForwardingTableDAO
+    NodeForwardingService --> TableClient : inyectada
+    NodeForwardingService --> ForwardingTableDAO : inyectada
+    NodeForwardingService --> NextHopClient : inyectada
+    NodeForwardingService --> RouterInfo : registro
+    NodeForwardingService ..> NodeForwardingResult : crea
+    NodeTables *-- ForwardingTable
+    ForwardingTable *-- ForwardingEntry
+    NodeForwardingResult *-- NodeTraceHop
+    HopPacket *-- NodeTraceHop
+    NextHopClient ..> HopPacket : envía
+    NodeHTTP --> NodeForwardingService : invoca

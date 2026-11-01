@@ -114,6 +114,48 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Requisitos relacionados | FR-07, FR-09, NFR-06, NFR-10; TC-15, TC-32; `02` §5, §7; `04` §4.2 |
 | Verificación personal |Ejecuté en Windows 11 la suite completa tras la variante A′ (553 passed) y scripts/demo.sh, que siguió devolviendo 503 CONTROLLER_UNAVAILABLE con el Controller detenido. |
 
+## S2-P09 — Retroalimentación del profesor: routers con dirección propia, tablas de forwarding e interfaz (C-32, fase de especificación)
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-31 |
+| Técnica | [Equipo] Prompt de rol (ingeniero senior) con requisitos numerados, escenarios de aceptación, pruebas obligatorias y orden de trabajo SDD (especificaciones antes que código); decisiones de diseño y aprobaciones explícitas en mensajes posteriores |
+| Objetivo | [IA] Registrar el cambio C-32 en las especificaciones 1.1 sin escribir código hasta la aprobación del diff |
+| Texto del prompt | El prompt «CORRECCIÓN DEL PROYECTO SDD BELLMAN-FORD SEGÚN RETROALIMENTACIÓN DEL PROFESOR» (secciones 1–7 y criterio final de aceptación) y las respuestas «Apruebo C-32 — Laura Sofia Quintero Fernandez», «Apruebo C-32 — Mariana Arturo Pabón» con las decisiones 1–7 (sincronización por consulta periódica de `GET /topology/version`; reenvío HTTP salto a salto con límite de saltos y detección de bucles; `config/topology-demo.json` no dirigida para la demostración; sin cambio de costo de enlaces; autoría según 05 §2 y commits tras «Revisado y aprobado»; especificaciones primero con diff y espera; no tocar `spec-1.0`) |
+| Salida relevante | [IA] Diagnóstico: el requisito de tablas por router contradecía `01` §1, DEC-06 y FR-07 (un `GET /route` por paquete, sin caché), por lo que se propuso C-32. Especificaciones 1.1: FR-11–FR-14, NFR-12, DEC-10–DEC-12, DEC-06 revisada, endpoints `GET /topology/version`, `GET /forwarding-table`, `GET /routers`, `GET /ui`, `GET /status`, `POST /forward`, secuencias S4–S5, oráculo de tablas T-01–T-23, TC-40–TC-50, fixture F-20, cuatro diagramas nuevos |
+| Problema detectado | [IA] (1) Con F-01 (dirigida) tres de las cuatro tablas son casi todo «inalcanzable». (2) En F-20 hay empates exactos (B→C y C→B) que exigen que el reenvío salto a salto siga coincidiendo con `GET /route`. (3) Un `;` en una nota de la secuencia S5 rompía el análisis de Mermaid |
+| Corrección hecha | [IA] (1) Decisión del equipo: F-20 no dirigida para la demostración (DEC-12). (2) Se documentó en `02` §6.4 por qué el tramo de una ruta óptima con el orden total de DEC-08 es óptimo y se añadió TC-46; el oráculo independiente (enumeración de rutas) y el motor 1.0 coinciden en T-01–T-22. (3) `;` sustituido por `,` en el diagrama y en `03` |
+| Requisitos relacionados | FR-06, FR-07, FR-11–FR-14, NFR-12; DEC-06, DEC-10–DEC-12; TC-40–TC-50 |
+| Verificación personal | Hechos comprobables (preparados por la IA; no son la verificación): en Windows 11 (portátil de Laura, Python 3.14.0, 01/11/2026) se observó el comportamiento especificado en C-32: una instancia por router en 8001–8004 con su propia tabla (`demo-evidence/c32-modo-nodo-windows/00-arranque.txt`, `01-funcionamiento-normal.txt`); con F-20, A→D sigue A→B→D costo 2 en v1, A→C→D costo 4 en v2 tras fallar B–D y A→B→D costo 2 en v3 (escenarios 2–4 y capturas de `demo-evidence/c32-ui-windows/`). **Verificación personal (Laura):** Comprobé en mi portátil que cada router responde en su propio puerto, del 8001 al 8004, y muestra su propia tabla. Al fallar el enlace B–D vi que la tabla de A cambió el siguiente salto hacia D de B a C. **Verificación personal (Mariana):** En este registro no verifiqué personalmente la especificación de C-32; mi verificación se limita a revisar las evidencias y los cambios del Controller. |
+
+## S2-P10 — Implementación de C-32 (W-14–W-19): tablas de forwarding, modo nodo, reenvío salto a salto, lanzador e interfaz
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-31 / 2026-11-01 |
+| Técnica | [Equipo] Implementación por tareas del plan (`05` W-14–W-19) con aprobación por tarea («Revisado y aprobado — <nombre>»), condiciones explícitas entre tareas (prueba con 5 procesos reales, aclaraciones de especificación al final, no tocar pruebas de arquitectura sin respaldo de la especificación) y verificación con oráculos independientes |
+| Objetivo | [IA] Implementar FR-11–FR-14 y NFR-12 sin romper el modo legado, con pruebas reales y evidencias reproducibles |
+| Texto del prompt | Literal en el anexo S2-P10 (mensajes de aprobación con condiciones; los mensajes que solo dicen «Revisado y aprobado — <nombre>» no se repiten) |
+| Salida relevante | [IA] Commits `0de59e6` (W-14), `542007b` (W-16), `925685e` (W-17), `080030d` (W-18), `4b469a1` (W-15). Suite: 676 passed, 1 skipped (nube). Oráculo de tablas T-01–T-22 coincidente; en TC-46 todas las parejas de F-20 y F-01 en las tres métricas siguen exactamente `GET /route`; prueba con 5 procesos reales; interfaz verificada en Chromium; `scripts/demo_nodes.py` y `demo-evidence/c32-modo-nodo/` |
+| Problema detectado | [IA] (1) **Fallo real detectado por TC-47:** cuando el error lo generaba el propio cliente de siguiente salto (p. ej. B no puede conectar con D), la respuesta no traía `details.at_router`, que `04` §4.4 exige; la prueba `test_error_from_a_later_hop_reaches_the_origin` falló con `KeyError: 'at_router'`. (2) `shared/registry.py` importa `shared/models.py` y la prueba AST de `shared/` solo admitía la biblioteca estándar. (3) La prueba de contratos contaba 13 códigos de error y C-32 añade 7. (4) El límite de saltos necesita el número de nodos de la tabla vigente, que solo se conoce tras sincronizar (orden distinto del pseudocódigo de `02` §6.4). (5) `ControllerHTTP` necesitaba el registro de routers (no figuraba en su firma). (6) La comprobación rápida de una etapa usó un filtro que también captaba `/status`; y la primera evidencia de `demo_nodes.py` guardaba rutas absolutas del contenedor, inútiles en Windows |
+| Corrección hecha | [IA] (1) `NodeForwardingService.handle` añade `at_router` (router donde se originó) a todo error que no lo traiga; los reproducidos de un salto posterior conservan el suyo; la prueba pasó y la corrección entró en el commit de W-17 (aclaración C-32.7). (2) y (3) Pruebas ajustadas con aprobación de Laura y registradas como aclaraciones C-32.2 y C-32.10. (4) Sincronizar antes de comprobar el límite (C-32.4). (5) `ControllerHTTP(service, routers=())` (C-32.6). (6) Filtro corregido; `demo_nodes.py` usa rutas relativas a la raíz y la evidencia se regeneró. Todas las aclaraciones están en `CHANGELOG-SPECS.md` (C-32.1–C-32.10) |
+| Requisitos relacionados | FR-07, FR-09, FR-11–FR-14, NFR-05, NFR-06, NFR-12; TC-13, TC-40–TC-50 |
+| Verificación personal | Hechos comprobables (preparados por la IA; no son la verificación): en Windows 11 (portátil de Laura, Python 3.14.0, 01/11/2026) `python -m pytest -q` → 687 passed, 1 warning; `scripts/demo_nodes.py --machine` → `demo-evidence/c32-modo-nodo-windows/` (36 respuestas HTTP 200 y 2 HTTP 503 controladas en el escenario 5); `scripts\start-all.ps1` arrancó Controller + 4 routers y se detuvo sin procesos en 8000–8004; `/ui` en `demo-evidence/c32-ui-windows/`; fallo de Windows (CONTROLLER_TIMEOUT por tuberías sin leer en las pruebas) diagnosticado y corregido (`CHANGELOG.md`). **Verificación personal (Laura):** Ejecuté pytest (687 passed), start-all.ps1 y la interfaz en 127.0.0.1:8000/ui. En la interfaz, el paquete A→D fue por A→B→D con costo 2 y, tras fallar B–D, por A→C→D con costo 4. **Verificación personal (Mariana):** Revisé las capturas de demo-evidence/c32-ui-windows/ y confirmé que la versión pasa de 1 a 2 y a 3 y que la ruta cambia a A→C→D con costo 4. |
+
+## S2-P11 — Fallo real en Windows 11 en la prueba de 5 procesos: hipótesis de PermissionError, causa real CONTROLLER_TIMEOUT (tuberías sin leer) y verificación en Windows
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-11-01 |
+| Técnica | [Equipo] Informe de fallo real con salida de Windows e hipótesis «a comprobar primero»; instrucciones numeradas (dejar constancia de la causa en la prueba, diagnóstico antes de corregir, sin cambiar el contrato de `04` ni subir timeouts para ocultar el fallo, constancia honesta en `CHANGELOG.md`); revisión del diff antes de aprobar; verificación en Windows 11 por el equipo con salida real; commits por propietaria tras «Revisado y aprobado» |
+| Objetivo | [IA] Encontrar y corregir la causa de «1 failed, 676 passed» en Windows 11 (`test_five_real_processes`: respuesta con `trace: []` tras fallar B–D) sin cambiar el comportamiento especificado |
+| Texto del prompt | Literal en el anexo S2-P11 (los mensajes que solo dicen «Revisado y aprobado — <nombre>» o piden el push no se repiten) |
+| Salida relevante | [IA] Commits `cdb3c5a` y `e4e4bbf` (reintento ante `PermissionError`, diagnóstico en la prueba y pruebas de carrera), `3386ba3` (Mariana: duración de las peticiones en el Controller), `858715c` y `a63d621` (arnés con salida a archivo, diagnóstico de red del Router, `scripts/diagnose_pipe_block.py`), `dc4a9ad` (flecha ASCII en el log), `40bdb2c` y `a18f044` (resultados de Windows). Linux: 686 passed, 1 skipped, también con las tuberías reducidas a 4 KB. Windows 11 (portátil de Laura, Python 3.14.0, `a63d621`), salida aportada por el equipo: `diagnose_pipe_block.py` → «[tubería] 58 de 300 correctas; la petición 59 falló con ReadTimeout tras 2.16 s» y «[archivo] 300 de 300 correctas»; `python -m pytest -q` → 687 passed, 1 warning; 5 rondas de las pruebas de 5 procesos y de carrera → 11 passed en cada una, 0 fallos |
+| Problema detectado | [IA] (1) **Hipótesis inicial errónea.** Se propuso un `PermissionError` de `os.replace` en Windows por concurrencia entre el hilo de sincronización y `handle()`. El análisis del código mostró que las escrituras ya estaban serializadas y que en el camino de pkt-2 no se reescribe la tabla; aun así se añadió un reintento acotado y pruebas de carrera. En Windows siguió fallando: «2 failed», y el diagnóstico mostró `CONTROLLER_TIMEOUT` en todos los routers tras llegar a v2. (2) **Causa real:** `tests/process_utils.start` mandaba stdout/stderr de cada proceso a tuberías que nadie leía; el registro de accesos de uvicorn llena el búfer (unos 4 KB en Windows, 64 KB en Linux) y la escritura bloquea el bucle de eventos del Controller. Se reprodujo en Linux reduciendo el búfer a 4 KB (mismos síntomas) y se descartaron handlers `async` bloqueantes, persistencia bajo candado, recálculo costoso (0,16 ms de mediana por tabla) y agotamiento del pool (un `httpx.Client` por llamada). (3) El mismo riesgo existía en TC-07, TC-10, TC-34 y TC-50. (4) Una ejecución de la suite con 4 KB falló una vez sin que se capturara el detalle; no se reprodujo en las 26 ejecuciones siguientes con tuberías de 4 KB que incluían `test_five_real_processes` (3 de esa prueba sola, 15 de las dos pruebas de 5 procesos y 8 de la suite completa). (5) En la consola de Windows «→» del log del Controller salía como `\u2192` |
+| Corrección hecha | [IA] `start(..., log_file=)` en el arnés y salida a archivo en todos los procesos largos de las pruebas, como hace el lanzador; prueba de inventario (AST) que solo admite `subprocess.PIPE` en procesos que terminan solos. Diagnóstico: el Router registra el tipo exacto de excepción httpx, la URL y la duración; el Controller, la duración de `/links/fail`, `/links/restore`, `/topology/version` y `/forwarding-table`; `_diagnosis` añade las últimas líneas del log de cada proceso; `scripts/diagnose_pipe_block.py` reproduce el bloqueo. El reintento ante `PermissionError` se conserva como robustez y `CHANGELOG.md` deja constancia de que no corregía este fallo. Flecha ASCII `->` en el log. Sin cambios de timeouts, de `specs/`, de `diagrams/` ni del contrato de `04` |
+| Requisitos relacionados | FR-10, FR-11–FR-13, NFR-06, NFR-12; TC-07, TC-10, TC-33, TC-34, TC-40, TC-45, TC-46, TC-50 |
+| Verificación personal | Hechos comprobables (preparados por la IA; no son la verificación): en Windows 11 (portátil de Laura, Python 3.14.0, 01/11/2026) `python scripts/diagnose_pipe_block.py` bloqueó la variante con tubería en la petición 59 (ReadTimeout tras 2.16 s) y completó 300 de 300 con salida a archivo; `python -m pytest -q` → 687 passed, 1 warning; 5 rondas consecutivas de las pruebas de 5 procesos y de carrera sin fallos. **Verificación personal (Laura):** Vi fallar las pruebas con CONTROLLER_TIMEOUT y ejecuté diagnose_pipe_block.py: con tubería se bloqueó en la petición 59; con archivo, 300 de 300. Entiendo que la causa era que la salida del Controller se acumulaba en una tubería que nadie leía; cuando se llenó, el Controller se quedó bloqueado al escribir su log y los routers no recibían respuesta, de ahí el CONTROLLER_TIMEOUT. El problema estaba en cómo las pruebas arrancaban los procesos, no en el sistema. Después de la corrección, las 5 rondas pasaron. **Verificación personal (Mariana):** Revisé los cambios del Controller que aprobé: el registro de la duración de cada petición y el cambio de la flecha a ->. Comprobé que no cambian las respuestas de la API, solo el log. No ejecuté la demo en mi equipo. |
+
 ### Anexo S2-P01 — texto literal
 
 ````text
@@ -281,4 +323,107 @@ Aplica la variante A′ (contexto SSL creado una vez en __init__ y verify=self._
 Añade en router/client.py un comentario breve con el motivo (evitar recargar certificados en cada llamada; p95 de POST /packets medido: 8,554 → 81,746 ms con A y 8,440 ms con A′).
 Añade el registro S2-P08 en prompts-session2.md con este prompt y el anterior, la regresión detectada y su corrección, con «Verificación personal» vacía para que la complete yo.
 Ejecuta la suite completa, haz los commits (autoría de Laura), regenera SHA256SUMS el último, haz push y crea la PR.
+````
+
+### Anexo S2-P10 — texto literal
+
+Mensaje tras W-16:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-16. Condiciones para las siguientes tareas:
+1. Antes de cerrar W-17/W-19 añade una prueba con 5 PROCESOS REALES (Controller + routers A, B, C y D en puertos distintos, arrancados como en el lanzador) que compruebe: cuatro servidores independientes, tablas distintas, un paquete A→D reenviado por HTTP real salto a salto, fallo y restauración de B–D con tablas actualizadas, y un router detenido con error controlado.
+2. Las diferencias con el diseño (campo url en NodeTables, y que shared/ pueda importar shared/) deben quedar reflejadas en 02 (diagrama 02-6 y §8) y anotadas en CHANGELOG-SPECS.md como aclaraciones de C-32, en un commit de especificaciones al final. No cambies pruebas de arquitectura sin que la especificación lo diga.
+3. Si app.state.node_service no se usa en W-17, elimínalo.
+Sigue con W-17.
+````
+
+Mensaje tras W-17:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-17 y sigue con W-18.
+Para el commit final de especificaciones, incluye todas las aclaraciones acumuladas: url en NodeTables (02-6), shared/ puede importar shared/ (02 §8), next_hop_client en la firma, orden del límite de saltos en handle() (02 §6.4) y la consulta de versión por salto (01 NFR-12 / DEC-06). Regístralo en CHANGELOG-SPECS.md como aclaraciones de C-32.
+Registra también en prompts-session2.md el fallo real de at_router que detectó TC-47 y su corrección.
+````
+
+Mensaje tras W-18:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-18. Confirma que start_all.py y start-all.ps1 usan config/topology-demo.json por defecto (DEC-12), y que data/logs/ y data/routers/ están en .gitignore. Después sigue con W-15 (Mariana) y luego W-19.
+````
+
+Mensaje tras W-15:
+
+````text
+Revisado y aprobado — Mariana Arturo Pabón
+Haz el commit y el push de W-15. Confirma también que el commit de W-18 (Laura) ya está subido y dame su SHA.
+Luego W-19: commit final de especificaciones con TODAS las aclaraciones acumuladas (url en NodeTables, shared→shared, next_hop_client, orden del límite de saltos, consulta de versión por salto, ControllerHTTP(service, routers)), README con instrucciones para Windows (start-all.ps1 y /ui), test-results.txt, prompts-session2.md y demo-evidence/ (indicando que las capturas de la nube son de Linux). Crea la PR pero NO la fusiones: la probaremos antes en Windows.
+````
+
+
+### Anexo S2-P11 — texto literal
+
+Informe del fallo (hipótesis inicial):
+
+````text
+Fallo real en Windows 11 (Python 3.14) al ejecutar python -m pytest -q en la rama de la PR #4: «1 failed, 676 passed». Falla tests/test_tc40_tc45_tc46_five_processes.py::test_five_real_processes en la línea 91: tras POST /links/fail B–D y _wait_tables(urls, 2) (que PASA: las 4 tablas ya están en v2 con DELAY_V2), el envío inmediato A→D devuelve una respuesta con "trace": [] (error), en vez de ["A","C","D"]. Reproducción manual en el mismo Windows con start_all.py: si espero 3 s tras el fallo, POST /packets a A da 200 y [A,C,D] coste 4 v2. Es decir, es una condición de carrera que solo aparece en Windows. Hipótesis a comprobar primero: concurrencia entre el hilo de sincronización periódica y la sincronización dentro de handle(); en Windows os.replace sobre forwarding-table.json (o la escritura de table-events.jsonl) falla con PermissionError si otro hilo tiene el archivo abierto, cosa que en Linux no ocurre. Haz: 1. Que la prueba muestre el status y el cuerpo completo cuando falle, para dejar constancia de la causa real. 2. Investiga y corrige la causa (por ejemplo, un candado único por instancia que serialice sync_if_changed y las escrituras del ForwardingTableDAO; y en Windows, reintento acotado de os.replace ante PermissionError). Sin cambiar el contrato de 04 ni el comportamiento especificado; si hace falta, regístralo como aclaración C-32.11. 3. Añade una prueba que envíe paquetes inmediatamente después de fallar/restaurar un enlace, repetida varias veces, para cubrir la carrera. 4. Ejecuta la suite completa. No puedes probar Windows: indícame qué debo ejecutar yo para confirmarlo. Commits con autoría de Laura (Router), solo tras «Revisado y aprobado — Laura Sofia Quintero Fernandez», con push a la misma rama de la PR. No fusiones.
+````
+
+Revisión antes de aprobar:
+
+````text
+Antes de aprobar, muéstrame el diff completo de router/dao.py y un resumen de cada prueba nueva (nombre y qué afirma). Confirma también:
+1. que el reintento solo se activa en Windows (cómo lo detectas) y que la espera máxima es 10 × 50 ms = 0,5 s;
+2. que ante PermissionError persistente la respuesta sigue siendo exactamente el LogPersistenceError / 500 LOG_PERSISTENCE_ERROR de 04;
+3. cuál es la prueba skipped y por qué;
+4. que no cambia nada en specs/ ni diagrams/ (git diff --stat -- specs diagrams vacío), para no alterar la base de spec-1.1.
+Añade además una entrada en CHANGELOG (no en specs) que diga: «Robustez Windows del DAO del Router: reintento acotado ante PermissionError; pruebas de carrera tras fallo/restauración de enlace. Pendiente de verificación en Windows 11.»
+````
+
+Aprobación con condiciones:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Sí: haz el commit con mi autoría (mensaje que indique «pendiente de verificación en Windows 11»), y un segundo commit mío regenerando SHA256SUMS (con CHANGELOG.md incluido). Verifica sha256sum -c antes del push. Push a claude/lucid-tesla-5aa8as. No fusiones.
+````
+
+Resultado en Windows y nueva investigación:
+
+````text
+Resultado real en Windows 11 (commit e4e4bbf), 2 failed, 682 passed. La causa NO es PermissionError: el diagnóstico muestra CONTROLLER_TIMEOUT.
+- test_five_real_processes: _wait_tables(urls, 2) pasa (las 4 tablas en v2), pero pkt-2 A→D da 504 CONTROLLER_TIMEOUT at_router A. En /status, A, C (y en otra ronda también B y D) tienen sync_status "error" CONTROLLER_TIMEOUT después de haber llegado a v2. pkt-2 se registra 3–5 s después del último synced_at.
+- test_packets_right_after_each_link_change: tras el primer fail, los 4 paquetes concurrentes dan 504 (NEXT_HOP_TIMEOUT en el origen, CONTROLLER_TIMEOUT en el router de tránsito); los 4 routers marcan CONTROLLER_TIMEOUT.
+- Ronda aislada: falla igual (no es intermitente).
+- Manual con start_all.py: si espero 3 s tras el fail, funciona.
+Conclusión: tras un cambio de enlace, en Windows el Controller deja de responder a tiempo a las consultas de los routers durante unos segundos.
+
+Haz, sin cambiar el contrato de 04:
+1. Diagnóstico antes de corregir: en el cliente del Router hacia el Controller, registra en el log del proceso el tipo exacto de excepción httpx (ConnectTimeout / ReadTimeout / PoolTimeout / otra), la URL y la duración; en el Controller, registra la duración de cada petición (/links/fail, /topology/version, /forwarding-table). Que _diagnosis de las pruebas incluya además las últimas líneas del log del Controller y de cada Router. Dime qué timeouts y límites de pool usa el Router para hablar con el Controller y si el cliente httpx se comparte entre el hilo periódico y handle().
+2. Revisa en el Controller: handlers async def que hagan trabajo bloqueante (escritura de archivos, cálculo, locks) y bloqueen el event loop; locks mantenidos durante la persistencia de la topología; recomputación costosa por petición. Revisa en el Router: agotamiento del pool, conexiones keep-alive reutilizadas tras el cierre por uvicorn.
+3. Dame un comando para Windows que reproduzca el fallo una vez y muestre esos logs, y corrige la causa que se demuestre (no subas timeouts para ocultarlo, salvo que la causa sea justamente un timeout mal dimensionado y lo justifiques).
+4. El reintento de PermissionError no resolvió esto: deja constancia honesta en CHANGELOG.md («Windows 11: 2 failed; causa real CONTROLLER_TIMEOUT, en investigación») y no lo presentes como corrección del fallo.
+5. Suite completa en Linux. Commits con autoría de quien corresponda (Router: Laura; Controller: Mariana), solo tras su «Revisado y aprobado — <nombre>». Push a la rama de la PR, sin fusionar.
+````
+
+Inventario de tuberías:
+
+````text
+Antes de las aprobaciones: confirma que scripts/demo_nodes.py, scripts/start_all.py, scripts/start-all.ps1, demo.sh y cualquier otro script o prueba que arranque procesos de larga duración NO usan stdout/stderr=PIPE sin leer (grep de Popen/PIPE en todo el repositorio y lista de cada uso con su justificación). Si alguno lo hace, corrígelo igual (salida a archivo) dentro del commit de Laura.
+````
+
+Verificación en Windows:
+
+````text
+Verificado en Windows 11 (Python 3.14.0, commit a63d621), salida real aportada por el equipo:
+- scripts/diagnose_pipe_block.py: «[tubería] 58 de 300 correctas; la petición 59 falló con ReadTimeout tras 2.16 s» (7971 bytes de salida); «[archivo] 300 de 300 correctas». Causa confirmada.
+- python -m pytest -q: 687 passed, 1 warning (StarletteDeprecationWarning) en 113.37 s.
+- 5 rondas consecutivas de tests/test_tc40_tc45_tc46_five_processes.py + tests/test_tc45_race_after_link_change.py: 11 passed en cada ronda (66.54 s, 72.32 s, 66.16 s, 71.43 s, 72.69 s); 0 fallos.
+Haz:
+1. CHANGELOG.md: sustituye «Windows 11: pendiente de verificación» de la entrada de la causa por estos resultados reales (sin inventar nada más). Mantén la nota de que el reintento ante PermissionError no corregía el fallo.
+2. test-results.txt: sustituye «PENDIENTE DE EJECUCIÓN EN WINDOWS 11» por el resultado real de arriba, con fecha 2026-11-01, máquina «Windows 11, portátil de Laura».
+3. En los logs del Controller, cambia la flecha «→» por «->» para que no salga como \u2192 en la consola de Windows (sin cambiar nada más).
+4. No marques S2-P09/S2-P10 ni la demo --machine como hechas: aún no las hemos ejecutado.
+5. Suite completa en Linux, SHA256SUMS regenerado y comprobado. Commits con autoría de Laura (documentos y SHA256SUMS) y de Mariana (cambio del log del Controller), solo tras su «Revisado y aprobado — <nombre>». Push a la rama de la PR, sin fusionar.
 ````
