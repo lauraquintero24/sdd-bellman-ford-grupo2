@@ -2656,14 +2656,16 @@ TABLA TC-40 → TC-50 (C-32; redactada a partir de la salida anterior; [IA])
 --------------------------------------------------------------------------------
 TC     Estado        Pruebas / evidencia
 TC-40  PASA          test_tc40_tc45_tc46_five_processes.py (5 procesos reales: Controller + A–D en puertos distintos,
-                     5 PID, /status con su identidad); demo-evidence/c32-modo-nodo/00-arranque.txt
+                     5 PID, /status con su identidad); demo-evidence/c32-modo-nodo/00-arranque.txt;
+                     Windows 11: demo-evidence/c32-modo-nodo-windows/00-arranque.txt
 TC-41  PASA          test_tc41_router_registry.py (registro válido, 13 inválidos, configuración del modo nodo)
 TC-42  PASA          test_tc42_router_tables_api.py (4 routers con su tabla, su URL y su directorio; CORS; 503 sin tabla)
 TC-43  PASA          test_tc43_forwarding_table_controller.py (T-01–T-22 de 06 §3.1 y oráculo de enumeración exhaustiva)
 TC-44  PASA          test_tc44_table_sync.py (0 peticiones de tabla con la versión sin cambios; 3 tras un cambio; eventos)
 TC-45  PASA          test_tc40_tc45_tc46_five_processes.py y test_tc42_router_tables_api.py (fallo y restauración de B–D
                      con procesos y sincronización periódica reales: T-19–T-22 y vuelta a T-07–T-10);
-                     demo-evidence/c32-modo-nodo/03-fallo-B-D.txt y 04-restauracion.txt
+                     demo-evidence/c32-modo-nodo/03-fallo-B-D.txt y 04-restauracion.txt;
+                     Windows 11: demo-evidence/c32-modo-nodo-windows/03-fallo-B-D.txt y 04-restauracion.txt
 TC-46  PASA          test_tc46_hop_by_hop.py (todas las parejas de F-20 y F-01, tres métricas = GET /route; un POST /forward
                      por salto) y la prueba de 5 procesos; demo-evidence/c32-modo-nodo/02-envio-A-D.txt y logs/
 TC-47  PASA          test_tc47_hop_errors.py (503/504/502 NEXT_HOP_*, propagación, 508, 409, 400, Controller caído);
@@ -2687,4 +2689,16 @@ EJECUCIÓN EN WINDOWS 11 — 2026-11-01 — Windows 11, portátil de Laura — P
   5 rondas consecutivas de tests/test_tc40_tc45_tc46_five_processes.py + tests/test_tc45_race_after_link_change.py:
       11 passed en cada ronda (66.54 s, 72.32 s, 66.16 s, 71.43 s, 72.69 s); 0 fallos.
 
-PENDIENTE DE EJECUCIÓN EN WINDOWS 11: scripts\start-all.ps1 y scripts/demo_nodes.py --machine.
+EVIDENCIAS EN WINDOWS 11 — 2026-11-01 — Windows 11, portátil de Laura — Python 3.14.0 (aportadas por el equipo, commit 89231ab)
+  python scripts/demo_nodes.py --machine "Windows 11, portátil de Laura" (sin --screenshots):
+      demo-evidence/c32-modo-nodo-windows/ — escenarios 0–5 y 7 (sin 06: no se pidieron capturas); 36 respuestas
+      HTTP 200 y 2 HTTP 503 (escenario 5: pkt-5 → 503 NEXT_HOP_UNAVAILABLE en A con el Router B detenido; pkt-6 →
+      503 CONTROLLER_UNAVAILABLE en C con el Controller detenido). pkt-1 A→D [A,B,D] costo 2 v1; pkt-3 [A,C,D] costo 4
+      v2; pkt-4 [A,B,D] costo 2 v3. Tablas en v1 tras 0.72 s, v2 en 1.42 s, v3 en 1.14 s.
+  scripts\start-all.ps1 en PowerShell: arrancó Controller + 4 routers (8000–8004); demo-evidence/c32-ui-windows/:
+      3 capturas manuales de http://127.0.0.1:8000/ui, recortadas por privacidad (sin pestañas del navegador,
+      perfil ni barra de tareas; la interfaz y la URL se conservan; commit f8c9ac8) — v1 A→B→D costo 2 (8001→8002→8004); v2 tras fallar B–D
+      A→C→D costo 4 (8001→8003→8004); v3 tras restaurar A→B→D costo 2; los 4 routers cambian de versión a la vez.
+      Al detenerlo con Ctrl+C no quedó ningún proceso escuchando en 8000–8004 (netstat vacío; declarado por el
+      equipo, sin archivo de salida en demo-evidence/).
+  demo-evidence/c32-modo-nodo/ (ejecución en Linux, citada por los documentos) se conserva sin cambios.

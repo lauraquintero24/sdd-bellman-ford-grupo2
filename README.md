@@ -148,7 +148,7 @@ python scripts/measure_nfr10.py --machine "descripción de la máquina"
 python scripts/measure_nfr11.py --machine "descripción de la máquina"
 ```
 
-- `scripts/demo.sh` arranca Controller (8100) y Router (8101) y guarda en `demo-evidence/` un archivo por paso con fecha, comando y salida literal: paquete con ruta y traza (a), fallo de un enlace de la ruta (b), restauración con versión 1 → 2 → 3 (c), destino inalcanzable (c2), Controller detenido → 503 y Controller que no responde → 504 (d), bitácora JSONL (e) y registro de accesos del Controller (f). Detecta `.venv/Scripts/python.exe` (Windows) o `.venv/bin/python` (Linux); los puertos se cambian con `CONTROLLER_PORT_DEMO`, `ROUTER_PORT_DEMO`, `ROUTER2_PORT_DEMO` y `SILENT_PORT_DEMO`. **En Windows (Git Bash) la demo arranca el Router con `--connect-timeout 3`** (en Linux, con el valor por defecto 1.0; se cambia con `CONNECT_TIMEOUT_DEMO`), para que el paso d muestre 503 con el Controller detenido: ver la limitación 10. **Solo se ha ejecutado en Linux;** debe ensayarse en el ordenador de la defensa.
+- `scripts/demo.sh` arranca Controller (8100) y Router (8101) y guarda en `demo-evidence/` un archivo por paso con fecha, comando y salida literal: paquete con ruta y traza (a), fallo de un enlace de la ruta (b), restauración con versión 1 → 2 → 3 (c), destino inalcanzable (c2), Controller detenido → 503 y Controller que no responde → 504 (d), bitácora JSONL (e) y registro de accesos del Controller (f). Detecta `.venv/Scripts/python.exe` (Windows) o `.venv/bin/python` (Linux); los puertos se cambian con `CONTROLLER_PORT_DEMO`, `ROUTER_PORT_DEMO`, `ROUTER2_PORT_DEMO` y `SILENT_PORT_DEMO`. **En Windows (Git Bash) la demo arranca el Router con `--connect-timeout 3`** (en Linux, con el valor por defecto 1.0; se cambia con `CONNECT_TIMEOUT_DEMO`), para que el paso d muestre 503 con el Controller detenido: ver la limitación 10. **Ejecutado en Windows 11 con Git Bash** el 30/10/2026 (portátil de Laura): las evidencias `a-…`–`f-…` de `demo-evidence/` son de esa ejecución. Ensayarlo de nuevo si la defensa se hace en otro ordenador.
 - Si en Windows se arranca el Router a mano para la demostración, usar también `--connect-timeout 3`:
 
 ```bash
@@ -169,7 +169,7 @@ shared/       models.py (Route) · errors.py (AppError y subclases) · error_con
 config/       topology.json (copia de F-01, valor por defecto de TOPOLOGY_FILE)
 tests/        test_tcXX_*.py (una o más por caso de 06), fakes.py (dobles), oracle.py (48 filas de 06 §3), conftest.py
 scripts/      demo.sh · measure_nfr10.py · measure_nfr11.py
-demo-evidence/  salidas literales de la demostración y mediciones (nfr10/, nfr11/)
+demo-evidence/  salidas literales de la demostración y mediciones (nfr10/, nfr11/); modo nodo C-32: c32-modo-nodo/ (Linux), c32-modo-nodo-windows/ y c32-ui-windows/ (Windows 11)
 test-results.txt  salida de pytest, tabla TC → estado y revisión manual (por firmar)
 prompts-session2.md  registro de prompts de la Sesión 2
 ```
@@ -229,7 +229,7 @@ Evidencia en `test-results.txt` (Windows 11: 553 aprobadas, 0 fallidas; nube: 55
 # Corrección C-32 — Un router por nodo, tablas de forwarding e interfaz web
 
 > Retroalimentación del profesor: cada router con su propia dirección HTTP y su propia tabla de forwarding, visible en una interfaz. Cambio de especificación **C-32** (aprobado por ambas el 31/10/2026; `CHANGELOG-SPECS.md`, versión 1.1 de `specs/`, con las aclaraciones C-32.1–C-32.10). El modo anterior del Router (sin `ROUTER_ID`, «modo legado») sigue igual y todas sus pruebas siguen aprobadas.
-> **Dónde se obtuvieron los resultados de esta sección:** pruebas, `demo-evidence/c32-modo-nodo/` (incluidas las capturas `ui-*.png`, tomadas con Chromium en **Linux**) en la máquina Linux en la nube. **Pendiente de las estudiantes:** ejecutar en Windows 11 el lanzador PowerShell, la suite y la demostración.
+> **Dónde se obtuvieron los resultados de esta sección:** pruebas, `demo-evidence/c32-modo-nodo/` (incluidas las capturas `ui-*.png`, tomadas con Chromium en **Linux**) en la máquina Linux en la nube. **En Windows 11** (portátil de Laura, Python 3.14.0, 01/11/2026): suite `687 passed`, `scripts/demo_nodes.py --machine` → `demo-evidence/c32-modo-nodo-windows/`, y `scripts\start-all.ps1` con capturas manuales de `/ui` → `demo-evidence/c32-ui-windows/` (`test-results.txt`, `CHANGELOG.md`).
 
 ## Qué cambia
 
@@ -302,7 +302,7 @@ Errores nuevos: 409 `TOPOLOGY_CHANGED`, 502/503/504 `NEXT_HOP_*`, 503 `FORWARDIN
 python scripts/demo_nodes.py --machine "descripción de la máquina"
 ```
 
-Arranca los cinco procesos como el lanzador y guarda en `demo-evidence/c32-modo-nodo/` un archivo por escenario con cada petición y su respuesta literal: (0) arranque y PID, (1) cada router en su dirección con su tabla, (2) paquete A→D salto a salto, (3) fallo de B–D con las tablas actualizadas, (4) restauración, (5) router B y Controller detenidos, más (7) la bitácora y los eventos de tabla de cada router y los registros de accesos (`logs/`). Con `--screenshots` añade capturas de `/ui` mediante `scripts/capture_ui.js` (opcional: requiere Node.js y Playwright).
+Arranca los cinco procesos como el lanzador y guarda en `demo-evidence/c32-modo-nodo/` (la ejecución de Linux; la de Windows 11 se conservó aparte en `demo-evidence/c32-modo-nodo-windows/`) un archivo por escenario con cada petición y su respuesta literal: (0) arranque y PID, (1) cada router en su dirección con su tabla, (2) paquete A→D salto a salto, (3) fallo de B–D con las tablas actualizadas, (4) restauración, (5) router B y Controller detenidos, más (7) la bitácora y los eventos de tabla de cada router y los registros de accesos (`logs/`). Con `--screenshots` añade capturas de `/ui` mediante `scripts/capture_ui.js` (opcional: requiere Node.js y Playwright).
 
 ## Pruebas nuevas
 
@@ -312,15 +312,15 @@ Arranca los cinco procesos como el lanzador y guarda en `demo-evidence/c32-modo-
 
 | Requisito | Estado | Evidencia |
 |---|---|---|
-| FR-11 Una instancia con dirección propia por router | Cumplido (nube) | TC-40 (5 procesos), TC-41, TC-50; `demo-evidence/c32-modo-nodo/00-arranque.txt` |
-| FR-12 Tabla de forwarding por router, actualizada al cambiar la topología | Cumplido (nube) | TC-42, TC-43 (T-01–T-22), TC-44, TC-45; escenarios 1, 3 y 4 |
-| FR-13 Reenvío HTTP salto a salto, bucles y límite de saltos | Cumplido (nube) | TC-46, TC-47; escenarios 2 y 5; `logs/router-*.log` (`POST /forward`) |
-| FR-14 Interfaz web | Cumplido (nube) | TC-48; capturas `ui-1` a `ui-4` (Chromium en Linux) |
+| FR-11 Una instancia con dirección propia por router | Cumplido (nube y Windows 11) | TC-40 (5 procesos), TC-41, TC-50; `demo-evidence/c32-modo-nodo/00-arranque.txt`; Windows 11: `demo-evidence/c32-modo-nodo-windows/00-arranque.txt` y `start-all.ps1` (`c32-ui-windows/`) |
+| FR-12 Tabla de forwarding por router, actualizada al cambiar la topología | Cumplido (nube y Windows 11) | TC-42, TC-43 (T-01–T-22), TC-44, TC-45; escenarios 1, 3 y 4 (en `c32-modo-nodo/` y `c32-modo-nodo-windows/`); capturas v1–v3 de `c32-ui-windows/` |
+| FR-13 Reenvío HTTP salto a salto, bucles y límite de saltos | Cumplido (nube y Windows 11) | TC-46, TC-47; escenarios 2 y 5; `logs/router-*.log` (`POST /forward`), en ambas carpetas de demostración |
+| FR-14 Interfaz web | Cumplido (nube y Windows 11) | TC-48; capturas `ui-1` a `ui-4` (Chromium en Linux); `demo-evidence/c32-ui-windows/` (3 capturas manuales en Windows 11 con `start-all.ps1`) |
 | NFR-12 Sin recálculos innecesarios | Cumplido (nube) | TC-44 (0 peticiones de tabla con la versión sin cambios); escenarios 3–4 (tablas actualizadas en < 1 s) |
 
 ## Limitaciones de C-32
 
-11. **Sin prueba en Windows todavía:** `scripts/start-all.ps1` no se pudo ejecutar en la máquina en la nube (sin PowerShell); el lanzador Python que envuelve sí está probado (TC-50). Las capturas de `/ui` son de Chromium en Linux.
+11. **`scripts/start-all.ps1` sin prueba automática:** no se puede ejecutar en la máquina en la nube (sin PowerShell); el lanzador Python que envuelve sí está probado (TC-50). Se ejecutó a mano en Windows 11 (portátil de Laura, 01/11/2026): arrancó Controller + 4 routers (8000–8004), `/ui` funcionó (`demo-evidence/c32-ui-windows/`) y tras Ctrl+C no quedó ningún proceso escuchando en 8000–8004 (netstat vacío, declarado por el equipo, sin archivo de salida).
 12. **Cambio de costo de enlaces en ejecución: fuera de alcance** (decisión del equipo, `01` §1): los costos solo cambian editando el archivo y reiniciando.
 13. **Controller detenido = reenvío bloqueado** (DEC-06 revisada): cada salto confirma la versión con el Controller; sin él, 503 aunque el router tenga tabla guardada (más estricto que un switch SDN real, pero evita tablas obsoletas). La interfaz y `/status` siguen respondiendo.
 14. **CORS `*` en los routers en modo nodo,** necesario para la interfaz; solo para laboratorio (`01` §9).
