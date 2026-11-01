@@ -33,7 +33,7 @@ def create_controller_app(settings: ControllerSettings, dao: TopologyDAO | None 
         started = time.perf_counter()
         response = await call_next(request)
         if request.url.path in TIMED_PATHS:
-            logger.info("%s %s → %d en %.1f ms", request.method, request.url.path, response.status_code,
+            logger.info("%s %s -> %d en %.1f ms", request.method, request.url.path, response.status_code,
                         (time.perf_counter() - started) * 1000)
         return response
 
