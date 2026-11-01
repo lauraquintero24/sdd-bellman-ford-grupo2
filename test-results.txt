@@ -2678,4 +2678,13 @@ test_tc13_architecture_ast.py (controller/ui.py y clases concretas del modo nodo
 Fallo real detectado durante C-32: TC-47 encontró que faltaba details.at_router en los errores del cliente de siguiente
 salto; corregido en NodeForwardingService.handle antes del commit de W-17 (S2-P10 de prompts-session2.md).
 
-PENDIENTE DE EJECUCIÓN EN WINDOWS 11: python -m pytest -q, scripts\start-all.ps1 y scripts/demo_nodes.py.
+EJECUCIÓN EN WINDOWS 11 — 2026-11-01 — Windows 11, portátil de Laura — Python 3.14.0 — commit a63d621
+(salida real aportada por el equipo)
+  python scripts/diagnose_pipe_block.py: [tubería] 58 de 300 correctas; la petición 59 falló con ReadTimeout tras
+      2.16 s (7971 bytes de salida); [archivo] 300 de 300 correctas. Causa del CONTROLLER_TIMEOUT confirmada
+      (tuberías sin leer en el arnés de pruebas; CHANGELOG.md).
+  python -m pytest -q: 687 passed, 1 warning (StarletteDeprecationWarning) en 113.37 s.
+  5 rondas consecutivas de tests/test_tc40_tc45_tc46_five_processes.py + tests/test_tc45_race_after_link_change.py:
+      11 passed en cada ronda (66.54 s, 72.32 s, 66.16 s, 71.43 s, 72.69 s); 0 fallos.
+
+PENDIENTE DE EJECUCIÓN EN WINDOWS 11: scripts\start-all.ps1 y scripts/demo_nodes.py --machine.
