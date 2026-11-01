@@ -1,0 +1,35 @@
+# Escenario 0 — Arranque: Controller y una instancia Router por nodo
+Fecha (UTC): 2026-11-01T18:08:24Z
+Máquina: Windows 11, portátil de Laura
+
+## python -m controller.main --host 127.0.0.1 --port 8000 --topology config/topology-demo.json   (ROUTERS_FILE=config/routers.json)
+## python -m router.main --router-id A --routers config/routers.json --controller-url http://127.0.0.1:8000 --connect-timeout 3 --log-file data/demo-c32/A/forwarding.jsonl --table-file data/demo-c32/A/forwarding-table.json
+## python -m router.main --router-id B --routers config/routers.json --controller-url http://127.0.0.1:8000 --connect-timeout 3 --log-file data/demo-c32/B/forwarding.jsonl --table-file data/demo-c32/B/forwarding-table.json
+## python -m router.main --router-id C --routers config/routers.json --controller-url http://127.0.0.1:8000 --connect-timeout 3 --log-file data/demo-c32/C/forwarding.jsonl --table-file data/demo-c32/C/forwarding-table.json
+## python -m router.main --router-id D --routers config/routers.json --controller-url http://127.0.0.1:8000 --connect-timeout 3 --log-file data/demo-c32/D/forwarding.jsonl --table-file data/demo-c32/D/forwarding-table.json
+## PID de los procesos: {"controller": 2252, "router-A": 1788, "router-B": 10884, "router-C": 9756, "router-D": 32088}
+$ GET http://127.0.0.1:8000/health
+{"status":"ok","application":"controller"}
+HTTP 200
+
+$ GET http://127.0.0.1:8000/routers
+{"routers":[{"router_id":"A","url":"http://127.0.0.1:8001"},{"router_id":"B","url":"http://127.0.0.1:8002"},{"router_id":"C","url":"http://127.0.0.1:8003"},{"router_id":"D","url":"http://127.0.0.1:8004"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8001/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+$ GET http://127.0.0.1:8002/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+$ GET http://127.0.0.1:8004/health
+{"status":"ok","application":"router"}
+HTTP 200
+
+## Las cuatro tablas sincronizadas en versión 1 tras 0.72 s

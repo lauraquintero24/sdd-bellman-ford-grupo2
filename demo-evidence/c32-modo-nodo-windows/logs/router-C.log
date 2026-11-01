@@ -1,0 +1,20 @@
+INFO:     Started server process [32476]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8003 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56302 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56313 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56321 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56329 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56333 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56356 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56380 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56388 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56392 - "POST /forward HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56417 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56425 - "GET /forwarding-table?metric=delay HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56445 - "GET /health HTTP/1.1" 200 OK
+Controller http://127.0.0.1:8000/topology/version: ConnectError tras 2.027 s
+INFO:     127.0.0.1:56448 - "POST /packets HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:56453 - "GET /status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56454 - "GET /health HTTP/1.1" 200 OK

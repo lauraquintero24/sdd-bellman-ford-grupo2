@@ -1,0 +1,44 @@
+# Escenario 1 — Cada router responde en su dirección con su propia tabla
+Fecha (UTC): 2026-11-01T18:08:29Z
+Máquina: Windows 11, portátil de Laura
+
+$ GET http://127.0.0.1:8001/status
+{"router_id":"A","url":"http://127.0.0.1:8001","mode":"node","topology_version":1,"synced_at":"2026-11-01T18:08:26.939Z","sync_status":"ok","sync_error":null}
+HTTP 200
+
+$ GET http://127.0.0.1:8002/status
+{"router_id":"B","url":"http://127.0.0.1:8002","mode":"node","topology_version":1,"synced_at":"2026-11-01T18:08:26.907Z","sync_status":"ok","sync_error":null}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/status
+{"router_id":"C","url":"http://127.0.0.1:8003","mode":"node","topology_version":1,"synced_at":"2026-11-01T18:08:26.953Z","sync_status":"ok","sync_error":null}
+HTTP 200
+
+$ GET http://127.0.0.1:8004/status
+{"router_id":"D","url":"http://127.0.0.1:8004","mode":"node","topology_version":1,"synced_at":"2026-11-01T18:08:26.954Z","sync_status":"ok","sync_error":null}
+HTTP 200
+
+$ GET http://127.0.0.1:8001/forwarding-table?metric=delay
+{"router_id":"A","url":"http://127.0.0.1:8001","metric":"delay","topology_version":1,"synced_at":"2026-11-01T18:08:26.939Z","entries":[{"destination":"B","next_hop":"B","path":["A","B"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"C","path":["A","C"],"total_cost":"2","status":"active"},{"destination":"D","next_hop":"B","path":["A","B","D"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8002/forwarding-table?metric=delay
+{"router_id":"B","url":"http://127.0.0.1:8002","metric":"delay","topology_version":1,"synced_at":"2026-11-01T18:08:26.907Z","entries":[{"destination":"A","next_hop":"A","path":["B","A"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"A","path":["B","A","C"],"total_cost":"3","status":"active"},{"destination":"D","next_hop":"D","path":["B","D"],"total_cost":"1","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8003/forwarding-table?metric=delay
+{"router_id":"C","url":"http://127.0.0.1:8003","metric":"delay","topology_version":1,"synced_at":"2026-11-01T18:08:26.953Z","entries":[{"destination":"A","next_hop":"A","path":["C","A"],"total_cost":"2","status":"active"},{"destination":"B","next_hop":"A","path":["C","A","B"],"total_cost":"3","status":"active"},{"destination":"D","next_hop":"D","path":["C","D"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8004/forwarding-table?metric=delay
+{"router_id":"D","url":"http://127.0.0.1:8004","metric":"delay","topology_version":1,"synced_at":"2026-11-01T18:08:26.954Z","entries":[{"destination":"A","next_hop":"B","path":["D","B","A"],"total_cost":"2","status":"active"},{"destination":"B","next_hop":"B","path":["D","B"],"total_cost":"1","status":"active"},{"destination":"C","next_hop":"C","path":["D","C"],"total_cost":"2","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8001/forwarding-table?metric=inverse_bandwidth
+{"router_id":"A","url":"http://127.0.0.1:8001","metric":"inverse_bandwidth","topology_version":1,"synced_at":"2026-11-01T18:08:26.939Z","entries":[{"destination":"B","next_hop":"B","path":["A","B"],"total_cost":"0.1","status":"active"},{"destination":"C","next_hop":"C","path":["A","C"],"total_cost":"0.01","status":"active"},{"destination":"D","next_hop":"C","path":["A","C","D"],"total_cost":"0.02","status":"active"}]}
+HTTP 200
+
+$ GET http://127.0.0.1:8001/forwarding-table?metric=loss
+{"router_id":"A","url":"http://127.0.0.1:8001","metric":"loss","topology_version":1,"synced_at":"2026-11-01T18:08:26.939Z","entries":[{"destination":"B","next_hop":"B","path":["A","B"],"total_cost":"0.0100503358535","status":"active"},{"destination":"C","next_hop":"C","path":["A","C"],"total_cost":"0.0202027073175","status":"active"},{"destination":"D","next_hop":"B","path":["A","B","D"],"total_cost":"0.020100671707","status":"active"}]}
+HTTP 200
+
