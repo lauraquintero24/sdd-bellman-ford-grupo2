@@ -1,8 +1,8 @@
 705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da  ./.gitattributes
 34c6b990a2a5d35903b904133469b5e25207b479e42d8733f3396a8d539b49bb  ./.gitignore
 f24a217bd2e838dfab662cee2b5c865de1070a5df428a26f6beb1915efc448d0  ./CHANGELOG-SPECS.md
-525704f7b2228962d02eb6b8d0d58177fcaab1427f4d14dec3a54da33809e724  ./CHANGELOG.md
-d709773a5976b53e249c1510015843083775ede2ab39948dce3016b30e4e426c  ./README.md
+ccf55bf4479e796c727b743e8f9e0bced39bb79ed05c8ded24208099ebee0084  ./CHANGELOG.md
+ba9e640027d23f00e6df9216df2ca0c9c7de5ff15662cae157d3025d1e2e26c7  ./README.md
 9e9ac92f080bb90cbabf3b646f550aa7c458070fdbd38cee9f3a32740723c052  ./REVIEW-AND-BASELINE.md
 aff2cbd798e52c72a7b2366531c1ba77b2d7c53e4e9e89fe3daf58f2759bc5a1  ./VALIDACION.md
 4cb74877d9581882dd7563d9934db27a9d4f79c61dd3726df26083be65df6a26  ./config/routers.json
@@ -27,6 +27,18 @@ da7cb799e2f8100ee3250d94163348b57138a0004ad046b1262d08fa87782b4e  ./demo-evidenc
 59cb2da797cdae2a24c1bbaa5fb4edc4ec50d145670d180c89ecc53a72b92404  ./demo-evidence/b-fallo-enlace.txt
 d59368501ca73e8900efe0712c6122ab9fc8cd964f4e659708ef763a675bbd07  ./demo-evidence/c-restauracion.txt
 a6d29d740c93b2e3826a12f8094b36010a4f99d76a6e5718c9239c0294549b40  ./demo-evidence/c2-destino-inalcanzable.txt
+51b62a4cc73fffe23acc1f4562e80bda1e9f098453baed83d25afe023568737a  ./demo-evidence/c32-modo-nodo-windows/00-arranque.txt
+34f708d9c2d9e436ba09c5534cc05d1d3bd8b90cb782bc0b063355ededbd6a8e  ./demo-evidence/c32-modo-nodo-windows/01-funcionamiento-normal.txt
+c86273b82bc8eefff357dbaae34d8950ca6bb02738de6c04c6288c86bf9a9fef  ./demo-evidence/c32-modo-nodo-windows/02-envio-A-D.txt
+cdbcd3ee8faba3d6e7fe9b706f6db82da735c2fb82d084764d4323bbfd34f702  ./demo-evidence/c32-modo-nodo-windows/03-fallo-B-D.txt
+efb15cfdd53623b279bb1c7c4402f7823ce1dedb0a4416e93d66ab8d91ff256c  ./demo-evidence/c32-modo-nodo-windows/04-restauracion.txt
+5fa665194cb7ec86158cc4f7e9ab5a8456b05b0e9e7795077b7d7522a8e4fe9c  ./demo-evidence/c32-modo-nodo-windows/05-no-disponible.txt
+38cba4964b97567b46b78d29d4117ad49f7cb6299592761c470772ec7e5252ce  ./demo-evidence/c32-modo-nodo-windows/07-bitacoras-y-eventos.txt
+45b8f6608a815dfd6d6b06060db9fae1b4b3d712e082dc0f1d573fba60fd997e  ./demo-evidence/c32-modo-nodo-windows/logs/controller.log
+889f5b71c48d24d86edc77fd3fabb505fdd5518522f4e5907bc9cb4c78ba2c4b  ./demo-evidence/c32-modo-nodo-windows/logs/router-A.log
+c808913edb891d53d8b5102af6816ec97320bec7e649b0a29e0d9d2d17d2d1b4  ./demo-evidence/c32-modo-nodo-windows/logs/router-B.log
+ce427f65b504a5af6ac87c358065918e7a7a365ada48b603fcaabc21872bf947  ./demo-evidence/c32-modo-nodo-windows/logs/router-C.log
+2befa4a74cf1ecb8bf26c1f3927010f35fee1e7f43093237fc75a6758c310eb0  ./demo-evidence/c32-modo-nodo-windows/logs/router-D.log
 9890b3aa077909e0aafcac1cfb374b209528af8a37588450905140242fefe981  ./demo-evidence/c32-modo-nodo/00-arranque.txt
 e8113e3ba689f7626911ebf703b399049a3850f4aeaab589c109fe1d1e150566  ./demo-evidence/c32-modo-nodo/01-funcionamiento-normal.txt
 b5c258700d61b9b4d9c6912a05d401a9194e62ad2a7c485930e95ae87f5e2e5d  ./demo-evidence/c32-modo-nodo/02-envio-A-D.txt
@@ -44,6 +56,9 @@ ed42c4407d2b593df2b32b2f32e075b617e7e33fedb0b51efe743cd4927a5440  ./demo-evidenc
 4dad5b1b8e6a4643b1514a9245fac381f22cbb7918fe217836593ed7864355d8  ./demo-evidence/c32-modo-nodo/ui-2-envio-A-D.png
 bec7acd91cb3a336fe3d3c951984541040cecb0413bd441bbc4eb4cb3b11c586  ./demo-evidence/c32-modo-nodo/ui-3-fallo-B-D.png
 032b8780d22de1a5e809818b364b5e511e83232a576b32c2e1e375663586596a  ./demo-evidence/c32-modo-nodo/ui-4-restauracion.png
+c3c049952abc9d3c251f9fcf793f0239edef8085e3f608b7c8a9f0b0f098dea2  ./demo-evidence/c32-ui-windows/ui-1-v1-ruta-ABD.png
+1d230b1d8bff032920c0b3f85e7264234ee46df495859cdfb54f2ce15fd7970d  ./demo-evidence/c32-ui-windows/ui-2-v2-fallo-BD-ruta-ACD.png
+25bd50b3b7fc0458df535f11f478985def9e7079ddd3cfbb5f34f0b8c9c50d07  ./demo-evidence/c32-ui-windows/ui-3-v3-restaurado-ruta-ABD.png
 f3ec03f623a1cbd115ff0ebedf719536c0d8a6f7f3ca3d6d070338948e569bc6  ./demo-evidence/controller-process.log
 ea196052be3c34a3742a9dc8f8003f8b29d4c6cee7bcb70a6ce2f36a81019b83  ./demo-evidence/d-controller-caido-timeout.txt
 b2776fc876b796270ac6b17f7e048cb7ec0df6d0f364770355e14d1322dba31c  ./demo-evidence/e-bitacora-jsonl.txt
@@ -91,7 +106,7 @@ ddb0c05d8208cba6f53ca5029f86dd0159c926de7f19af16b6a69a82397ea6ed  ./evidencias/f
 7a728753f1cfa70531641ab4b421afb9cfc3b46e15bfe7b931d3a877b61334be  ./evidencias/prompts/P09-few-shot-bellman-ford.txt
 0ec9410f8fdde83263dcb38efd3c9d44fae819b41297635ce481784bf812620b  ./evidencias/prompts/P10-prompt-auditoria-spdr-y-correccion.txt
 b236729ee7d7dc3147c4084c84fbb1e970226d94571aa0233694d5398637ae32  ./prompts-session1.md
-dbab1d1b4b441949b47a2cb637794e2b9373c4012fba143af182397227d92188  ./prompts-session2.md
+aa9cdae301629fb7062fce4af7def3d1bbccd397436121a3add84ab750658f2d  ./prompts-session2.md
 6c6ccf864e8f2d2e0223ee8e39bfde660c12435aa37d81e2b14000a6bee15003  ./pytest.ini
 8ed7bc5aaed16905021552c8d6b5fb19e3d9253297808e5f65788b42001775d0  ./requirements.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./router/__init__.py
@@ -154,7 +169,7 @@ a670f2b21b0ade300938e807061de1271a3c3e6702b6bb3d2b72fd9a008f7ee0  ./specs/fixtur
 94647c8dfd8ae8dfd24efb7895a1946f23290e2a5206c360ef6b2f4c5810d5a1  ./specs/fixtures/F-18b.json
 3d7f65948b7f63edd3f9f7520afc07dc477c3dce0351bd1c8bed4709cda09f14  ./specs/fixtures/F-19.json
 574a517f791f00b835a44ae03d7aa8e8d592261c8725af0aeff1a521878f200d  ./specs/fixtures/F-20.json
-2332cf986786525fdeb8432c0af5534bda37b6cc8270fabbd6b10998890634d4  ./test-results.txt
+b0b9cabb82848df66ab14b6695689d392a38efc16b04738ccb7b5e4bc5ce5e0e  ./test-results.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./tests/__init__.py
 3348f19839e7807fb0c5bf225c19cc5a01d4ad10f974a457484561b955b4fb0e  ./tests/conftest.py
 a531479e46cc8db9ce9a7dc85095cf58506d559f60d3d212b3a0bf23a5351c66  ./tests/fakes.py
