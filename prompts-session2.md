@@ -128,6 +128,20 @@ Registro de cada prompt sustancial de la Sesión 2 (R10), con los campos del PDF
 | Requisitos relacionados | FR-06, FR-07, FR-11–FR-14, NFR-12; DEC-06, DEC-10–DEC-12; TC-40–TC-50 |
 | Verificación personal | [Por completar por la estudiante: verificación personal] |
 
+## S2-P10 — Implementación de C-32 (W-14–W-19): tablas de forwarding, modo nodo, reenvío salto a salto, lanzador e interfaz
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-31 / 2026-11-01 |
+| Técnica | [Equipo] Implementación por tareas del plan (`05` W-14–W-19) con aprobación por tarea («Revisado y aprobado — <nombre>»), condiciones explícitas entre tareas (prueba con 5 procesos reales, aclaraciones de especificación al final, no tocar pruebas de arquitectura sin respaldo de la especificación) y verificación con oráculos independientes |
+| Objetivo | [IA] Implementar FR-11–FR-14 y NFR-12 sin romper el modo legado, con pruebas reales y evidencias reproducibles |
+| Texto del prompt | Literal en el anexo S2-P10 (mensajes de aprobación con condiciones; los mensajes que solo dicen «Revisado y aprobado — <nombre>» no se repiten) |
+| Salida relevante | [IA] Commits `0de59e6` (W-14), `542007b` (W-16), `925685e` (W-17), `080030d` (W-18), `4b469a1` (W-15). Suite: 676 passed, 1 skipped (nube). Oráculo de tablas T-01–T-22 coincidente; en TC-46 todas las parejas de F-20 y F-01 en las tres métricas siguen exactamente `GET /route`; prueba con 5 procesos reales; interfaz verificada en Chromium; `scripts/demo_nodes.py` y `demo-evidence/c32-modo-nodo/` |
+| Problema detectado | [IA] (1) **Fallo real detectado por TC-47:** cuando el error lo generaba el propio cliente de siguiente salto (p. ej. B no puede conectar con D), la respuesta no traía `details.at_router`, que `04` §4.4 exige; la prueba `test_error_from_a_later_hop_reaches_the_origin` falló con `KeyError: 'at_router'`. (2) `shared/registry.py` importa `shared/models.py` y la prueba AST de `shared/` solo admitía la biblioteca estándar. (3) La prueba de contratos contaba 13 códigos de error y C-32 añade 7. (4) El límite de saltos necesita el número de nodos de la tabla vigente, que solo se conoce tras sincronizar (orden distinto del pseudocódigo de `02` §6.4). (5) `ControllerHTTP` necesitaba el registro de routers (no figuraba en su firma). (6) La comprobación rápida de una etapa usó un filtro que también captaba `/status`; y la primera evidencia de `demo_nodes.py` guardaba rutas absolutas del contenedor, inútiles en Windows |
+| Corrección hecha | [IA] (1) `NodeForwardingService.handle` añade `at_router` (router donde se originó) a todo error que no lo traiga; los reproducidos de un salto posterior conservan el suyo; la prueba pasó y la corrección entró en el commit de W-17 (aclaración C-32.7). (2) y (3) Pruebas ajustadas con aprobación de Laura y registradas como aclaraciones C-32.2 y C-32.10. (4) Sincronizar antes de comprobar el límite (C-32.4). (5) `ControllerHTTP(service, routers=())` (C-32.6). (6) Filtro corregido; `demo_nodes.py` usa rutas relativas a la raíz y la evidencia se regeneró. Todas las aclaraciones están en `CHANGELOG-SPECS.md` (C-32.1–C-32.10) |
+| Requisitos relacionados | FR-07, FR-09, FR-11–FR-14, NFR-05, NFR-06, NFR-12; TC-13, TC-40–TC-50 |
+| Verificación personal | [Por completar por la estudiante: verificación personal] |
+
 ### Anexo S2-P01 — texto literal
 
 ````text
@@ -295,4 +309,41 @@ Aplica la variante A′ (contexto SSL creado una vez en __init__ y verify=self._
 Añade en router/client.py un comentario breve con el motivo (evitar recargar certificados en cada llamada; p95 de POST /packets medido: 8,554 → 81,746 ms con A y 8,440 ms con A′).
 Añade el registro S2-P08 en prompts-session2.md con este prompt y el anterior, la regresión detectada y su corrección, con «Verificación personal» vacía para que la complete yo.
 Ejecuta la suite completa, haz los commits (autoría de Laura), regenera SHA256SUMS el último, haz push y crea la PR.
+````
+
+### Anexo S2-P10 — texto literal
+
+Mensaje tras W-16:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-16. Condiciones para las siguientes tareas:
+1. Antes de cerrar W-17/W-19 añade una prueba con 5 PROCESOS REALES (Controller + routers A, B, C y D en puertos distintos, arrancados como en el lanzador) que compruebe: cuatro servidores independientes, tablas distintas, un paquete A→D reenviado por HTTP real salto a salto, fallo y restauración de B–D con tablas actualizadas, y un router detenido con error controlado.
+2. Las diferencias con el diseño (campo url en NodeTables, y que shared/ pueda importar shared/) deben quedar reflejadas en 02 (diagrama 02-6 y §8) y anotadas en CHANGELOG-SPECS.md como aclaraciones de C-32, en un commit de especificaciones al final. No cambies pruebas de arquitectura sin que la especificación lo diga.
+3. Si app.state.node_service no se usa en W-17, elimínalo.
+Sigue con W-17.
+````
+
+Mensaje tras W-17:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-17 y sigue con W-18.
+Para el commit final de especificaciones, incluye todas las aclaraciones acumuladas: url en NodeTables (02-6), shared/ puede importar shared/ (02 §8), next_hop_client en la firma, orden del límite de saltos en handle() (02 §6.4) y la consulta de versión por salto (01 NFR-12 / DEC-06). Regístralo en CHANGELOG-SPECS.md como aclaraciones de C-32.
+Registra también en prompts-session2.md el fallo real de at_router que detectó TC-47 y su corrección.
+````
+
+Mensaje tras W-18:
+
+````text
+Revisado y aprobado — Laura Sofia Quintero Fernandez
+Haz el commit y el push de W-18. Confirma que start_all.py y start-all.ps1 usan config/topology-demo.json por defecto (DEC-12), y que data/logs/ y data/routers/ están en .gitignore. Después sigue con W-15 (Mariana) y luego W-19.
+````
+
+Mensaje tras W-15:
+
+````text
+Revisado y aprobado — Mariana Arturo Pabón
+Haz el commit y el push de W-15. Confirma también que el commit de W-18 (Laura) ya está subido y dame su SHA.
+Luego W-19: commit final de especificaciones con TODAS las aclaraciones acumuladas (url en NodeTables, shared→shared, next_hop_client, orden del límite de saltos, consulta de versión por salto, ControllerHTTP(service, routers)), README con instrucciones para Windows (start-all.ps1 y /ui), test-results.txt, prompts-session2.md y demo-evidence/ (indicando que las capturas de la nube son de Linux). Crea la PR pero NO la fusiones: la probaremos antes en Windows.
 ````
