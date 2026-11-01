@@ -6,6 +6,8 @@ verifica optimalidad: confía en el Controller (frontera de confianza intenciona
 """
 
 import json
+import logging
+import time
 
 import httpx
 
@@ -42,6 +44,14 @@ from shared.errors import (
     TopologyChangedError,
 )
 from shared.models import ForwardingEntry, ForwardingTable, Route
+
+logger = logging.getLogger("router")
+
+
+def _log_network_failure(target: str, url: str, exc: httpx.HTTPError, started: float) -> None:
+    """Diagnóstico del proceso: tipo exacto de excepción httpx (ConnectTimeout, ReadTimeout, PoolTimeout, …), URL y duración."""
+    logger.warning("%s %s: %s tras %.3f s", target, url, type(exc).__name__, time.perf_counter() - started)
+
 
 _PROPAGATED = {NODE_NOT_FOUND: NodeNotFoundError, ROUTE_UNREACHABLE: RouteUnreachableError}
 _BAD_RESPONSE = "La respuesta del Controller no cumple el contrato."
@@ -143,17 +153,20 @@ class HttpRouteClient(RouteClient):
 
 def _controller_get(client, path: str, params: dict | None) -> httpx.Response:
     """Un GET al Controller con un httpx.Client por llamada y el mapeo de errores de red de 02 §9."""
+    started = time.perf_counter()
     try:
         # Un httpx.Client por llamada: no queda ningún cliente abierto durante la vida del proceso.
         with httpx.Client(
             base_url=client._base_url, timeout=client._timeout, transport=client._transport, verify=client._ssl_context
         ) as http:
             return http.get(path, params=params)
-    except httpx.ConnectError:
-        raise ControllerUnavailableError("No fue posible conectar con el Controller.") from None
-    except httpx.TimeoutException:
-        raise ControllerTimeoutError("El Controller no respondió a tiempo.") from None
-    except httpx.HTTPError:  # conexión cortada a mitad de respuesta, protocolo inválido, etc.
+    except httpx.HTTPError as exc:
+        _log_network_failure("Controller", client._base_url + path, exc, started)
+        if isinstance(exc, httpx.ConnectError):
+            raise ControllerUnavailableError("No fue posible conectar con el Controller.") from None
+        if isinstance(exc, httpx.TimeoutException):
+            raise ControllerTimeoutError("El Controller no respondió a tiempo.") from None
+        # conexión cortada a mitad de respuesta, protocolo inválido, etc.
         raise ControllerBadResponseError(_BAD_RESPONSE) from None
 
 
@@ -347,9 +360,14 @@ class HttpNextHopClient(NextHopClient):
         self._ssl_context = httpx.create_ssl_context()  # una vez por instancia (ver HttpRouteClient)
 
     def forward(self, url: str, hop: HopPacket) -> NodeForwardingResult:
+        started = time.perf_counter()
         try:
-            with httpx.Client(timeout=self._timeout, transport=self._transport, verify=self._ssl_context) as http:
-                response = http.post(url.rstrip("/") + "/forward", json=_hop_body(hop))
+            try:
+                with httpx.Client(timeout=self._timeout, transport=self._transport, verify=self._ssl_context) as http:
+                    response = http.post(url.rstrip("/") + "/forward", json=_hop_body(hop))
+            except httpx.HTTPError as exc:
+                _log_network_failure("Siguiente router", url.rstrip("/") + "/forward", exc, started)
+                raise
         except httpx.ConnectError:
             raise NextHopUnavailableError("No fue posible conectar con el siguiente router.") from None
         except httpx.TimeoutException:

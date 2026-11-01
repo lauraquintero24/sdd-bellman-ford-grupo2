@@ -34,7 +34,8 @@ def test_tc14_controller_by_environment(tmp_path):
     topology = tmp_path / "topo.json"
     shutil.copy(FIXTURES_DIR / "F-01.json", topology)
     port = free_port()
-    process = start("controller.main", [], env={"CONTROLLER_PORT": str(port), "TOPOLOGY_FILE": str(topology)})
+    process = start("controller.main", [], env={"CONTROLLER_PORT": str(port), "TOPOLOGY_FILE": str(topology)},
+                    log_file=tmp_path / "controller.log")
     try:
         assert wait_health(port).json() == {"status": "ok", "application": "controller"}
     finally:
@@ -46,7 +47,7 @@ def test_tc14_controller_by_cli(tmp_path):
     shutil.copy(FIXTURES_DIR / "F-01.json", topology)
     port = free_port()
     process = start("controller.main", ["--host", "127.0.0.1", "--port", str(port), "--topology", str(topology)],
-                    env={"CONTROLLER_PORT": "1"})  # la CLI prevalece sobre el entorno
+                    env={"CONTROLLER_PORT": "1"}, log_file=tmp_path / "controller.log")  # la CLI prevalece sobre el entorno
     try:
         assert wait_health(port).status_code == 200
     finally:

@@ -13,7 +13,7 @@ import time
 import httpx
 
 from tests.fakes import FIXTURES_DIR
-from tests.process_utils import free_port, start, stop, wait_health
+from tests.process_utils import free_port, log_tail, start, stop, wait_health
 
 DELAY_V1 = {  # 06 §3.1, T-07–T-10: siguiente salto por destino
     "A": {"B": "B", "C": "C", "D": "B"}, "B": {"A": "A", "C": "A", "D": "D"},
@@ -59,6 +59,8 @@ def _diagnosis(urls, tmp_path) -> str:
         log = tmp_path / n / "forwarding.jsonl"
         last = log.read_text(encoding="utf-8").splitlines()[-1:] if log.exists() else []
         lines.append(f"  {n}: /status={status} · última línea de bitácora={last}")
+    for name in ["controller", *urls]:  # salida de cada proceso (start(..., log_file=tmp_path / "logs" / ...))
+        lines.append(f"  --- últimas líneas de logs/{name}.log ---\n{log_tail(tmp_path / 'logs' / f'{name}.log')}")
     return "\n".join(lines)
 
 
@@ -83,7 +85,11 @@ def test_five_real_processes(tmp_path):
     registry.write_text(json.dumps({"routers": [{"router_id": n, "url": u} for n, u in urls.items()]}), encoding="utf-8")
     controller_url = f"http://127.0.0.1:{c_port}"
 
-    procs = {"controller": start("controller.main", ["--port", str(c_port), "--topology", str(topology)])}
+    # Salida de cada proceso a un archivo, como el lanzador: una tubería sin leer se llena (~4 KB en Windows) y bloquea
+    # el servidor (ver tests/process_utils.start)
+    logs = tmp_path / "logs"
+    procs = {"controller": start("controller.main", ["--port", str(c_port), "--topology", str(topology)],
+                                 log_file=logs / "controller.log")}
     for n in "ABCD":
         (tmp_path / n).mkdir()
         # --connect-timeout 3: en Windows una conexión rechazada a 127.0.0.1 tarda ~2 s (127.0.0.1:9 →
@@ -91,7 +97,7 @@ def test_five_real_processes(tmp_path):
         procs[n] = start("router.main", ["--router-id", n, "--routers", str(registry), "--controller-url", controller_url,
                                          "--log-file", str(tmp_path / n / "forwarding.jsonl"),
                                          "--table-file", str(tmp_path / n / "forwarding-table.json"),
-                                         "--connect-timeout", "3"])
+                                         "--connect-timeout", "3"], log_file=logs / f"{n}.log")
     try:
         # 1. Cuatro servidores independientes, cada uno en su puerto y con su identidad
         wait_health(c_port)

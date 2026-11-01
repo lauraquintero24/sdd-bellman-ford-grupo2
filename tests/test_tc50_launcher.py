@@ -13,7 +13,7 @@ import time
 import httpx
 
 from tests.fakes import FIXTURES_DIR
-from tests.process_utils import ROOT, free_port, port_open
+from tests.process_utils import ROOT, free_port, port_open, read_output
 
 
 def _registry(tmp_path, names):
@@ -27,18 +27,32 @@ def _registry(tmp_path, names):
 def _launcher(tmp_path, registry, c_port, *extra):
     topology = tmp_path / "topology-demo.json"
     shutil.copy(FIXTURES_DIR / "F-20.json", topology)
-    return subprocess.Popen(
-        [sys.executable, "scripts/start_all.py", "--topology", str(topology), "--routers", str(registry),
-         "--controller-port", str(c_port), "--logs", str(tmp_path / "logs"), *extra],
-        cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-    )
+    # Salida del lanzador a archivos, no a tuberías sin leer mientras vive (ver tests/process_utils.start)
+    out_file, err_file = tmp_path / "launcher-stdout.txt", tmp_path / "launcher-stderr.txt"
+    with out_file.open("wb") as out, err_file.open("wb") as err:
+        process = subprocess.Popen(
+            [sys.executable, "scripts/start_all.py", "--topology", str(topology), "--routers", str(registry),
+             "--controller-port", str(c_port), "--logs", str(tmp_path / "logs"), *extra],
+            cwd=ROOT, stdout=out, stderr=err,
+        )
+    process.output_files = (out_file, err_file)
+    return process
+
+
+def _output(process) -> tuple[str, str]:
+    return tuple(read_output(path) for path in process.output_files)
+
+
+def _finish(process, timeout: float) -> tuple[str, str]:
+    process.wait(timeout=timeout)
+    return _output(process)
 
 
 def test_registry_that_does_not_match_nodes_starts_nothing(tmp_path):
     registry, ports = _registry(tmp_path, "ABC")  # falta D
     c_port = free_port()
     process = _launcher(tmp_path, registry, c_port)
-    out, err = process.communicate(timeout=30)
+    out, err = _finish(process, 30)
     assert process.returncode == 2 and "no coincide" in err
     assert not port_open(c_port) and not any(port_open(p) for p in ports.values())
 
@@ -51,7 +65,7 @@ def test_launcher_starts_one_router_per_node_and_stops_everything(tmp_path):
     try:
         deadline = time.monotonic() + 60
         while not all(port_open(p) for p in [c_port, *ports.values()]):
-            assert process.poll() is None, process.communicate()
+            assert process.poll() is None, _output(process)
             assert time.monotonic() < deadline, "el lanzador no arrancó todo a tiempo"
             time.sleep(0.2)
         for n, port in ports.items():
@@ -62,7 +76,7 @@ def test_launcher_starts_one_router_per_node_and_stops_everything(tmp_path):
             "controller.log", "router-A.log", "router-B.log", "router-C.log", "router-D.log"]
     finally:
         stop_file.write_text("stop", encoding="utf-8")
-        out, err = process.communicate(timeout=60)
+        out, err = _finish(process, 60)
     assert process.returncode == 0, err
     assert "Red en marcha: Controller + 4 routers" in out and "todos los procesos detenidos" in out
     for port in [c_port, *ports.values()]:

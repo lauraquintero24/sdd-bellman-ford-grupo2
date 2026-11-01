@@ -40,14 +40,16 @@ def test_packets_right_after_each_link_change(tmp_path):
     registry = tmp_path / "routers.json"
     registry.write_text(json.dumps({"routers": [{"router_id": n, "url": u} for n, u in urls.items()]}), encoding="utf-8")
     controller = f"http://127.0.0.1:{c_port}"
-    procs = {"controller": start("controller.main", ["--port", str(c_port), "--topology", str(topology)])}
+    logs = tmp_path / "logs"  # salida a archivos, nunca a tuberías sin leer (tests/process_utils.start)
+    procs = {"controller": start("controller.main", ["--port", str(c_port), "--topology", str(topology)],
+                                 log_file=logs / "controller.log")}
     for n in "ABCD":
         (tmp_path / n).mkdir()
         # --connect-timeout 3 como en el lanzador en Windows (rechazo de conexión lento, limitación 10 del README)
         procs[n] = start("router.main", ["--router-id", n, "--routers", str(registry), "--controller-url", controller,
                                          "--log-file", str(tmp_path / n / "forwarding.jsonl"),
                                          "--table-file", str(tmp_path / n / "forwarding-table.json"),
-                                         "--connect-timeout", "3"])
+                                         "--connect-timeout", "3"], log_file=logs / f"{n}.log")
     try:
         wait_health(c_port)
         for port in ports.values():
@@ -227,3 +229,53 @@ def test_concurrent_syncs_never_write_at_the_same_time():
     stop_flag.set()
     workers[0].join()
     assert dao.saves > 1 and dao.max_active == 1
+
+
+# --- Diagnóstico del fallo real en Windows 11 (CONTROLLER_TIMEOUT tras un cambio de enlace) ---
+
+def test_controller_network_failure_is_logged_with_type_url_and_duration(caplog):
+    """El cliente del Router registra el tipo exacto de excepción httpx, la URL y la duración (sin cambiar el 504)."""
+    import logging
+
+    from router.client import HttpTableClient
+    from shared.errors import ControllerTimeoutError
+
+    def timeout(request):
+        raise httpx.ReadTimeout("lento", request=request)
+
+    client = HttpTableClient("http://127.0.0.1:9", 1.0, 2.0, transport=httpx.MockTransport(timeout))
+    with caplog.at_level(logging.WARNING, logger="router"), pytest.raises(ControllerTimeoutError):
+        client.fetch_topology_version()
+    message = caplog.records[-1].getMessage()
+    assert message.startswith("Controller http://127.0.0.1:9/topology/version: ReadTimeout tras ") and message.endswith(" s")
+
+
+def test_long_running_processes_write_to_a_file_not_to_a_pipe(tmp_path):
+    """Las pruebas de 5 procesos no usan tuberías sin leer: con ~4 KB de búfer (Windows) el servidor se bloquea."""
+    port = free_port()
+    process = start("controller.main", ["--port", str(port), "--topology", str(FIXTURES_DIR / "F-20.json")],
+                    log_file=tmp_path / "logs" / "controller.log")
+    try:
+        assert process.stdout is None and process.stderr is None
+        wait_health(port)
+        for _ in range(100):  # ~7 KB de registro de accesos: más que el búfer de una tubería en Windows
+            assert httpx.get(f"http://127.0.0.1:{port}/topology/version", timeout=httpx.Timeout(2.0, connect=1.0)).status_code == 200
+    finally:
+        stop(process)
+    assert process.stdout_text.count("GET /topology/version") >= 200  # línea de acceso + línea de duración
+
+
+def test_only_short_lived_processes_use_pipes():
+    """Inventario: subprocess.PIPE solo donde la salida se lee con communicate() (procesos que terminan solos)."""
+    import ast
+
+    from tests.process_utils import ROOT
+
+    def uses_pipe(path) -> bool:
+        return any(isinstance(node, ast.Attribute) and node.attr == "PIPE" and isinstance(node.value, ast.Name)
+                   and node.value.id == "subprocess" for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))))
+
+    users = sorted(path.relative_to(ROOT).as_posix() for folder in ("tests", "scripts", "controller", "router", "shared")
+                   for path in (ROOT / folder).rglob("*.py") if uses_pipe(path))
+    # process_utils.start sin log_file: TC-10/TC-14 (arranque inválido, el proceso termina y se lee con communicate())
+    assert users == ["tests/process_utils.py"]

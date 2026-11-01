@@ -15,10 +15,15 @@ import httpx
 from tests.process_utils import ROOT, free_port, stop, wait_health
 
 
-def _start(cwd, module, args):
+def _start(cwd, module, args, log_file):
+    """Salida a ``log_file`` (fuera de ambos directorios): una tubería sin leer bloquea el servidor al llenarse."""
     env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
-    return subprocess.Popen([sys.executable, "-m", module, *args], cwd=cwd, env=env,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    with log_file.open("wb") as handle:
+        process = subprocess.Popen([sys.executable, "-m", module, *args], cwd=cwd, env=env,
+                                   stdout=handle, stderr=subprocess.STDOUT)
+    process.log_file = log_file  # stop() lo lee
+    return process
 
 
 def test_tc34_two_separate_directories(tmp_path):
@@ -32,12 +37,14 @@ def test_tc34_two_separate_directories(tmp_path):
     assert not (rtr_dir / "controller").exists() and not (ctrl_dir / "router").exists()
 
     c_port, r_port = free_port(), free_port()
-    controller = _start(ctrl_dir, "controller.main", ["--port", str(c_port), "--topology", "topology.json"])
+    controller = _start(ctrl_dir, "controller.main", ["--port", str(c_port), "--topology", "topology.json"],
+                        tmp_path / "logs" / "controller.log")
     # --connect-timeout 3: en Windows una conexión rechazada a 127.0.0.1 no falla al instante (el equipo midió
     # socket.connect a 127.0.0.1:9, puerto cerrado → «ConnectionRefusedError 2.03 s»); con el valor por defecto
     # de 1.0 s (02 §7) httpx lanzaría ConnectTimeout (504) antes que ConnectError (503) con el Controller detenido.
     router = _start(rtr_dir, "router.main", ["--port", str(r_port), "--controller-url", f"http://127.0.0.1:{c_port}",
-                                             "--log-file", "forwarding.jsonl", "--connect-timeout", "3"])
+                                             "--log-file", "forwarding.jsonl", "--connect-timeout", "3"],
+                    tmp_path / "logs" / "router.log")
     try:
         wait_health(c_port), wait_health(r_port)
         response = httpx.post(f"http://127.0.0.1:{r_port}/packets", timeout=10,
