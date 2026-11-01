@@ -214,12 +214,16 @@ classDiagram
     class ControllerHTTP {
         <<Controller MVC>>
         -RoutingService service
-        +ControllerHTTP(service: RoutingService)
+        +ControllerHTTP(service: RoutingService, routers: tuple~RouterInfo~ = ())
         +get_topology() TopologyResponseSchema
         +get_route(src: str, dst: str, metric: str) RouteResponseSchema
         +fail_link(LinkRequestSchema) LinkStatusSchema
         +restore_link(LinkRequestSchema) LinkStatusSchema
         +health() ControllerHealthSchema
+        +get_topology_version() TopologyVersionSchema
+        +get_forwarding_table(router_id: str, metric: str) ForwardingTableResponseSchema
+        +list_routers() RouterListSchema
+        +ui() HTMLResponse
     }
     class TopologyResponseSchema {
         <<View>>
@@ -560,6 +564,7 @@ classDiagram
     }
     class NodeTables {
         +str router_id
+        +str url
         +int topology_version
         +str synced_at
         +dict~str, ForwardingTable~ tables
@@ -651,7 +656,9 @@ classDiagram
     NodeHTTP --> NodeForwardingService : invoca
 ```
 
-**Controller (Estudiante A), clases y métodos nuevos:** `BellmanFordEngine.find_all_paths(topology, src, metric) -> dict[str, PathScore]`; `RoutingService.topology_version() -> int` y `RoutingService.compute_forwarding_table(router_id, metric) -> ForwardingTable`; `ControllerHTTP.get_topology_version()`, `get_forwarding_table(router_id, metric)`, `list_routers()` y `ui()`; esquemas `TopologyVersionSchema`, `ForwardingEntrySchema`, `ForwardingTableResponseSchema`, `RouterInfoSchema`, `RouterListSchema` (`controller/view.py`) y la página `DASHBOARD_HTML` (`controller/ui.py`, View). `ControllerSettings` añade `routers: tuple[RouterInfo, ...]` (vacío si no se configura `ROUTERS_FILE`).
+**Controller (Estudiante A), clases y métodos nuevos:** `BellmanFordEngine.find_all_paths(topology, src, metric) -> dict[str, PathScore]`; `RoutingService.topology_version() -> int` y `RoutingService.compute_forwarding_table(router_id, metric) -> ForwardingTable`; `ControllerHTTP.get_topology_version()`, `get_forwarding_table(router_id, metric)`, `list_routers()` y `ui()`; esquemas `TopologyVersionSchema`, `ForwardingEntrySchema`, `ForwardingTableResponseSchema`, `RouterInfoSchema`, `RouterListSchema` (`controller/view.py`) y la página `DASHBOARD_HTML` (`controller/ui.py`, View). `ControllerSettings` añade `routers: tuple[RouterInfo, ...]` (vacío si no se configura `ROUTERS_FILE`), que `create_controller_app` pasa a `ControllerHTTP(service, routers=settings.routers)` *(aclaración C-32.6)*; los métodos nuevos de `ControllerHTTP` figuran también en el diagrama de §3.1.
+
+*Aclaraciones C-32 (01/11/2026):* `NodeTables` incluye `url` (la URL de la instancia que se guarda en `forwarding-table.json`, `04` §6) *(C-32.1)*; el constructor de `NodeForwardingService` recibe `next_hop_client` entre `table_dao` y `log_dao`, como muestra el diagrama *(C-32.3)*.
 
 ## 4. Correspondencia MVC/DAO y responsabilidades
 
@@ -746,8 +753,8 @@ mejora_primaria(x, y) := x < y en modo additive;  x > y en modo product
 
 ```text
 1. si R aparece en trace                      → ForwardingLoopError (508)
-2. si len(trace) + 1 > número de nodos        → HopLimitExceededError (508)
-3. tablas = sync_if_changed()                   # GET /topology/version; tabla nueva solo si cambió
+2. tablas = sync_if_changed()                   # GET /topology/version en cada salto; tabla nueva solo si cambió
+3. si len(trace) + 1 > número de nodos de la tabla vigente → HopLimitExceededError (508)
 4. si topology_version recibida ≠ tablas.topology_version → TopologyChangedError (409)
 5. trace = trace + (NodeTraceHop(len(trace), R, url(R)),)
 6. si packet.destination == R                   → resultado forwarded (rol egress, o ingress si el origen es R)
@@ -757,6 +764,8 @@ mejora_primaria(x, y) := x < y en modo additive;  x > y en modo product
    (si no → NextHopBadResponseError)
 10. registrar y devolver resultado (rol ingress o transit)
 ```
+
+*Aclaraciones C-32 (01/11/2026):* el límite de saltos se comprueba después de sincronizar, porque el número de nodos sale de la tabla vigente *(C-32.4)*. Un `InvalidRequestError` de ingreso (`source` ≠ `router_id`) se lanza antes de registrar nada y responde solo el sobre `{"error": …}`; todo otro fallo se registra con `trace = []` y recibe `details.at_router` = router donde se originó, salvo que ya lo traiga de un salto posterior *(C-32.7)*. En la respuesta de un `POST /forward`, `route.total_cost` es el costo desde el router que responde hasta el destino (`"0"` en el destino); cada router lo reemplaza por el de su propia fila, de modo que el router de ingreso devuelve el costo de toda la ruta *(C-32.8)*.
 
 Los timeouts de conexión y lectura de `NextHopClient` son los de `CONTROLLER_CONNECT_TIMEOUT_SECONDS` y `CONTROLLER_READ_TIMEOUT_SECONDS`. Cada router espera la respuesta del siguiente, de modo que un salto que no responde produce 504 en el router que lo esperaba y ese error se propaga hacia el origen.
 
@@ -783,7 +792,7 @@ Los timeouts de conexión y lectura de `NextHopClient` son los de `CONTROLLER_CO
 | Router *(C-32)* | `FORWARDING_TABLE_FILE` | `--table-file` | `data/routers/<router_id>/forwarding-table.json` |
 | Router *(C-32)* | `TABLE_SYNC_INTERVAL_SECONDS` | `--sync-interval` | `1.0` (`0` desactiva la sincronización periódica) |
 
-**Modo nodo (C-32).** Con `ROUTER_ID`, `create_router_app` crea `HttpTableClient`, `HttpNextHopClient`, `JsonForwardingTableDAO(settings.table_file, …/table-events.jsonl)` y `JsonlForwardingLogDAO(settings.log_file)` —con `FORWARDING_LOG_FILE` por defecto `data/routers/<router_id>/forwarding.jsonl`—, construye `NodeForwardingService(...)`, registra `NodeHTTP`, habilita CORS (`*`, métodos GET y POST) para la interfaz web y arranca la sincronización periódica; acepta `table_client`, `table_dao` y `next_hop_client` opcionales como puntos de inyección de pruebas. En modo nodo el host y el puerto salen de la URL del propio `router_id` en el registro; `--host`/`--port` explícitos distintos de esa URL impiden el arranque. El registro `config/routers.json` tiene la forma `{"routers": [{"router_id": "A", "url": "http://127.0.0.1:8001"}, …]}`; IDs no vacíos y únicos, URL `http://` o `https://` con puerto explícito, URL y puertos únicos; se valida con la función pura `parse_router_registry(text)` de `shared/registry.py`. El lanzador `scripts/start_all.py` (y su envoltorio `scripts/start-all.ps1` para Windows) arranca el Controller con `--routers` y **una instancia por nodo** de la topología (por defecto `config/topology-demo.json`), y no arranca si el conjunto de IDs del registro difiere del de `nodes`.
+**Modo nodo (C-32).** Con `ROUTER_ID`, `create_router_app` crea `HttpTableClient`, `HttpNextHopClient`, `JsonForwardingTableDAO(settings.table_file, …/table-events.jsonl)` y `JsonlForwardingLogDAO(settings.log_file)` —con `FORWARDING_LOG_FILE` por defecto `data/routers/<router_id>/forwarding.jsonl`—, construye `NodeForwardingService(...)`, registra `NodeHTTP`, habilita CORS (`*`, métodos GET y POST) para la interfaz web y arranca la sincronización periódica; acepta `table_client`, `table_dao` y `next_hop_client` opcionales como puntos de inyección de pruebas. En modo nodo el host y el puerto salen de la URL del propio `router_id` en el registro; `--host`/`--port` explícitos distintos de esa URL impiden el arranque. El registro `config/routers.json` tiene la forma `{"routers": [{"router_id": "A", "url": "http://127.0.0.1:8001"}, …]}`; IDs no vacíos y únicos, URL `http://` o `https://` con puerto explícito, URL y puertos únicos; se valida con la función pura `parse_router_registry(text)` de `shared/registry.py`. El lanzador `scripts/start_all.py` (y su envoltorio `scripts/start-all.ps1` para Windows) arranca el Controller con `--routers` y **una instancia por nodo** de la topología (por defecto `config/topology-demo.json`), y no arranca si el conjunto de IDs del registro difiere del de `nodes`. *Aclaración C-32.9:* el lanzador pasa el registro al Controller con la variable de entorno `ROUTERS_FILE`, añade `--connect-timeout 3` a los routers en Windows (rechazo de conexión lento, limitación 10 del README), guarda la salida de cada proceso en `data/logs/<nombre>.log` y acepta `--stop-file` para detenerse de forma ordenada en las pruebas (Ctrl+C en uso interactivo).
 
 Precedencia: opción CLI > variable de entorno > valor por defecto. Impiden el arranque con un diagnóstico claro: un puerto fuera de 1–65535, un timeout ≤ 0, un `TOPOLOGY_FILE` inexistente o inválido, y un `FORWARDING_LOG_FILE` cuyo directorio no admite escritura. El archivo de bitácora se crea si no existe; el directorio por defecto `data/` se crea al arrancar, mientras que el directorio de una ruta indicada explícitamente debe existir.
 
@@ -820,7 +829,7 @@ scripts/start_all.py   scripts/start-all.ps1 (C-32)
 
 | Módulo | Puede importar | No puede importar | Verificación |
 |---|---|---|---|
-| `shared/*` | Biblioteca estándar | FastAPI, Starlette, Pydantic, NetworkX, httpx, `controller`, `router` | TC-13 |
+| `shared/*` | Biblioteca estándar y el propio paquete `shared` (p. ej. `registry.py` usa `RouterInfo` de `models.py`; aclaración C-32.2) | FastAPI, Starlette, Pydantic, NetworkX, httpx, `controller`, `router` | TC-13 |
 | `controller/models.py`, `ports.py`, `service.py`, `engine.py`, `presenter.py` | `shared`, `models`, `ports`; `service.py` además `engine.py` y `presenter.py` (tipos de sus dependencias inyectadas); NetworkX solo en `engine.py` | FastAPI, Pydantic, `router`, `controller/dao.py`, `open()` | TC-08, TC-13 |
 | `router/models.py`, `ports.py`, `service.py` | `shared`, `models`, `ports` | FastAPI, NetworkX, httpx, `controller`, `router/dao.py`, `router/client.py`, `open()` | TC-09, TC-13 |
 | `controller/http.py`, `router/http.py`, `*/http_errors.py`, `*/view.py`, `controller/ui.py` | FastAPI, Pydantic, servicio propio, `models`, `shared` | `dao.py`, `client.py`, `engine.py`, `open()` | TC-13 |

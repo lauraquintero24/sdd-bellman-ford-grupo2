@@ -262,7 +262,7 @@ Mismo `GET /health` de §4.1. Además:
 
 **`GET /forwarding-table?metric=delay`** → **200** la tabla local con la forma de §3.7 más `url` y `synced_at`. 400 `INVALID_REQUEST` (métrica ausente o inválida); 503 `FORWARDING_TABLE_UNAVAILABLE` si la instancia todavía no tiene tabla. No contacta al Controller.
 
-**`POST /packets`** (ingreso): mismo cuerpo de §4.2; `source` debe ser el `router_id` de la instancia (si no, 400 `INVALID_REQUEST`, `details.fields = ["source"]`). **`POST /forward`** (salto entre routers; `HopRequestSchema`, `extra="forbid"`): los campos del paquete más `topology_version` (entero ≥ 1) y `trace` (lista de `{"hop_index", "node", "router_url"}`, la traza hasta el router anterior).
+**`POST /packets`** (ingreso): mismo cuerpo de §4.2; `source` debe ser el `router_id` de la instancia (si no, 400 `INVALID_REQUEST`, `details.fields = ["source"]`, solo con el sobre `{"error": …}` y sin registro; aclaración C-32.7). **`POST /forward`** (salto entre routers; `HopRequestSchema`, `extra="forbid"`): los campos del paquete más `topology_version` (entero ≥ 1) y `trace` (lista de `{"hop_index", "node", "router_url"}`, la traza hasta el router anterior).
 
 Algoritmo de cada router: `02` §6.4. **200** (`NodeForwardingResponseSchema`), ejemplo A→D en F-20:
 
@@ -279,7 +279,7 @@ Algoritmo de cada router: `02` §6.4. **200** (`NodeForwardingResponseSchema`), 
 }
 ```
 
-`route.path` son los nodos de `trace`; `route.total_cost` es el de la fila del destino en la tabla del router de ingreso (`"0"` si origen = destino). Los errores de un paquete validado usan `PacketErrorSchema` (§4.2) con `details.at_router` = router donde se originó el error.
+`route.path` son los nodos de `trace`; `route.total_cost` es el de la fila del destino en la tabla del router de ingreso (`"0"` si origen = destino). En las respuestas intermedias de `POST /forward` es el costo desde el router que responde (aclaración C-32.8). Los errores de un paquete validado usan `PacketErrorSchema` (§4.2) con `details.at_router` = router donde se originó el error.
 
 | Estado | `error.code` | Cuándo | ¿Se registra? |
 |---|---|---|---|
@@ -333,7 +333,7 @@ Un error con sobre válido devuelto por el siguiente router y con un código de 
 
 La bitácora no contiene `payload` ni datos personales.
 
-**Modo nodo (C-32).** Cada instancia escribe en **su** `data/routers/<router_id>/forwarding.jsonl` una línea por paquete que procesa, con los mismos campos más `router_id` y `role` (`ingress`, `transit` o `egress`) al final; en `trace` cada salto incluye `router_url`. Además, `JsonForwardingTableDAO` reemplaza de forma atómica `forwarding-table.json` (`{"router_id", "url", "topology_version", "synced_at", "tables": {"delay": [filas], "inverse_bandwidth": [...], "loss": [...]}}`) y anexa a `table-events.jsonl` una línea por cambio de versión: `{"recorded_at", "router_id", "previous_version", "topology_version", "changes": [{"metric", "destination", "before", "after"}]}`, donde `before`/`after` son `{"next_hop", "total_cost", "status"}` (`before` nulo en la primera sincronización).
+**Modo nodo (C-32).** Cada instancia escribe en **su** `data/routers/<router_id>/forwarding.jsonl` una línea por paquete que procesa, con los mismos campos más `router_id` y `role` (`ingress`, `transit` o `egress`) al final; en `trace` cada salto incluye `router_url`; en las líneas `failed`, `trace` es `[]` y `error.details` incluye `at_router` (aclaración C-32.7). Además, `JsonForwardingTableDAO` reemplaza de forma atómica `forwarding-table.json` (`{"router_id", "url", "topology_version", "synced_at", "tables": {"delay": [filas], "inverse_bandwidth": [...], "loss": [...]}}`) y anexa a `table-events.jsonl` una línea por cambio de versión: `{"recorded_at", "router_id", "previous_version", "topology_version", "changes": [{"metric", "destination", "before", "after"}]}`, donde `before`/`after` son `{"next_hop", "total_cost", "status"}` (`before` nulo en la primera sincronización).
 
 ## 7. Versiones y sincronización
 
