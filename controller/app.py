@@ -17,7 +17,7 @@ def create_controller_app(settings: ControllerSettings, dao: TopologyDAO | None 
     ``JsonTopologyDAO(settings.topology_file)`` (que lanza ``TopologyLoadError`` si es inválida)."""
     topology_dao = dao if dao is not None else JsonTopologyDAO(settings.topology_file)
     service = RoutingService(dao=topology_dao, engine=BellmanFordEngine(), presenter=CostPresenter())
-    app = FastAPI(title="Controller SDN — Grupo 2 (Bellman-Ford)", version="1.0")
-    app.include_router(ControllerHTTP(service).router)
+    app = FastAPI(title="Controller SDN — Grupo 2 (Bellman-Ford)", version="1.1")
+    app.include_router(ControllerHTTP(service, routers=settings.routers).router)
     install_error_handlers(app)
     return app

@@ -7,8 +7,10 @@ Los handlers solo reciben esquemas ya validados por la View, invocan un método 
 from typing import Annotated
 
 from fastapi import APIRouter, Query
+from fastapi.responses import HTMLResponse
 
 from controller.service import RoutingService
+from controller.ui import DASHBOARD_HTML
 from controller.view import (
     ControllerHealthSchema,
     ForwardingEntrySchema,
@@ -19,14 +21,18 @@ from controller.view import (
     Metric,
     NodeId,
     RouteResponseSchema,
+    RouterInfoSchema,
+    RouterListSchema,
     TopologyResponseSchema,
     TopologyVersionSchema,
 )
+from shared.models import RouterInfo
 
 
 class ControllerHTTP:
-    def __init__(self, service: RoutingService) -> None:
+    def __init__(self, service: RoutingService, routers: tuple[RouterInfo, ...] = ()) -> None:
         self._service = service
+        self._routers = routers
         self.router = APIRouter()
         self.router.add_api_route("/health", self.health, methods=["GET"], response_model=ControllerHealthSchema)
         self.router.add_api_route("/topology", self.get_topology, methods=["GET"], response_model=TopologyResponseSchema)
@@ -39,6 +45,8 @@ class ControllerHTTP:
         )
         self.router.add_api_route("/links/fail", self.fail_link, methods=["POST"], response_model=LinkStatusSchema)
         self.router.add_api_route("/links/restore", self.restore_link, methods=["POST"], response_model=LinkStatusSchema)
+        self.router.add_api_route("/routers", self.list_routers, methods=["GET"], response_model=RouterListSchema)
+        self.router.add_api_route("/ui", self.ui, methods=["GET"], response_class=HTMLResponse)
 
     def health(self) -> ControllerHealthSchema:
         return ControllerHealthSchema(status="ok", application="controller")
@@ -97,6 +105,13 @@ class ControllerHTTP:
                 for entry in table.entries
             ],
         )
+
+    def list_routers(self) -> RouterListSchema:
+        return RouterListSchema(routers=[RouterInfoSchema(router_id=r.router_id, url=r.url) for r in self._routers])
+
+    def ui(self) -> HTMLResponse:
+        """Interfaz web (C-32): la página no contiene datos; los obtiene por HTTP desde el navegador."""
+        return HTMLResponse(DASHBOARD_HTML)
 
     def fail_link(self, body: LinkRequestSchema) -> LinkStatusSchema:
         return self._link_status(self._service.set_link_status(body.source, body.target, False))

@@ -25,6 +25,7 @@ RULES = {
     "controller/http.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
     "controller/http_errors.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
     "controller/view.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),
+    "controller/ui.py": ("controller.dao", "controller.engine", "networkx", "router", "httpx", "open"),  # 02 §8 (C-32)
     "controller/dao.py": FRAMEWORKS + ("networkx", "router", "httpx"),
     "controller/app.py": ("router",),
     "controller/main.py": ("router",),
