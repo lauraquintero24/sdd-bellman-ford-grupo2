@@ -197,6 +197,7 @@ classDiagram
         -LinkCostPolicy policy
         +BellmanFordEngine()
         +find_path(topology: Topology, src: str, dst: str, metric: str) PathScore
+        +find_all_paths(topology: Topology, src: str, metric: str) dict~str, PathScore~
         +run_bellman_ford_on_weighted_graph(graph: nx.Graph, src: str, mode: str) dict~str, RouteLabel~
     }
     class CostPresenter {
@@ -210,10 +211,13 @@ classDiagram
         +read_topology() Topology
         +compute_route(src: str, dst: str, metric: str) Route
         +set_link_status(source: str, target: str, active: bool) LinkChangeResult
+        +topology_version() int
+        +compute_forwarding_table(router_id: str, metric: str) ForwardingTable
     }
     class ControllerHTTP {
         <<Controller MVC>>
         -RoutingService service
+        -tuple~RouterInfo~ routers
         +ControllerHTTP(service: RoutingService, routers: tuple~RouterInfo~ = ())
         +get_topology() TopologyResponseSchema
         +get_route(src: str, dst: str, metric: str) RouteResponseSchema
@@ -268,10 +272,39 @@ classDiagram
         +str status
         +str application
     }
+    class TopologyVersionSchema {
+        <<View>>
+        +int topology_version
+    }
+    class ForwardingEntrySchema {
+        <<View>>
+        +str destination
+        +Optional~str~ next_hop
+        +Optional~list~ path
+        +Optional~str~ total_cost
+        +str status
+    }
+    class ForwardingTableResponseSchema {
+        <<View>>
+        +str router_id
+        +str metric
+        +int topology_version
+        +list~ForwardingEntrySchema~ entries
+    }
+    class RouterInfoSchema {
+        <<View>>
+        +str router_id
+        +str url
+    }
+    class RouterListSchema {
+        <<View>>
+        +list~RouterInfoSchema~ routers
+    }
     class ControllerSettings {
         +str host
         +int port
         +Path topology_file
+        +tuple~RouterInfo~ routers
     }
     class ErrorBodySchema {
         <<View>>
@@ -296,6 +329,13 @@ classDiagram
         +str total_cost
         +int topology_version
     }
+    class ForwardingTable {
+        <<shared, dataclass inmutable>>
+        +str router_id
+        +str metric
+        +int topology_version
+        +tuple~ForwardingEntry~ entries
+    }
     Topology "1" *-- "0..*" Link : contiene
     TopologyDAO <|.. JsonTopologyDAO
     JsonTopologyDAO "1" o-- "1" Topology : estado vigente
@@ -305,6 +345,7 @@ classDiagram
     RoutingService "1" --> "1" BellmanFordEngine : inyectado
     RoutingService "1" --> "1" CostPresenter : inyectado
     RoutingService ..> Route : crea
+    RoutingService ..> ForwardingTable : crea
     BellmanFordEngine "1" *-- "1" LinkCostPolicy
     BellmanFordEngine ..> RouteLabel : usa
     BellmanFordEngine ..> PathScore : devuelve
@@ -315,7 +356,12 @@ classDiagram
     ControllerHTTP ..> LinkRequestSchema
     ControllerHTTP ..> LinkStatusSchema
     ControllerHTTP ..> ControllerHealthSchema
+    ControllerHTTP ..> TopologyVersionSchema
+    ControllerHTTP ..> ForwardingTableResponseSchema
+    ControllerHTTP ..> RouterListSchema
     TopologyResponseSchema "1" *-- "0..*" LinkSchema
+    ForwardingTableResponseSchema "1" *-- "0..*" ForwardingEntrySchema
+    RouterListSchema "1" *-- "0..*" RouterInfoSchema
     ControllerComposition ..> ControllerSettings : lee
     ControllerComposition ..> JsonTopologyDAO : crea si no se inyecta dao
     ControllerComposition ..> RoutingService : crea e inyecta
@@ -359,7 +405,6 @@ classDiagram
         -str base_url
         -float connect_timeout_s
         -float read_timeout_s
-        -httpx.Client http
         +HttpRouteClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport: httpx.BaseTransport = None)
         +fetch_route(src: str, dst: str, metric: str) Route
     }
@@ -608,15 +653,20 @@ classDiagram
     }
     class HttpTableClient {
         +HttpTableClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport = None)
+        +fetch_topology_version() int
+        +fetch_forwarding_table(router_id: str, metric: str) ForwardingTable
     }
     class HttpNextHopClient {
         +HttpNextHopClient(connect_timeout_s: float, read_timeout_s: float, transport = None)
+        +forward(url: str, hop: HopPacket) NodeForwardingResult
     }
     class JsonForwardingTableDAO {
         -Path path
         -Path events_path
         -Lock lock
         +JsonForwardingTableDAO(path: Path, events_path: Path)
+        +load() Optional~NodeTables~
+        +save(tables: NodeTables) None
     }
     class NodeForwardingService {
         -str router_id
@@ -656,7 +706,7 @@ classDiagram
     NodeHTTP --> NodeForwardingService : invoca
 ```
 
-**Controller (Estudiante A), clases y métodos nuevos:** `BellmanFordEngine.find_all_paths(topology, src, metric) -> dict[str, PathScore]`; `RoutingService.topology_version() -> int` y `RoutingService.compute_forwarding_table(router_id, metric) -> ForwardingTable`; `ControllerHTTP.get_topology_version()`, `get_forwarding_table(router_id, metric)`, `list_routers()` y `ui()`; esquemas `TopologyVersionSchema`, `ForwardingEntrySchema`, `ForwardingTableResponseSchema`, `RouterInfoSchema`, `RouterListSchema` (`controller/view.py`) y la página `DASHBOARD_HTML` (`controller/ui.py`, View). `ControllerSettings` añade `routers: tuple[RouterInfo, ...]` (vacío si no se configura `ROUTERS_FILE`), que `create_controller_app` pasa a `ControllerHTTP(service, routers=settings.routers)` *(aclaración C-32.6)*; los métodos nuevos de `ControllerHTTP` figuran también en el diagrama de §3.1.
+**Controller (Estudiante A), clases y métodos nuevos:** `BellmanFordEngine.find_all_paths(topology, src, metric) -> dict[str, PathScore]`; `RoutingService.topology_version() -> int` y `RoutingService.compute_forwarding_table(router_id, metric) -> ForwardingTable`; `ControllerHTTP.get_topology_version()`, `get_forwarding_table(router_id, metric)`, `list_routers()` y `ui()`; esquemas `TopologyVersionSchema`, `ForwardingEntrySchema`, `ForwardingTableResponseSchema`, `RouterInfoSchema`, `RouterListSchema` (`controller/view.py`) y la página `DASHBOARD_HTML` (`controller/ui.py`, View). `ControllerSettings` añade `routers: tuple[RouterInfo, ...]` (vacío si no se configura `ROUTERS_FILE`), que `create_controller_app` pasa a `ControllerHTTP(service, routers=settings.routers)` *(aclaración C-32.6)*; los métodos nuevos de `BellmanFordEngine`, `RoutingService` y `ControllerHTTP`, los esquemas nuevos, `ForwardingTable` y `ControllerSettings.routers` figuran también en el diagrama de §3.1 *(aclaración C-32.11)*.
 
 *Aclaraciones C-32 (01/11/2026):* `NodeTables` incluye `url` (la URL de la instancia que se guarda en `forwarding-table.json`, `04` §6) *(C-32.1)*; el constructor de `NodeForwardingService` recibe `next_hop_client` entre `table_dao` y `log_dao`, como muestra el diagrama *(C-32.3)*.
 
@@ -860,8 +910,8 @@ Cada `http_errors.py` contiene la tabla `error.code → estado HTTP` de su proce
 | S1 — reenvío exitoso | `PacketHTTP.post_packet`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ControllerHTTP.get_route`, `RoutingService.compute_route`, `TopologyDAO.get_topology`, `BellmanFordEngine.find_path`, `CostPresenter.format_cost`, `ForwardingLogDAO.save` |
 | S2 — fallo, nueva ruta y restauración | `ControllerHTTP.fail_link`, `ControllerHTTP.restore_link`, `RoutingService.set_link_status`, `TopologyDAO.set_link_status` y el flujo de S1 |
 | S3 — Controller no disponible | `PacketHTTP.post_packet`, `ForwardingService.forward`, `HttpRouteClient.fetch_route`, `ForwardingLogDAO.save`, `PacketHTTP.health` |
-| S4 — Reenvío salto a salto *(C-32)* | `NodeHTTP.post_packet`, `NodeHTTP.forward`, `NodeForwardingService.handle`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `NextHopClient.forward`, `ForwardingLogDAO.save` |
-| S5 — Actualización de tablas tras un fallo *(C-32)* | `ControllerHTTP.fail_link`, `RoutingService.set_link_status`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `TableClient.fetch_forwarding_table`, `ControllerHTTP.get_forwarding_table`, `RoutingService.compute_forwarding_table`, `BellmanFordEngine.find_all_paths`, `ForwardingTableDAO.save` |
+| S4 — Reenvío salto a salto *(C-32)* | `NodeHTTP.post_packet`, `NodeHTTP.forward`, `NodeForwardingService.handle`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `ControllerHTTP.get_topology_version`, `RoutingService.topology_version`, `NextHopClient.forward`, `ForwardingLogDAO.save` |
+| S5 — Actualización de tablas tras un fallo *(C-32)* | `ControllerHTTP.fail_link`, `RoutingService.set_link_status`, `NodeForwardingService.sync_if_changed`, `TableClient.fetch_topology_version`, `ControllerHTTP.get_topology_version`, `RoutingService.topology_version`, `TableClient.fetch_forwarding_table`, `ControllerHTTP.get_forwarding_table`, `RoutingService.compute_forwarding_table`, `BellmanFordEngine.find_all_paths`, `ForwardingTableDAO.save` |
 
 ## 11. Fuentes
 
