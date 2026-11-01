@@ -405,7 +405,6 @@ classDiagram
         -str base_url
         -float connect_timeout_s
         -float read_timeout_s
-        -httpx.Client http
         +HttpRouteClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport: httpx.BaseTransport = None)
         +fetch_route(src: str, dst: str, metric: str) Route
     }
@@ -654,15 +653,20 @@ classDiagram
     }
     class HttpTableClient {
         +HttpTableClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport = None)
+        +fetch_topology_version() int
+        +fetch_forwarding_table(router_id: str, metric: str) ForwardingTable
     }
     class HttpNextHopClient {
         +HttpNextHopClient(connect_timeout_s: float, read_timeout_s: float, transport = None)
+        +forward(url: str, hop: HopPacket) NodeForwardingResult
     }
     class JsonForwardingTableDAO {
         -Path path
         -Path events_path
         -Lock lock
         +JsonForwardingTableDAO(path: Path, events_path: Path)
+        +load() Optional~NodeTables~
+        +save(tables: NodeTables) None
     }
     class NodeForwardingService {
         -str router_id

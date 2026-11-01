@@ -30,7 +30,6 @@ classDiagram
         -str base_url
         -float connect_timeout_s
         -float read_timeout_s
-        -httpx.Client http
         +HttpRouteClient(base_url: str, connect_timeout_s: float, read_timeout_s: float, transport: httpx.BaseTransport = None)
         +fetch_route(src: str, dst: str, metric: str) Route
     }

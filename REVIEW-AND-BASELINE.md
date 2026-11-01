@@ -4,7 +4,7 @@
 |---|---|
 | Versión candidata | **1.0** — 2026-10-29 — seis especificaciones, `specs/fixtures/`, `diagrams/` y `prompts-session1.md` (SHA-256 en `SHA256SUMS`) |
 | Baseline objetivo | Tag Git `spec-1.0` |
-| Estado | **Versión 1.1 en revisión (cambio C-32)** — C-32 aprobado por ambas el 31/10/2026 («Apruebo C-32 — Laura Sofia Quintero Fernandez», «Apruebo C-32 — Mariana Arturo Pabón»); diff de `specs/` aprobado por ambas el 31/10/2026 (commit `8896993`) e implementado (W-14–W-19); aclaraciones C-32.1–C-32.10 del 01/11/2026; pendiente: pruebas en Windows y tag `spec-1.1` (§4). La versión anterior sigue **CONGELADA (spec-1.0)** — reconfirmada por ambas estudiantes el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf`, `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`). Commit y tag Git `spec-1.0`: pendientes (§3, paso 5). Este es el único documento donde cambia el estado. |
+| Estado | **CONGELADA (spec-1.1)** — cambio C-32 aprobado por ambas el 31/10/2026 («Apruebo C-32 — Laura Sofia Quintero Fernandez», «Apruebo C-32 — Mariana Arturo Pabón»); diff de `specs/` aprobado por ambas el 31/10/2026 (commit `8896993`) e implementado (W-14–W-19); aclaraciones C-32.1–C-32.10 del 01/11/2026; pruebas en Windows 11 hechas el 01/11/2026 (`test-results.txt`); PR #4 fusionada en `main` en el commit de fusión `bf17fc6`; tag `spec-1.1` creado por el equipo el 01/11/2026 sobre `bf17fc6` (§4). **En revisión:** aclaración C-32.11 (corrección de coherencia `02`↔`03`, sin cambio de comportamiento), que se etiquetará como `spec-1.1.1` tras la aprobación de ambas. La versión anterior sigue **CONGELADA (spec-1.0)** — reconfirmada por ambas estudiantes el 30/10/2026 (`evidencias/aprobaciones/reconfirmacion-v1.0-Mariana.pdf`, `evidencias/aprobaciones/reconfirmacion-v1.0-Laura.pdf`); commit y tag Git `spec-1.0`: `20c2289` (§3, paso 5). Este es el único documento donde cambia el estado. |
 
 ## 1. Revisión cruzada (PDF p. 4: diagramas, requisitos, API y pruebas concuerdan)
 
@@ -60,7 +60,7 @@ La versión 1.0 introduce los cambios C-01 a C-31 de `CHANGELOG-SPECS.md`; los m
 
 **Hechos observables que el docente puede pedir aclarar.** Ambos PDF se generaron con Word a partir de la misma plantilla (versión definitiva exportada a las 06:02:36 la de Mariana y a las 05:58:26 la de Laura, el 30/10/2026; sustituye a una primera versión que conservaba textos de propuesta de la plantilla), y en sus metadatos el autor figura como «Pendiente de completar por la estudiante». Las firmas son el nombre escrito; no hay firma manuscrita ni criptográfica.
 
-**Estado del procedimiento de §3:** pasos 1–4 completados el 30/10/2026; queda el paso 5 (commit y tag `spec-1.0` en el repositorio del equipo).
+**Estado del procedimiento de §3:** pasos 1–4 completados el 30/10/2026; paso 5 completado: commit y tag `spec-1.0` en `20c2289` (30/10/2026).
 
 ## 3. Procedimiento único de congelamiento (acción humana)
 
@@ -76,4 +76,6 @@ La versión 1.0 introduce los cambios C-01 a C-31 de `CHANGELOG-SPECS.md`; los m
 
 Cualquier cambio de diseño posterior se registra en `CHANGELOG-SPECS.md` con motivo, artefactos afectados y aprobación de ambas antes de modificar el código (PDF p. 4).
 
-**C-32 (31/10/2026).** Primer cambio posterior a `spec-1.0`: ver `CHANGELOG-SPECS.md`. Procedimiento: (1) aprobación del cambio por ambas — hecha; (2) redacción de `specs/` 1.1 y revisión del diff por ambas — hecha (31/10/2026); (3) implementación solo tras (2) — hecha (W-14–W-19), con aclaraciones C-32.1–C-32.10; (4) regeneración de `SHA256SUMS`, commit y tag `spec-1.1` por el equipo; `spec-1.0` no se modifica ni se mueve. La implementación de la Sesión 2 sigue la baseline congelada; si el código no la cumple, se corrige el código o se registra el fallo, nunca se ajusta el requisito para que coincida con un código incorrecto (PDF p. 5).
+**C-32 (31/10/2026).** Primer cambio posterior a `spec-1.0`: ver `CHANGELOG-SPECS.md`. Procedimiento: (1) aprobación del cambio por ambas — hecha; (2) redacción de `specs/` 1.1 y revisión del diff por ambas — hecha (31/10/2026); (3) implementación solo tras (2) — hecha (W-14–W-19), con aclaraciones C-32.1–C-32.10; (4) regeneración de `SHA256SUMS`, commit y tag `spec-1.1` por el equipo — hecho: pruebas en Windows 11 el 01/11/2026 (`test-results.txt`), PR #4 fusionada en `bf17fc6` (commit de fusión) y tag `spec-1.1` creado por el equipo el 01/11/2026 sobre `bf17fc6`; `spec-1.0` no se modifica ni se mueve.
+
+**C-32.11 (01/11/2026).** Aclaración de coherencia `02`↔`03` sin cambio de comportamiento (`CHANGELOG-SPECS.md`): requiere «Apruebo C-32.11 — Laura Sofia Quintero Fernandez» y «Apruebo C-32.11 — Mariana Arturo Pabón» antes de su commit; tras la aprobación de ambas se etiquetará como `spec-1.1.1`. `spec-1.0` y `spec-1.1` no se modifican ni se mueven. La implementación de la Sesión 2 sigue la baseline congelada; si el código no la cumple, se corrige el código o se registra el fallo, nunca se ajusta el requisito para que coincida con un código incorrecto (PDF p. 5).
