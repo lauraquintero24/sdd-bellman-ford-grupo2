@@ -2702,3 +2702,8 @@ EVIDENCIAS EN WINDOWS 11 — 2026-11-01 — Windows 11, portátil de Laura — P
       Al detenerlo con Ctrl+C no quedó ningún proceso escuchando en 8000–8004 (netstat vacío; declarado por el
       equipo, sin archivo de salida en demo-evidence/).
   demo-evidence/c32-modo-nodo/ (ejecución en Linux, citada por los documentos) se conserva sin cambios.
+
+EJECUCIÓN EN WINDOWS 11 — última — Windows 11, portátil de Laura — Python 3.14.0 — commit 071aacf (main tras la fusión de
+la PR #5, C-32.11; tag spec-1.1.1) (salida real aportada por el equipo)
+  python -m pytest -q: 687 passed, 1 warning (StarletteDeprecationWarning) en 128.53 s.
+  sha256sum -c SHA256SUMS: OK.
