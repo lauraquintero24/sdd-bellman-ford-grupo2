@@ -48,6 +48,31 @@ def _send(url, src, dst, packet_id):
                                               "metric": "delay"}, timeout=15)
 
 
+def _diagnosis(urls, tmp_path) -> str:
+    """Estado de cada router y última línea de su bitácora, para dejar constancia de la causa de un fallo."""
+    lines = []
+    for n, url in urls.items():
+        try:
+            status = _get(url, "/status").json()
+        except httpx.HTTPError as exc:
+            status = f"sin respuesta ({type(exc).__name__})"
+        log = tmp_path / n / "forwarding.jsonl"
+        last = log.read_text(encoding="utf-8").splitlines()[-1:] if log.exists() else []
+        lines.append(f"  {n}: /status={status} · última línea de bitácora={last}")
+    return "\n".join(lines)
+
+
+def _send_expect(urls, tmp_path, src, dst, packet_id, expected_path):
+    """Envía y comprueba la traza; si falla, el mensaje incluye el estado HTTP, el cuerpo completo y el diagnóstico."""
+    response = _send(urls[src], src, dst, packet_id)
+    nodes = [h["node"] for h in response.json().get("trace", [])] if response.headers.get("content-type", "").startswith(
+        "application/json") else None
+    assert response.status_code == 200 and nodes == expected_path, (
+        f"{packet_id} {src}→{dst}: esperado {expected_path}; HTTP {response.status_code}; cuerpo: {response.text}\n"
+        + _diagnosis(urls, tmp_path))
+    return response.json()
+
+
 def test_five_real_processes(tmp_path):
     topology = tmp_path / "topology-demo.json"
     shutil.copy(FIXTURES_DIR / "F-20.json", topology)
@@ -80,7 +105,7 @@ def test_five_real_processes(tmp_path):
         _wait_tables(urls, 1)
         assert {n: _next_hops(u) for n, u in urls.items()} == DELAY_V1
         # 3. Paquete A→D salto a salto por HTTP real, igual a la ruta del Controller
-        body = _send(urls["A"], "A", "D", "pkt-1").json()
+        body = _send_expect(urls, tmp_path, "A", "D", "pkt-1", ["A", "B", "D"])
         route = _get(controller_url, "/route", src="A", dst="D", metric="delay").json()
         assert [h["node"] for h in body["trace"]] == route["path"] == ["A", "B", "D"]
         assert [h["router_url"] for h in body["trace"]] == [urls["A"], urls["B"], urls["D"]]
@@ -88,11 +113,11 @@ def test_five_real_processes(tmp_path):
         httpx.post(controller_url + "/links/fail", json={"source": "B", "target": "D"}, timeout=5)
         _wait_tables(urls, 2)
         assert {n: _next_hops(u) for n, u in urls.items()} == DELAY_V2
-        assert [h["node"] for h in _send(urls["A"], "A", "D", "pkt-2").json()["trace"]] == ["A", "C", "D"]
+        _send_expect(urls, tmp_path, "A", "D", "pkt-2", ["A", "C", "D"])
         httpx.post(controller_url + "/links/restore", json={"source": "B", "target": "D"}, timeout=5)
         _wait_tables(urls, 3)
         assert {n: _next_hops(u) for n, u in urls.items()} == DELAY_V1
-        assert [h["node"] for h in _send(urls["A"], "A", "D", "pkt-3").json()["trace"]] == ["A", "B", "D"]
+        _send_expect(urls, tmp_path, "A", "D", "pkt-3", ["A", "B", "D"])
         # 5. Router B detenido: error controlado en A; los demás siguen vivos
         stop(procs["B"])
         response = _send(urls["A"], "A", "D", "pkt-4")

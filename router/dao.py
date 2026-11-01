@@ -4,8 +4,11 @@ Anexa una línea JSON por resultado bajo un candado de proceso y las relee para 
 """
 
 import json
+import logging
 import os
+import sys
 import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -13,6 +16,28 @@ from router.models import ForwardingResult, NodeForwardingResult, NodeTables, No
 from router.ports import ForwardingLogDAO, ForwardingTableDAO
 from shared.errors import LogPersistenceError
 from shared.models import ForwardingEntry, ForwardingTable, Route
+
+logger = logging.getLogger("router")
+
+# En Windows, un antivirus o el indexador abren brevemente los archivos recién escritos sin FILE_SHARE_DELETE;
+# mientras tanto os.replace (y a veces open) falla con PermissionError (WinError 5 o 32). Se reintenta de forma
+# acotada (10 intentos, 9 esperas de 50 ms: ≤ 0,45 s) antes de convertirlo en LogPersistenceError. En otros sistemas un PermissionError es un
+# problema real de permisos y no se reintenta (TC-33).
+RETRY_PERMISSION_ERRORS = sys.platform == "win32"
+_RETRIES = 10
+_RETRY_DELAY_S = 0.05
+
+
+def _retry_transient(operation, description: str):
+    """Ejecuta ``operation``; en Windows reintenta ante ``PermissionError`` transitorio."""
+    for attempt in range(1, _RETRIES + 1):
+        try:
+            return operation()
+        except PermissionError as exc:
+            if not RETRY_PERMISSION_ERRORS or attempt == _RETRIES:
+                raise
+            logger.warning("%s: %r; reintento %d de %d", description, exc, attempt, _RETRIES - 1)
+            time.sleep(_RETRY_DELAY_S)
 
 
 def _recorded_at() -> str:
@@ -102,10 +127,11 @@ class JsonlForwardingLogDAO(ForwardingLogDAO):
         line = json.dumps(_record(result), ensure_ascii=False) + "\n"
         with self._lock:
             try:
-                with self._path.open("a", encoding="utf-8") as handle:
+                with _retry_transient(lambda: self._path.open("a", encoding="utf-8"), "abrir la bitácora") as handle:
                     handle.write(line)
                     handle.flush()
-            except OSError:
+            except OSError as exc:
+                logger.error("No fue posible guardar en %s: %r", self._path.name, exc)  # diagnóstico del proceso
                 raise LogPersistenceError("No fue posible guardar el resultado.") from None
 
     def list_recent(self, limit: int) -> list[ForwardingResult]:
@@ -207,8 +233,9 @@ class JsonForwardingTableDAO(ForwardingTableDAO):
             tmp = self._path.with_name(self._path.name + ".tmp")
             try:
                 tmp.write_text(json.dumps(_tables_to_dict(tables), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-                os.replace(tmp, self._path)
-                with self._events_path.open("a", encoding="utf-8") as handle:
+                _retry_transient(lambda: os.replace(tmp, self._path), "reemplazar forwarding-table.json")
+                with _retry_transient(lambda: self._events_path.open("a", encoding="utf-8"), "abrir table-events.jsonl") as handle:
                     handle.write(json.dumps(event, ensure_ascii=False) + "\n")
-            except OSError:
+            except OSError as exc:
+                logger.error("No fue posible guardar la tabla de forwarding: %r", exc)  # diagnóstico del proceso
                 raise LogPersistenceError("No fue posible guardar la tabla de forwarding.") from None
